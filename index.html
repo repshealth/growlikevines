@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Project Reset App</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,700;1,800&family=Montserrat:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: sticky brand bar + tab row; one centred column for clients, wide grid for the coach. Single light look by choice: white base, GrowLikeVines neon green, black for weight. */
+:root{
+  color-scheme: light;
+  --bg:#ffffff;
+  --surface:#f6f8f5;
+  --surface-2:#e9eee7;
+  --line:#dfe5dc;
+  --fg:#0a0b0a;
+  --muted:#626a60;
+  --lime:#39e81f;
+  --lime-dim:#39e81f1f;
+  --green-ink:#14861a;
+  --night:#0a0b0a;
+  --on-night:#f2f5f1;
+  --ink:#0a0b0a;
+  --ok:#14861a;
+  --warn:#a86a00;
+  --bad:#d4371f;
+  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:Montserrat,"Helvetica Neue",Arial,sans-serif;
+  --r:14px;
+}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--fg)}
+body{font-family:var(--body);font-size:15px;line-height:1.55;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--green-ink);outline-offset:2px}
+h1,h2,h3{text-wrap:balance;margin:0}
+p{margin:0}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.col{max-width:760px;margin:0 auto}
+.wide{max-width:1180px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.display{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;letter-spacing:.01em;line-height:.92}
+.num{font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+
+/* Wordmark */
+.mark{display:inline-flex;flex-direction:column;line-height:.8;font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;color:var(--fg)}
+.mark span:last-child{background:var(--lime);color:var(--ink);padding:0 .12em;align-self:flex-start;margin-top:.04em}
+.mark.sm{font-size:19px}
+.mark.lg{font-size:clamp(54px,14vw,84px);transform:skew(-4deg)}
+
+/* Top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--lime)}
+.top-in{display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;padding:8px 12px;border-radius:999px;color:var(--muted);font-weight:600;font-size:13px;white-space:nowrap}
+.tab:hover{color:var(--fg)}
+.tab[aria-current="page"]{background:var(--lime);color:var(--ink)}
+.who{display:flex;align-items:center;gap:10px;font-size:13px}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px}
+.link{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:4px}
+.link:hover{color:var(--fg)}
+.proto{font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--line);color:var(--muted);padding:3px 7px;border-radius:999px;font-weight:600}
+
+main{padding-block:24px 64px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:11px 16px;font-weight:700;font-size:14px;border:1px solid var(--line);background:var(--surface-2)}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn:disabled{opacity:.4;cursor:default}
+
+/* Login */
+.login{min-height:100%;display:grid;place-items:center;padding-block:48px}
+.login-card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:22px}
+.login-card form{display:flex;flex-direction:column;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.input{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:11px 12px;width:100%;min-width:0}
+.input:focus{border-color:var(--green-ink);outline:none}
+.login-hero{background:var(--night);border-radius:18px;padding:28px 24px 24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 0 1px var(--night),0 18px 50px -18px var(--lime);background-image:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--lime) 22%,transparent),transparent 60%)}
+.login-hero .mark span:first-child{color:var(--on-night)}
+.login-hero p{color:var(--on-night);font-weight:600}
+.demo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
+
+/* Cards and sections */
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:6px}
+.sec-title{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.02em}
+
+/* Today header */
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.dayno{font-size:clamp(64px,16vw,96px);color:var(--fg)}
+.dayno small{font-size:.4em;color:var(--muted);margin-left:6px;font-style:italic}
+.ring{flex:none;position:relative;width:96px;height:96px}
+.ring svg{display:block}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:28px;font-weight:700;font-style:italic}
+.daynav{display:flex;gap:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600}
+.chip:disabled{opacity:.35;cursor:default}
+.theme{background:var(--night);color:var(--lime);box-shadow:inset 0 0 0 1px var(--night),0 10px 30px -12px var(--lime);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.theme .eyebrow{color:var(--on-night);opacity:.7}
+.theme .display{font-size:clamp(30px,8vw,42px)}
+.targets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.target{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.target b{font-family:var(--display);font-size:24px;font-weight:700;line-height:1}
+.sticky{background:var(--surface);border-left:4px solid var(--lime);border-radius:0 var(--r) var(--r) 0;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.coachnote{border:1px solid var(--green-ink);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:6px;background:var(--lime-dim)}
+
+/* Task rows */
+.tasks{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line);min-width:0}
+.row:first-child{border-top:0}
+.row .lbl{flex:1;min-width:0;display:flex;flex-direction:column}
+.row .lbl strong{font-weight:600}
+.row .lbl small{color:var(--muted);font-size:12px}
+.row.done .lbl strong{color:var(--fg)}
+.tick{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;flex:none;background:transparent;transition:background .15s,border-color .15s}
+.row.done .tick{background:var(--lime);border-color:var(--lime)}
+.tick svg{opacity:0}
+.row.done .tick svg{opacity:1}
+button.row{background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;width:100%;color:inherit}
+.row.stacked{flex-direction:column;align-items:stretch;gap:10px}
+.row.stacked .top-line{display:flex;align-items:center;gap:14px}
+.rating{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.rating button{border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:7px 0;font-weight:700;font-size:13px}
+.rating button[aria-pressed="true"]{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.ctrl{width:150px;flex:none}
+.ctrl.time{width:120px}
+.badge{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.badge.ok{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.badge.miss{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--lime);border-radius:99px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);font-weight:700;font-size:18px;line-height:1}
+.stepper b{font-family:var(--display);font-size:24px;min-width:58px;text-align:center}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opts button[aria-pressed="true"]{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.upload{display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.upload input{position:absolute;width:1px;height:1px;opacity:0}
+textarea.input{min-height:84px;resize:vertical}
+.more{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.more button{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px}
+.more button:hover{border-color:var(--green-ink)}
+.more small{color:var(--muted);font-size:12px}
+
+/* Programme content */
+.hero-p{display:flex;flex-direction:column;gap:10px;padding-block:8px 6px}
+.hero-p .display{font-size:clamp(44px,11vw,72px)}
+.acc{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.acc summary{list-style:none;cursor:pointer;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary h3{font-family:var(--display);font-weight:700;font-size:24px;text-transform:uppercase;letter-spacing:.02em}
+.acc summary .plus{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;flex:none;transition:transform .2s}
+.acc[open] summary .plus{transform:rotate(45deg);border-color:var(--lime);background:var(--lime);color:var(--ink)}
+.acc .body{padding:0 18px 20px;display:flex;flex-direction:column;gap:12px;max-width:68ch}
+.acc .body h4{margin:6px 0 0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--green-ink)}
+.acc .body ul,.acc .body ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.acc .body blockquote{margin:0;padding:12px 14px;border-left:4px solid var(--lime);background:var(--surface);border-radius:0 10px 10px 0;font-weight:600}
+.reset-letters{display:grid;gap:8px}
+.reset-letters div{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start}
+.reset-letters b{font-family:var(--display);font-style:italic;font-size:40px;line-height:.9;color:var(--green-ink)}
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.tool{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:4px}
+.tool b{font-family:var(--display);font-size:22px;text-transform:uppercase;font-weight:700}
+.tool small{color:var(--muted)}
+
+/* Progress */
+.heat{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.heat .cell{aspect-ratio:1;max-width:100%;border-radius:8px;border:1px solid var(--line);display:grid;place-items:center;font-size:12px;font-weight:700;background:var(--surface-2);color:var(--muted)}
+.heat .cell.l1{background:color-mix(in srgb,var(--lime) 18%,var(--surface));color:var(--fg)}
+.heat .cell.l2{background:color-mix(in srgb,var(--lime) 45%,var(--surface));color:var(--fg)}
+.heat .cell.l3{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.heat .cell.future{background:transparent;border-style:dashed;opacity:.5}
+.heat .cell.today{outline:2px solid var(--fg);outline-offset:1px}
+.heat .cell.sel{outline:2px solid var(--green-ink);outline-offset:2px}
+button.cell{cursor:pointer}
+.heat-head{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;font-size:11px;color:var(--muted);text-align:center;margin-bottom:6px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-2px;margin-right:4px;border:1px solid var(--line)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile b{font-family:var(--display);font-size:36px;line-height:1;font-weight:700}
+.tile small{color:var(--muted);font-size:12px}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--body)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.keyrow{display:flex;gap:14px;font-size:12px;color:var(--muted)}
+.keyrow i{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+
+/* Coach */
+.coach-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.filters button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:860px;font-size:13px}
+th,td{padding:11px 12px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--surface)}
+th button{background:none;border:0;padding:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+th button[data-active="true"]{color:var(--green-ink)}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--surface-2)}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.pill.warn{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.mini{display:inline-flex;gap:2px;vertical-align:middle}
+.mini i{width:8px;height:18px;border-radius:2px;background:var(--surface-2)}
+.mini i.l1{background:color-mix(in srgb,var(--lime) 25%,var(--surface-2))}
+.mini i.l2{background:color-mix(in srgb,var(--lime) 55%,var(--surface-2))}
+.mini i.l3{background:var(--lime)}
+.habit{display:grid;grid-template-columns:110px minmax(0,1fr) 40px;gap:10px;align-items:center;font-size:13px;padding:5px 0}
+.habit .bar i.low{background:var(--bad)}
+.habit .bar i.mid{background:var(--warn)}
+.detail-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.detail-head .display{font-size:clamp(40px,9vw,64px)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.log-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 24px}
+.log-list div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px;min-width:0}
+.log-list div span:last-child{text-align:right;overflow-wrap:anywhere}
+.log-list .miss span:last-child{color:var(--muted)}
+.weeks-tbl table{min-width:820px}
+.weeks-tbl td{vertical-align:top}
+.weeks-tbl .input{padding:8px 10px;font-size:13px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lime);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:999px;font-size:13px;z-index:20}
+
+@media (max-width:900px){
+  .coach-grid{grid-template-columns:1fr}
+  .two{grid-template-columns:1fr}
+}
+@media (max-width:560px){
+  .targets{grid-template-columns:repeat(2,1fr)}
+  .tiles{grid-template-columns:repeat(2,1fr)}
+  .log-list{grid-template-columns:1fr}
+  .ctrl{width:120px}
+  .top .proto{display:none}
+  .demo-row{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div id="root"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- storage (per browser, demo only) ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+const K={session:"pr1_session",edits:"pr1_edits",notes:"pr1_notes",weeks:"pr1_weeks"};
+
+/* ---------- dates ---------- */
+const DAY=86400000;
+const pad=n=>String(n).padStart(2,"0");
+const ymd=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const diffDays=(a,b)=>Math.round((b-a)/DAY);
+const NOW=new Date();
+const TODAY=new Date(NOW.getFullYear(),NOW.getMonth(),NOW.getDate());
+const COHORT=addDays(TODAY,-((TODAY.getDay()+6)%7)-7); // Monday of last week, so the demo is always mid-programme
+const fmtLong=d=>d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"});
+const fmtShort=d=>d.toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+const mins=t=>{if(!t)return null;const[h,m]=t.split(":").map(Number);return h*60+m};
+const hhmm=m=>{m=((Math.round(m)%1440)+1440)%1440;return pad(Math.floor(m/60))+":"+pad(m%60)};
+const PROGRAMME_DAYS=28;
+
+/* ---------- programme config ---------- */
+const DEFAULT_WEEKS=[
+  {theme:"Build the baseline",note:"Same wake time, same bed time, every day this week. Your nervous system trusts what it can predict. Give it something to predict.",wake:"07:00",bed:"22:00",water:6,steps:10000},
+  {theme:"Make it the default",note:"Stress, poor sleep & poor recovery all lower the oxygen reaching your cells. Less oxygen means every task costs you more energy. Settle those first & the same day costs you less.",wake:"07:00",bed:"22:00",water:6,steps:10000},
+  {theme:"Raise the floor",note:"Your worst day this week should still beat your best day before you started. Protect the minimum, the rest follows.",wake:"07:00",bed:"22:00",water:6,steps:10000},
+  {theme:"Own the standard",note:"Nobody is checking anymore except you. This is the week the habits stop being tasks and become who you are.",wake:"07:00",bed:"22:00",water:6,steps:10000}
+];
+let WEEKS=store.get(K.weeks,null)||DEFAULT_WEEKS.map(w=>({...w}));
+
+const RESETS=["Breathwork","Nature walk","Stretch","Nap","Journal","Sauna","Other"];
+const TASKS=[
+  {k:"am_state",label:"AM state",type:"rating",sec:"day",hint:"How you feel on waking, 1 to 10"},
+  {k:"woke_at",label:"Woke at",type:"time",sec:"day",target:"wake"},
+  {k:"outside_early",label:"Outside early",type:"check",sec:"day",hint:"Daylight within the first hour"},
+  {k:"todo",label:"To-do list",type:"check",sec:"day",hint:"Today's list written"},
+  {k:"steps1",label:"Steps 1",type:"check",sec:"day",split:0},
+  {k:"meal1",label:"Meal 1",type:"text",sec:"day"},
+  {k:"meal2",label:"Meal 2",type:"text",sec:"day"},
+  {k:"steps2",label:"Steps 2",type:"check",sec:"day",split:1},
+  {k:"meal3",label:"Meal 3",type:"text",sec:"day"},
+  {k:"steps3",label:"Steps 3",type:"check",sec:"day",split:2},
+  {k:"meal4",label:"Meal 4",type:"text",sec:"day"},
+  {k:"meal5",label:"Meal 5",type:"text",sec:"day"},
+  {k:"pm_state",label:"PM state",type:"rating",sec:"done",hint:"How you feel tonight, 1 to 10"},
+  {k:"full_steps",label:"Full steps",type:"steps",sec:"done"},
+  {k:"steps_shot",label:"Steps screenshot",type:"upload",sec:"done"},
+  {k:"water",label:"Water",type:"water",sec:"done"},
+  {k:"bed",label:"Bed",type:"time",sec:"done",target:"bed"},
+  {k:"training",label:"Training",type:"check",sec:"done",hint:"Today's session done"},
+  {k:"reset",label:"Reset",type:"select",sec:"done",hint:"Pick from Recharge"},
+  {k:"brain_dump",label:"Brain dump",type:"textarea",sec:"done"}
+];
+const splitSteps=s=>{const a=Math.floor(s/3);return[a,a,s-2*a]};
+
+function isDone(t,v,wk){
+  if(v===undefined||v===null||v==="")return false;
+  switch(t.type){
+    case"check":return v===true;
+    case"rating":return v>0;
+    case"steps":return Number(v)>=wk.steps;
+    case"water":return Number(v)>=wk.water;
+    default:return String(v).trim().length>0;
+  }
+}
+function onTarget(t,v,wk){
+  if(!t.target||!v)return null;
+  let m=mins(v),goal=mins(wk[t.target]);
+  if(t.target==="bed"){if(m<12*60)m+=1440;if(goal<12*60)goal+=1440}
+  return m<=goal+15;
+}
+const pct=(log,wk)=>log?Math.round(TASKS.filter(t=>isDone(t,log[t.k],wk)).length/TASKS.length*100):0;
+const hasAny=log=>log&&Object.values(log).some(v=>v!==""&&v!==false&&v!==null&&v!==undefined);
+
+/* ---------- demo clients (sample data) ---------- */
+const CLIENTS=[
+  {id:"sarah",name:"Sarah Mitchell",email:"sarah@example.com",offset:0,base:.86,drift:.05},
+  {id:"tom",name:"Tom Hughes",offset:0,base:.93,drift:.02},
+  {id:"priya",name:"Priya Shah",offset:0,base:.74,drift:.12},
+  {id:"dan",name:"Dan Cole",offset:0,base:.72,drift:-.3,gone:2},
+  {id:"jess",name:"Jess Martin",offset:0,base:.55,drift:.04},
+  {id:"liam",name:"Liam O'Neill",offset:0,base:.84,drift:-.22},
+  {id:"chloe",name:"Chloe Evans",offset:0,base:.95,drift:0},
+  {id:"marcus",name:"Marcus Reid",offset:7,base:.78,drift:.1}
+];
+const MEALS=["Eggs, sourdough, berries","Greek yoghurt, oats, honey","Chicken, rice, greens","Salmon, potatoes, broccoli","Beef chilli, rice","Protein shake, banana","Turkey wrap, salad","Steak, sweet potato, peppers","Omelette, spinach, toast","Cottage cheese, fruit"];
+const DUMPS=["Long day at work but got everything done.","Felt flat this afternoon, walk helped.","Slept better than last week.","Struggled with the evening meal, too busy.","Good energy all day.","Kids were up early, still hit the basics."];
+function rngFor(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);let t=(h^=h>>>16)>>>0;t+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function partialCut(){const h=NOW.getHours();return h<8?0:h<10?3:h<12?6:h<15?9:h<18?11:h<21?14:TASKS.length}
+
+const clientStart=c=>addDays(COHORT,c.offset);
+const clientDayNum=c=>clamp(diffDays(clientStart(c),TODAY)+1,1,PROGRAMME_DAYS);
+const weekOf=dayNum=>WEEKS[clamp(Math.floor((dayNum-1)/7),0,3)];
+const dateOf=(c,dayNum)=>addDays(clientStart(c),dayNum-1);
+
+const GEN={};
+function generated(c){
+  if(GEN[c.id])return GEN[c.id];
+  const rng=rngFor(c.id),out={},today=clientDayNum(c);
+  for(let d=1;d<=today;d++){
+    const date=ymd(dateOf(c,d)),wk=weekOf(d),isToday=d===today;
+    if(c.gone&&d>today-c.gone)continue;
+    if(c.id==="sarah"&&isToday)continue; // the demo login fills today in
+    const p=clamp(c.base+c.drift*(d/14)+(rng()-.5)*.22,.08,.99);
+    const L={},cut=isToday?partialCut():TASKS.length;
+    TASKS.forEach((t,i)=>{
+      const r=rng();if(i>=cut)return;
+      const hit=r<p;
+      switch(t.type){
+        case"rating":if(rng()<p+.15)L[t.k]=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));break;
+        case"time":{if(rng()>p+.1)break;const base=mins(wk[t.target]);L[t.k]=hhmm(base+(rng()-.3)*(t.target==="bed"?110:70)*(1.15-p));break}
+        case"check":if(hit)L[t.k]=true;break;
+        case"text":if(hit)L[t.k]=MEALS[Math.floor(rng()*MEALS.length)];break;
+        case"steps":L[t.k]=hit?Math.round(wk.steps*(1+rng()*.35)):(rng()<.7?Math.round(wk.steps*(.35+rng()*.55)):"");break;
+        case"water":L[t.k]=hit?wk.water+Math.round(rng()*2)/2:(rng()<.7?Math.round(wk.water*(.4+rng()*.5)*2)/2:"");break;
+        case"upload":if(hit)L[t.k]="steps-"+date+".png";break;
+        case"select":if(hit)L[t.k]=RESETS[Math.floor(rng()*RESETS.length)];break;
+        case"textarea":if(hit&&rng()<.7)L[t.k]=DUMPS[Math.floor(rng()*DUMPS.length)];break;
+      }
+    });
+    out[date]=L;
+  }
+  return GEN[c.id]=out;
+}
+function logsFor(c){
+  const g=generated(c),edits=(store.get(K.edits,{})[c.id])||{},out={};
+  for(const d in g)out[d]={...g[d]};
+  for(const d in edits)out[d]={...(out[d]||{}),...edits[d]};
+  return out;
+}
+function saveEdit(cid,date,k,v){
+  const all=store.get(K.edits,{});all[cid]=all[cid]||{};all[cid][date]=all[cid][date]||{};all[cid][date][k]=v;store.set(K.edits,all);
+}
+
+/* ---------- stats ---------- */
+function statsFor(c){
+  const logs=logsFor(c),today=clientDayNum(c),days=[];
+  for(let d=1;d<=today;d++){const date=ymd(dateOf(c,d)),wk=weekOf(d),log=logs[date]||{};days.push({d,date,wk,log,pct:pct(log,wk),any:hasAny(log)})}
+  const past=days.filter(x=>x.d<today);
+  const last7=past.slice(-7);
+  const avg7=last7.length?Math.round(last7.reduce((a,x)=>a+x.pct,0)/last7.length):days[days.length-1].pct;
+  let streak=0;
+  const todayRow=days[days.length-1];
+  if(todayRow.pct>=70)streak++;
+  for(let i=past.length-1;i>=0;i--){if(past[i].pct>=70)streak++;else break}
+  let lastLog=null;for(let i=days.length-1;i>=0;i--){if(days[i].any){lastLog=days[i];break}}
+  const since=lastLog?today-lastLog.d:today;
+  const numAvg=(k,rows)=>{const v=rows.map(x=>Number(x.log[k])).filter(n=>n>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  const bedRows=last7.filter(x=>x.log.bed);
+  const bedOn=bedRows.length?Math.round(bedRows.filter(x=>onTarget(TASKS.find(t=>t.k==="bed"),x.log.bed,x.wk)).length/last7.length*100):0;
+  let status="ok";
+  if(since>=2||avg7<45)status="bad";else if(avg7<70)status="warn";
+  return{c,days,today,todayPct:todayRow.pct,avg7,streak,since,lastLog,
+    steps7:numAvg("full_steps",last7),am7:numAvg("am_state",last7),pm7:numAvg("pm_state",last7),bedOn,status};
+}
+const STATUS={ok:["ok","On track"],warn:["warn","Slipping"],bad:["bad","At risk"]};
+const lvl=p=>p>=70?"l3":p>=40?"l2":p>0?"l1":"";
+
+/* ---------- content (from the Project Reset Notion page) ---------- */
+const CONTENT=[
+  {id:"nutshell",title:"The main focus in a nutshell",blocks:[
+    "Regulate the nervous system to reduce stress & enhance the positive effects of the daily actions you take working towards your goal.",
+    "#The 5 areas we most want to improve on",
+    ["Oxygen usage = cellular health","Fat mobility = glycogen spare","Blood sugar sensitivity = stability = balance","ATP replenishment & mitochondria = brain + body under less strain & less reliant on will power","PPAR & UPR system = higher recoverability means less stress signals"],
+    "Incredibly advanced things to understand? They can all be done in very simple tasks within your day, covered in each section of R.E.S.E.T, that you won't even have to think about. That's the beauty of this. Advanced changes with simple living.",
+    "All of the above keeps the body functioning how it should & leaves the CNS in energy saver mode. Brain & body function in synergy, and the CNS works in your favour not against you, as the work you do towards your goals tells your CNS 'You got this'.",
+    "When the CNS is doing the work it will not be specific with the energy used & where from. Leaving you mugged from the inside.",
+    ">Mitochondria health is the cheat code to do it all.",
+    "Less stress = higher efficiency with your energy, which = more results with less stress, further reducing the load & creating a healthier behavioural shift that makes adherence more viable and leads to more results.",
+    "Stability in the CNS must be done before mobility or else the systems break.",
+    "This is all done via the 5 letters in R.E.S.E.T, as no one space can only do 1. It's a 5 letter bill of oxygen, fat mobility, blood sugar, ATP + mitochondria and PPAR & UPR.",
+    "@reset"
+  ]},
+  {id:"isnt",title:"What Project Reset isn't",blocks:[
+    "Project Reset was built not as another 1 dimensional physique challenge that claims to shock the body into working, whilst ignoring all the stress signals your body & brain give out along the way in the form of:",
+    "!(Fatigue, Hunger, Injuries, Low motivation, Strength loss, Stagnant progress)",
+    "Those stress signals that you have been taught to 'ignore' are real & they stem from somewhere even more real. If enough of them come at you at once, if they don't get you now they will certainly get you later when it counts most. Causing dysregulation in your systems.",
+    "That is why Project Reset is not a physique improvement challenge that may or may not bring you to your goal, whilst ignoring all the signs & forcing your body into change that leaves more scars than progress in most cases.",
+    ["It's not a calorie deficit, fat burning programme","It's not a challenge that pushes you beyond your limits"]
+  ]},
+  {id:"is",title:"What Project Reset is",blocks:[
+    "The antidote to the source of the things that made you fail before. The answer to the signals your body & brain send out whenever you try to change. The fix to the problem, so the only thing that ever holds you back next time is nothing other than 'Choice'.",
+    ["It's an energy surplus, fat burning promoting method","It's a challenge that promotes every part of you to raise your limits"],
+    "Because this is the building of your foundation that will not crack under the pressure of your goals. Your goals now become not just possible, but quicker & easier.",
+    "A one size fits all approach to restore natural working order in all our systems again, by combining brain & body together in synergy.",
+    "This is done through a holistic, physique enhancing, trackable framework built around a guided formula with only 1 objective: to RESET the broken connection between you & your goals.",
+    "#The main disconnect we focus on during your Reset",
+    ["Your thoughts lead to your actions","Your actions lead to your results"],
+    "Body & brain rely on one another to connect your thoughts to your actions & your actions to your results. One thing rules them both though."
+  ]},
+  {id:"how",title:"How Project Reset works",blocks:[
+    ">Stability of your Central Nervous System health.",
+    "Fix the master controller of the circuit, where the signals come from, & the path soon becomes energy, fat loss, durability, high mood, limitless progress and strength gain.",
+    "An approach that can stand the test of your life alongside your biggest goals. Powering more energy from one direction instead of eating away at one another.",
+    ["Your thoughts now always lead to action","Your actions now always lead to your results"],
+    "All you need to do is apply each letter & all that it resembles to your day, & the connection will be Reset with full power. So now doing more finally gets you more."
+  ]},
+  {id:"everyone",title:"Why Project Reset works for everyone",blocks:[
+    "A nervous system that is set to a parasympathetic (rest & digest) state functions with higher efficiency & less energy draining effects within the physical & emotional tasks of your everyday life.",
+    "A nervous system operating in a sympathetic fight or flight state costs you more energy every second, energy you cannot afford already. To make things worse, 9 times out of 10 it's the wrong mode for the task in the first place. This leads to high bills & poor outcomes.",
+    "No matter what your day consists of & what your physique goals may be, everyone benefits from a system that operates as it should & makes a profit with a low bill at the end of the day.",
+    "Project Reset fits your day whether you like it at first or not. Although we may have different circumstances within our day, there is one thing we all have in common.",
+    ">We are human & 1000s of years of adaptation through neurology & physiology do not lie."
+  ]},
+  {id:"applies",title:"When Project Reset applies",blocks:[
+    "#Since men & women needed more than just survival",
+    "Until your nervous system is working with you, it will work against you in every way possible to keep you in the same position you are in now. Why? Because we are the same humans that once needed to hunt for food, fight off animals & survive the elements in order to build a life. Or else we wouldn't be here today.",
+    "#The modern version",
+    "That nervous system stress response got hardwired into our genetic code to survive, not to be optimal & help us drop fat. Our stress is different now but the response is still the same. It fires when we don't need it to, causing us to hold fat so we don't starve, stay inside to avoid danger & move away from the things that allow us to be the best versions of ourselves.",
+    "#The upgraded version",
+    "The mission is to restore that nervous system into knowing the difference between stress that would kill us and stress that will build us. Once that is restored, progress becomes possible because your body knows it is safe again, & a relaxed body outside of the gym can spend its energy on dropping fat & building muscle.",
+    ">This is the part you've been missing. The foundation that's held back your progress, no matter how many times you've tried before.",
+    "Project Reset connects the systems beneath it all: your energy, mood, mindset & physique. Complete the daily tasks one at a time & unlock the potential to build the body & lifestyle you've always wanted."
+  ]},
+  {id:"mission",title:"Mission brief: this is your why",open:true,blocks:[
+    ">Optimise before you mobilise.",
+    "The step most people never do, then wonder why their body never responds to the work they think is right. You are pulling on levers that aren't connected properly to what they are pulling on. Without the steps in Project Reset, more work causes more problems in the long run.",
+    "So your nervous system just tries to survive instead of thrive. It holds body fat, conserves energy or burns it at the wrong time, & even rewires your brain for backwards decisions that feel right.",
+    "Pile a big calorie deficit, endless cardio, HYROX & CrossFit classes on a body stuck in survival mode & it holds you back further. Your brain tells you again that you can't do this.",
+    "The only way to fix this is to act instead of think, until the change takes effect & your brain stops holding you back, because your nervous system & body are working so efficiently that the evidence your brain once had gets less & less.",
+    "Project Reset fixes the foundation first. 28 days of the fundamentals, done properly, the same every day: sleep, steps, food, recovery & the routines that open & close your day.",
+    "Everything in Project Reset links together, the same way your nervous system links to everything that allows the change you want. It's step by step: one tick at a time, one day at a time, one week at a time.",
+    "Do everything that's asked & the results come. Some days it will feel hard, but that's your old brain trying to pull you back. If you can do it when it feels hard, doing it when it feels easy is easy.",
+    "No one's going to save you. It's all on you. But this time you have the formula & the coach to hold you to the standard you want to become.",
+    ">There's a time to fix it. It's now. Watch what happens."
+  ]},
+  {id:"imagine",title:"Imagine this",blocks:[
+    "Imagine yourself as an electrical gadget. Lots of jobs are hardwired into it, all running off a circuit board powered by a hybrid battery. The battery's power is pinnacle to the smooth running of the circuit board.",
+    "The battery can never be fully charged in 1 go. It takes consistent, consecutive days. That's a flaw, because the gadget is needed every day.",
+    "#Fully charged",
+    "Fully capable of every job, done efficiently with power to spare, so 1 night on charge & you can do the same again tomorrow. Jobs done well actually add to the battery, because a hybrid is self charging when the circuit board sends off enough positive energy.",
+    "#Half charged",
+    "Half capable. Doing half the jobs, or all of them poorly. By the end of the day the battery is flat, 1 night's charge repeats the same, & functionality drops until the battery burns out completely.",
+    "This whole time you've been thinking the jobs need changing or the circuit board is broken. Until the battery can fully recharge, fixing either only works for so long.",
+    ">It's the battery that needed a full factory R.E.S.E.T."
+  ]}
+];
+const LETTERS=[["R","Recovering from stress adequately & having higher resilience to stress in the first place"],["E","Nourishing correctly so your energy systems don't need to rely on the CNS for energy"],["S","Movement to regulate the body & brain"],["E","Training to regulate the use of energy"],["T","The heartbeat the CNS relies on most. The consistency that allows the change."]];
+const TOOLKIT=[["Get started","Your morning, daytime & evening"],["Eat","Food"],["Steps","Hitting your daily number"],["Evolve","Workouts"],["Recharge","Reset picks"],["Mindset","A hard day"],["My space","Planning"]];
+
+/* ---------- app state ---------- */
+const S={
+  session:store.get(K.session,null),
+  tab:"today", viewDay:null,
+  coachTab:"overview", detail:null, detailDay:null, sort:{k:"status",dir:1}, filter:"all"
+};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const root=document.getElementById("root");
+const me=()=>CLIENTS.find(c=>c.id===S.session?.clientId);
+const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2);
+const TICK='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
+
+function render(){
+  if(!S.session){root.innerHTML=loginView();return}
+  root.innerHTML=topBar()+`<main class="wrap"><div class="${S.session.role==="coach"?"wide":"col"}">${S.session.role==="coach"?coachView():clientView()}</div></main>`;
+  window.scrollTo&&0;
+}
+
+/* ---------- login ---------- */
+function loginView(){
+  return `<div class="login wrap"><div class="login-card">
+    <div class="login-hero"><div class="mark lg" aria-label="Project Reset"><span>Project</span><span>Reset</span></div>
+    <p>28 days to set a new standard.</p></div>
+    <form id="loginForm" novalidate>
+      <label class="field" for="email">Email<input class="input" id="email" type="email" placeholder="you@email.com" autocomplete="email"></label>
+      <label class="field" for="pw">Password<input class="input" id="pw" type="password" placeholder="Password" autocomplete="current-password"></label>
+      <button class="btn primary" type="submit">Log in</button>
+    </form>
+    <div class="stack" style="gap:10px">
+      <span class="eyebrow">Prototype demo access</span>
+      <div class="demo-row">
+        <button class="btn" data-act="demo-client">Enter as client</button>
+        <button class="btn" data-act="demo-coach">Enter as coach</button>
+      </div>
+      <p class="note">This is a clickable prototype with sample clients. Ticks you make as a client are saved in this browser only, and show up live in the coach view.</p>
+    </div>
+  </div></div>`;
+}
+
+function topBar(){
+  const coach=S.session.role==="coach";
+  const tabs=coach?[["overview","Clients"],["settings","Programme settings"]]:[["today","Today"],["programme","Programme"],["progress","Progress"]];
+  const cur=coach?S.coachTab:S.tab;
+  const name=coach?"Ellis Vine":me().name;
+  return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
+    <div class="mark sm" aria-label="Project Reset"><span>Project</span><span>Reset</span></div>
+    <nav class="tabs" aria-label="Sections">${tabs.map(([k,l])=>`<button class="tab" data-tab="${k}" ${cur===k?'aria-current="page"':""}>${l}</button>`).join("")}</nav>
+    <div class="who"><span class="proto">Prototype</span><span class="avatar" title="${esc(name)}">${initials(name)}</span><button class="link" data-act="logout">Log out</button></div>
+  </div></header>`;
+}
+
+/* ---------- client: today ---------- */
+function clientView(){
+  if(S.tab==="programme")return programmeView();
+  if(S.tab==="progress")return progressView(me());
+  return todayView();
+}
+function ring(p,size=96){
+  const r=size/2-7,c=2*Math.PI*r;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="8"/><circle class="ring-arc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--lime)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p/100)}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset .35s"/></svg>`;
+}
+function todayView(){
+  const c=me(),today=clientDayNum(c);
+  const dn=S.viewDay||today,date=dateOf(c,dn),dk=ymd(date),wk=weekOf(dn);
+  const log=logsFor(c)[dk]||{},p=pct(log,wk);
+  const note=(store.get(K.notes,{})[c.id]);
+  const secs=[["day","Day"],["done","Day done"]];
+  const sp=splitSteps(wk.steps);
+  return `<div class="stack" data-date="${dk}" data-day="${dn}">
+    <div class="dayhead">
+      <div><div class="eyebrow">Week ${Math.floor((dn-1)/7)+1} · ${fmtLong(date)}${dn===today?" · Today":""}</div>
+      <h1 class="display dayno">Day ${dn}<small class="num">/ ${PROGRAMME_DAYS}</small></h1></div>
+      <div class="ring" role="img" aria-label="${p}% of today's tasks done">${ring(p)}<b class="num" id="ringPct">${p}%</b></div>
+    </div>
+    <div class="daynav">
+      <button class="chip" data-act="day" data-d="${dn-1}" ${dn<=1?"disabled":""}>&lsaquo; Day ${Math.max(1,dn-1)}</button>
+      ${dn!==today?`<button class="chip" data-act="day" data-d="${today}">Back to today</button>`:""}
+      <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
+    </div>
+    ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
+    <div class="theme"><span class="eyebrow">Week theme</span><span class="display">${esc(wk.theme)}</span></div>
+    <div class="targets">
+      <div class="target"><span class="eyebrow">Wake</span><b class="num">${esc(wk.wake)}</b></div>
+      <div class="target"><span class="eyebrow">Bed</span><b class="num">${esc(wk.bed)}</b></div>
+      <div class="target"><span class="eyebrow">Water</span><b class="num">${wk.water}L</b></div>
+      <div class="target"><span class="eyebrow">Steps</span><b class="num">${wk.steps.toLocaleString("en-GB")}</b></div>
+    </div>
+    <div class="sticky"><span class="eyebrow">Sticky note</span><p>${esc(wk.note)}</p></div>
+    ${secs.map(([s,l])=>{
+      const ts=TASKS.filter(t=>t.sec===s);
+      return `<section class="card"><div class="sec-head"><h2 class="sec-title">${l}</h2><span class="muted num" data-count="${s}">${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}</span></div>
+      <div class="tasks">${ts.map(t=>taskRow(t,log[t.k],wk,sp)).join("")}</div></section>`;
+    }).join("")}
+    <section class="stack" style="gap:10px"><h2 class="sec-title">Need more?</h2>
+      <div class="more">${TOOLKIT.map(([a,b])=>`<button data-tab="programme"><b>${a}</b><small>${b}</small></button>`).join("")}</div>
+    </section>
+  </div>`;
+}
+function taskRow(t,v,wk,sp){
+  const done=isDone(t,v,wk),cls=`row${done?" done":""}`,tick=`<span class="tick">${TICK}</span>`;
+  const hint=t.split!=null?`${sp[t.split].toLocaleString("en-GB")} steps`:(t.hint||"");
+  const lbl=`<span class="lbl"><strong>${t.label}</strong>${hint?`<small>${esc(hint)}</small>`:""}</span>`;
+  switch(t.type){
+    case"check":
+      return `<button class="${cls}" data-k="${t.k}" data-type="check" aria-pressed="${done}">${tick}${lbl}</button>`;
+    case"rating":
+      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div>
+        <div class="rating" role="group" aria-label="${t.label}">${Array.from({length:10},(_,i)=>`<button data-rate="${i+1}" aria-pressed="${v===i+1}">${i+1}</button>`).join("")}</div></div>`;
+    case"time":{
+      const ot=onTarget(t,v,wk);
+      return `<div class="${cls}" data-k="${t.k}">${tick}${lbl}${ot===null?"":`<span class="badge ${ot?"ok":"miss"}">${ot?"On target":"Late"}</span>`}<input class="input ctrl time" type="time" id="f-${t.k}" value="${esc(v||"")}" aria-label="${t.label}"></div>`;
+    }
+    case"text":
+      return `<div class="${cls}" data-k="${t.k}">${tick}${lbl}<input class="input ctrl" type="text" id="f-${t.k}" placeholder="What did you eat?" value="${esc(v||"")}" aria-label="${t.label}"></div>`;
+    case"textarea":
+      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div><textarea class="input" id="f-${t.k}" placeholder="Anything on your mind from today" aria-label="${t.label}">${esc(v||"")}</textarea></div>`;
+    case"steps":{
+      const n=Number(v)||0,w=Math.min(100,n/wk.steps*100);
+      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}<span class="lbl"><strong>Full steps</strong><small class="num" data-live="steps">${n.toLocaleString("en-GB")} / ${wk.steps.toLocaleString("en-GB")} (${sp.map(x=>x.toLocaleString("en-GB")).join(" + ")})</small></span><input class="input ctrl" type="number" inputmode="numeric" min="0" step="1" id="f-${t.k}" value="${v===undefined?"":esc(v)}" placeholder="0" aria-label="Full steps"></div><div class="bar"><i style="width:${w}%"></i></div></div>`;
+    }
+    case"water":{
+      const n=Number(v)||0,w=Math.min(100,n/wk.water*100);
+      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}<div class="stepper"><button data-water="-0.5" aria-label="Less water">&minus;</button><b class="num">${n}L</b><button data-water="0.5" aria-label="More water">+</button></div></div><div class="bar"><i style="width:${w}%"></i></div></div>`;
+    }
+    case"select":
+      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div><div class="opts">${RESETS.map(o=>`<button class="chip" data-opt="${esc(o)}" aria-pressed="${v===o}">${o}</button>`).join("")}</div></div>`;
+    case"upload":
+      return `<div class="${cls}" data-k="${t.k}">${tick}<span class="lbl"><strong>${t.label}</strong><small>${v?esc(v):"From your phone's health app"}</small></span><label class="chip upload" for="f-${t.k}">${v?"Replace":"Upload"}<input type="file" id="f-${t.k}" accept="image/*"></label></div>`;
+  }
+}
+
+/* ---------- client: programme ---------- */
+function blockHtml(b){
+  if(Array.isArray(b))return `<ul>${b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+  if(b==="@reset")return `<div class="reset-letters">${LETTERS.map(([l,t])=>`<div><b>${l}</b><p>${esc(t)}</p></div>`).join("")}</div>`;
+  if(b[0]==="#")return `<h4>${esc(b.slice(1))}</h4>`;
+  if(b[0]===">")return `<blockquote>${esc(b.slice(1))}</blockquote>`;
+  if(b[0]==="!")return `<p class="muted" style="font-weight:600">${esc(b.slice(1))}</p>`;
+  return `<p>${esc(b)}</p>`;
+}
+function programmeView(){
+  return `<div class="stack">
+    <div class="hero-p"><span class="eyebrow">Welcome to Project Reset</span><h1 class="display">28 days to set a new standard</h1>
+    <p class="muted" style="max-width:56ch">Read the mission brief first. Then work through the rest at your own pace. The more you understand why, the more the habits stick.</p></div>
+    ${CONTENT.map(s=>`<details class="acc" ${s.open?"open":""}><summary><h3>${esc(s.title)}</h3><span class="plus" aria-hidden="true">+</span></summary><div class="body">${s.blocks.map(blockHtml).join("")}</div></details>`).join("")}
+    <h2 class="sec-title" style="margin-top:12px">Toolkit</h2>
+    <div class="tool-grid">${TOOLKIT.map(([a,b])=>`<div class="tool"><b>${a}</b><span>${b}</span><small>Content imports from the Notion page</small></div>`).join("")}</div>
+  </div>`;
+}
+
+/* ---------- charts ---------- */
+function chart({n,series,max,target,fmt,kind,labelEvery}){
+  const W=640,H=190,pl=44,pr=12,pt=12,pb=26,iw=W-pl-pr,ih=H-pt-pb,bw=iw/Math.max(n,1);
+  const xc=i=>pl+bw*(i+.5),y=v=>pt+ih-(v/max)*ih;
+  const ticks=[0,max/2,max];
+  let s=`<svg class="chart" viewBox="0 0 ${W} ${H}" role="img">`;
+  ticks.forEach(t=>{s+=`<line class="grid" x1="${pl}" x2="${W-pr}" y1="${y(t)}" y2="${y(t)}"/><text x="${pl-8}" y="${y(t)+4}" text-anchor="end">${fmt(t)}</text>`});
+  for(let i=0;i<n;i++){if(i===0||(i+1)%(labelEvery||7)===0||i===n-1)s+=`<text x="${xc(i)}" y="${H-8}" text-anchor="middle">D${i+1}</text>`}
+  if(target!=null)s+=`<line x1="${pl}" x2="${W-pr}" y1="${y(target)}" y2="${y(target)}" stroke="var(--fg)" stroke-dasharray="4 4" stroke-width="1" opacity=".6"/><text x="${W-pr}" y="${y(target)-5}" text-anchor="end" style="fill:var(--fg)">Target</text>`;
+  series.forEach(se=>{
+    if(kind==="bar"){
+      se.values.forEach((v,i)=>{if(v==null)return;const h=Math.max(1,(Math.min(v,max)/max)*ih);s+=`<rect x="${xc(i)-bw*.32}" y="${pt+ih-h}" width="${bw*.64}" height="${h}" rx="3" fill="${target!=null&&v<target?"var(--surface-2)":se.color}" stroke="var(--green-ink)" stroke-width="1"><title>Day ${i+1}: ${fmt(v)}</title></rect>`});
+    }else{
+      const pts=se.values.map((v,i)=>v==null?null:[xc(i),y(Math.min(v,max))]);
+      const segs=[];let cur=[];pts.forEach(p=>{if(p)cur.push(p);else if(cur.length){segs.push(cur);cur=[]}});if(cur.length)segs.push(cur);
+      segs.forEach(sg=>{
+        if(se.area&&sg.length>1)s+=`<path d="M${sg[0][0]},${pt+ih} L${sg.map(p=>p.join(",")).join(" L")} L${sg[sg.length-1][0]},${pt+ih} Z" fill="${se.color}" opacity=".14"/>`;
+        s+=`<polyline points="${sg.map(p=>p.join(",")).join(" ")}" fill="none" stroke="${se.color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+      });
+      pts.forEach((p,i)=>{if(p)s+=`<circle cx="${p[0]}" cy="${p[1]}" r="${i===pts.length-1?4.5:2.5}" fill="${se.color}"><title>Day ${i+1}: ${fmt(se.values[i])}</title></circle>`});
+    }
+  });
+  return s+"</svg>";
+}
+function heatmap(st,{clickable,sel}={}){
+  const cells=[];
+  for(let d=1;d<=PROGRAMME_DAYS;d++){
+    const row=st.days[d-1],future=d>st.today;
+    const cls=`cell ${future?"future":lvl(row?row.pct:0)}${d===st.today?" today":""}${sel===d?" sel":""}`;
+    const label=future?`Day ${d}, upcoming`:`Day ${d}, ${row.pct}% done`;
+    cells.push(clickable&&!future?`<button class="${cls}" data-hday="${d}" aria-label="${label}" title="${label}">${d}</button>`:`<div class="${cls}" title="${label}">${d}</div>`);
+  }
+  const start=clientStart(st.c);
+  const heads=Array.from({length:7},(_,i)=>addDays(start,i).toLocaleDateString("en-GB",{weekday:"short"}));
+  return `<div class="heat-head">${heads.map(h=>`<span>${h}</span>`).join("")}</div><div class="heat">${cells.join("")}</div>
+  <div class="legend" style="margin-top:10px"><span><i style="background:var(--lime)"></i>70%+</span><span><i style="background:color-mix(in srgb,var(--lime) 45%,var(--surface))"></i>40 to 69%</span><span><i style="background:color-mix(in srgb,var(--lime) 18%,var(--surface))"></i>Under 40%</span><span><i></i>Nothing logged</span></div>`;
+}
+function trendCharts(st){
+  const n=st.today;
+  const comp=st.days.map(x=>x.pct);
+  const steps=st.days.map(x=>x.log.full_steps?Number(x.log.full_steps):null);
+  const am=st.days.map(x=>x.log.am_state||null),pm=st.days.map(x=>x.log.pm_state||null);
+  const tgt=weekOf(n).steps;
+  return `<div class="two">
+    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Daily completion</h3></div>${chart({n,series:[{values:comp,color:"var(--green-ink)",area:true}],max:100,fmt:v=>Math.round(v)+"%"})}</section>
+    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Steps</h3></div>${chart({n,kind:"bar",series:[{values:steps,color:"var(--lime)"}],max:Math.max(16000,...steps.filter(Boolean)),target:tgt,fmt:v=>v>=1000?Math.round(v/1000)+"k":String(Math.round(v))})}</section>
+    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">AM and PM state</h3><div class="keyrow"><span><i style="background:var(--green-ink)"></i>AM</span><span><i style="background:var(--fg)"></i>PM</span></div></div>${chart({n,series:[{values:am,color:"var(--green-ink)"},{values:pm,color:"var(--fg)"}],max:10,fmt:v=>String(Math.round(v))})}</section>
+  </div>`;
+}
+
+/* ---------- client: progress ---------- */
+function progressView(c){
+  const st=statsFor(c);
+  return `<div class="stack">
+    <div><span class="eyebrow">Your 28 days</span><h1 class="display" style="font-size:clamp(44px,11vw,72px)">Day ${st.today} of ${PROGRAMME_DAYS}</h1></div>
+    <div class="tiles">
+      <div class="tile"><small>Today</small><b class="num">${st.todayPct}%</b></div>
+      <div class="tile"><small>Last 7 days</small><b class="num">${st.avg7}%</b></div>
+      <div class="tile"><small>Streak (70%+ days)</small><b class="num">${st.streak}</b></div>
+      <div class="tile"><small>Avg steps, 7 days</small><b class="num">${st.steps7?Math.round(st.steps7).toLocaleString("en-GB"):"–"}</b></div>
+    </div>
+    <section class="card">${heatmap(st)}</section>
+    ${trendCharts(st)}
+  </div>`;
+}
+
+/* ---------- coach ---------- */
+function coachView(){
+  if(S.coachTab==="settings")return settingsView();
+  if(S.detail)return detailView(CLIENTS.find(c=>c.id===S.detail));
+  return overviewView();
+}
+function overviewView(){
+  const all=CLIENTS.map(statsFor);
+  const counts={ok:0,warn:0,bad:0};all.forEach(s=>counts[s.status]++);
+  const avgToday=Math.round(all.reduce((a,s)=>a+s.todayPct,0)/all.length);
+  const avg7=Math.round(all.reduce((a,s)=>a+s.avg7,0)/all.length);
+  const order={bad:0,warn:1,ok:2};
+  const keyed={status:s=>order[s.status]*1000+s.avg7,name:s=>s.c.name,day:s=>s.today,today:s=>s.todayPct,avg7:s=>s.avg7,streak:s=>s.streak,steps:s=>s.steps7||0,bed:s=>s.bedOn,state:s=>s.am7||0,last:s=>s.since};
+  let rows=all.filter(s=>S.filter==="all"||s.status===S.filter);
+  const f=keyed[S.sort.k];rows.sort((a,b)=>{const x=f(a),y=f(b);return(x>y?1:x<y?-1:0)*S.sort.dir});
+  const th=(k,l,num)=>`<th class="${num?"num":""}"><button data-sort="${k}" data-active="${S.sort.k===k}">${l}${S.sort.k===k?(S.sort.dir>0?" ↑":" ↓"):""}</button></th>`;
+
+  // habit breakdown over last 7 completed days, all clients
+  const hb=TASKS.map(t=>{let n=0,d=0;all.forEach(s=>s.days.filter(x=>x.d<s.today).slice(-7).forEach(x=>{n++;if(isDone(t,x.log[t.k],x.wk))d++}));return{t,p:n?Math.round(d/n*100):0}}).sort((a,b)=>a.p-b.p);
+
+  return `<div class="stack">
+    <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
+    <div class="tiles">
+      <div class="tile"><small>Active clients</small><b class="num">${all.length}</b></div>
+      <div class="tile"><small>Avg done today, so far</small><b class="num">${avgToday}%</b></div>
+      <div class="tile"><small>Avg last 7 days</small><b class="num">${avg7}%</b></div>
+      <div class="tile"><small>Need attention</small><b class="num" style="color:${counts.bad?"var(--bad)":"var(--fg)"}">${counts.bad+counts.warn}</b></div>
+    </div>
+    <div class="coach-grid">
+      <div class="stack" style="min-width:0">
+        <div class="filters" role="group" aria-label="Filter clients">
+          ${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join("")}
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Today",1)}${th("avg7","7 days",1)}<th>Last 7</th>${th("streak","Streak",1)}${th("steps","Steps avg",1)}${th("bed","Bed on time",1)}${th("state","AM / PM",1)}${th("last","Last log")}</tr></thead>
+          <tbody>${rows.map(s=>{const[cls,lab]=STATUS[s.status];const l7=s.days.slice(-8,-1);
+            return `<tr data-client="${s.c.id}" tabindex="0">
+            <td><strong>${esc(s.c.name)}</strong></td>
+            <td><span class="pill ${cls}">${lab}</span></td>
+            <td class="num">${s.today}</td>
+            <td class="num">${s.todayPct}%</td>
+            <td class="num"><strong>${s.avg7}%</strong></td>
+            <td><span class="mini">${Array.from({length:7},(_,i)=>{const x=l7[l7.length-7+i];return `<i class="${x?lvl(x.pct):""}" title="${x?`Day ${x.d}: ${x.pct}%`:""}"></i>`}).join("")}</span></td>
+            <td class="num">${s.streak}</td>
+            <td class="num">${s.steps7?Math.round(s.steps7).toLocaleString("en-GB"):"–"}</td>
+            <td class="num">${s.bedOn}%</td>
+            <td class="num">${s.am7?s.am7.toFixed(1):"–"} / ${s.pm7?s.pm7.toFixed(1):"–"}</td>
+            <td>${s.since===0?"Today":s.since===1?"Yesterday":`<span style="color:var(--bad)">${s.since} days ago</span>`}</td></tr>`}).join("")}</tbody>
+        </table></div>
+        <p class="muted" style="font-size:12px">Status uses the last 7 full days: on track at 70%+, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged. Select a client to see their full log.</p>
+      </div>
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Habits, last 7 days</h2></div>
+        <p class="muted" style="font-size:12px;margin-bottom:8px">Share of client days each task was completed, weakest first.</p>
+        ${hb.map(h=>`<div class="habit"><span>${h.t.label}</span><div class="bar"><i class="${h.p<50?"low":h.p<70?"mid":""}" style="width:${h.p}%"></i></div><span class="num" style="text-align:right">${h.p}%</span></div>`).join("")}
+      </section>
+    </div>
+  </div>`;
+}
+function detailView(c){
+  const st=statsFor(c),[cls,lab]=STATUS[st.status];
+  const sel=S.detailDay||st.today,row=st.days[sel-1],wk=row.wk;
+  const note=(store.get(K.notes,{})[c.id])||{};
+  return `<div class="stack">
+    <div><button class="chip" data-act="back">&lsaquo; All clients</button></div>
+    <div class="detail-head">
+      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1></div>
+      <span class="pill ${cls}" style="font-size:14px">${lab}</span>
+    </div>
+    <div class="tiles">
+      <div class="tile"><small>Last 7 days</small><b class="num">${st.avg7}%</b></div>
+      <div class="tile"><small>Streak</small><b class="num">${st.streak}</b></div>
+      <div class="tile"><small>Avg steps, 7 days</small><b class="num">${st.steps7?Math.round(st.steps7).toLocaleString("en-GB"):"–"}</b></div>
+      <div class="tile"><small>Bed on time, 7 days</small><b class="num">${st.bedOn}%</b></div>
+    </div>
+    <div class="two">
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">28 day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.pct}%</span></div>
+        <div class="log-list">${TASKS.map(t=>{const v=row.log[t.k],d=isDone(t,v,wk);let shown=v===undefined||v===""||v===false?"–":v===true?"Done":t.type==="water"?v+"L":t.type==="steps"?Number(v).toLocaleString("en-GB"):t.type==="rating"?v+" / 10":v;
+          const ot=onTarget(t,v,wk);if(ot===false)shown+=" (late)";
+          return `<div class="${d?"":"miss"}"><span>${d?"✓ ":""}${t.label}</span><span>${esc(shown)}</span></div>`}).join("")}</div>
+      </section>
+    </div>
+    ${trendCharts(st)}
+    <section class="card stack" style="gap:10px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Note to ${esc(c.name.split(" ")[0])}</h2>${note.at?`<span class="muted" style="font-size:12px">Last sent ${fmtShort(new Date(note.at))}</span>`:""}</div>
+      <label for="coachNote" class="muted" style="font-size:13px">Shows at the top of their Today screen.</label>
+      <textarea class="input" id="coachNote" placeholder="Great week. Bed time is the one to tighten up next.">${esc(note.text||"")}</textarea>
+      <div><button class="btn primary" data-act="send-note" data-c="${c.id}">Send note</button></div>
+    </section>
+  </div>`;
+}
+function settingsView(){
+  return `<div class="stack">
+    <div><span class="eyebrow">Coach only</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Your numbers</h1>
+    <p class="muted" style="max-width:62ch;margin-top:6px">Set each week's theme, sticky note and targets. Every client sees the week they are on, so changes apply to everyone at that stage.</p></div>
+    <div class="tbl-wrap weeks-tbl"><table>
+      <thead><tr><th>Week</th><th>Week start</th><th>Theme</th><th>Wake</th><th>Bed by</th><th>Water (L)</th><th>Steps</th><th>Sticky note</th></tr></thead>
+      <tbody>${WEEKS.map((w,i)=>`<tr style="cursor:default">
+        <td><strong>Week ${i+1}</strong></td><td class="num">${fmtShort(addDays(COHORT,i*7))}</td>
+        <td><input class="input" id="w${i}-theme" data-w="${i}" data-f="theme" value="${esc(w.theme)}" style="width:190px"></td>
+        <td><input class="input" type="time" id="w${i}-wake" data-w="${i}" data-f="wake" value="${esc(w.wake)}"></td>
+        <td><input class="input" type="time" id="w${i}-bed" data-w="${i}" data-f="bed" value="${esc(w.bed)}"></td>
+        <td><input class="input" type="number" step="0.5" min="0" id="w${i}-water" data-w="${i}" data-f="water" value="${w.water}" style="width:80px"></td>
+        <td><input class="input" type="number" step="500" min="0" id="w${i}-steps" data-w="${i}" data-f="steps" value="${w.steps}" style="width:100px"></td>
+        <td style="white-space:normal"><textarea class="input" id="w${i}-note" data-w="${i}" data-f="note" style="width:280px;min-height:70px">${esc(w.note)}</textarea></td></tr>`).join("")}</tbody>
+    </table></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-act="save-weeks">Save changes</button><button class="btn" data-act="reset-weeks">Restore defaults</button></div>
+    <p class="note">Week 2's theme and sticky note come from the Notion page. Weeks 1, 3 and 4 are sample wording for Ellis to replace. Week starts shown are for the current sample cohort.</p>
+  </div>`;
+}
+
+/* ---------- client edits: update in place to keep focus ---------- */
+function ctx(){const el=root.querySelector("[data-date]");return el?{date:el.dataset.date,dn:Number(el.dataset.day)}:null}
+function commit(k,v,rerenderRow){
+  const c=me(),x=ctx();if(!c||!x)return;
+  saveEdit(c.id,x.date,k,v);
+  const wk=weekOf(x.dn),log=logsFor(c)[x.date]||{},t=TASKS.find(t=>t.k===k);
+  const rowEl=root.querySelector(`[data-k="${k}"]`);
+  if(rerenderRow&&rowEl){rowEl.outerHTML=taskRow(t,log[k],wk,splitSteps(wk.steps))}
+  else if(rowEl){rowEl.classList.toggle("done",isDone(t,log[k],wk))}
+  const p=pct(log,wk),arc=root.querySelector(".ring-arc");
+  if(arc){const c2=Number(arc.getAttribute("stroke-dasharray"));arc.setAttribute("stroke-dashoffset",c2*(1-p/100))}
+  const rp=root.querySelector("#ringPct");if(rp)rp.textContent=p+"%";
+  ["day","done"].forEach(s=>{const el=root.querySelector(`[data-count="${s}"]`),ts=TASKS.filter(t=>t.sec===s);if(el)el.textContent=`${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}`});
+}
+
+root.addEventListener("submit",e=>{
+  if(e.target.id==="loginForm"){e.preventDefault();login("client")}
+});
+function login(role){S.session=role==="coach"?{role}:{role,clientId:"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;render();window.scrollTo(0,0)}
+
+root.addEventListener("click",e=>{
+  const b=e.target.closest("button,[data-client]");if(!b)return;
+  const act=b.dataset.act;
+  if(act==="demo-client")return login("client");
+  if(act==="demo-coach")return login("coach");
+  if(act==="logout"){S.session=null;store.set(K.session,null);return render()}
+  if(b.dataset.tab){if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
+  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,1,t);return render()}
+  if(b.dataset.client){S.detail=b.dataset.client;S.detailDay=null;render();window.scrollTo(0,0);return}
+  if(act==="back"){S.detail=null;return render()}
+  if(b.dataset.hday){S.detailDay=Number(b.dataset.hday);return render()}
+  if(b.dataset.filter){S.filter=b.dataset.filter;return render()}
+  if(b.dataset.sort){const k=b.dataset.sort;S.sort=S.sort.k===k?{k,dir:-S.sort.dir}:{k,dir:k==="name"||k==="status"||k==="last"?1:-1};return render()}
+  if(act==="send-note"){const v=root.querySelector("#coachNote").value.trim();const all=store.get(K.notes,{});all[b.dataset.c]={text:v,at:Date.now()};store.set(K.notes,all);toast(v?"Note sent":"Note cleared");return render()}
+  if(act==="save-weeks"){
+    root.querySelectorAll("[data-w]").forEach(el=>{const w=WEEKS[el.dataset.w],f=el.dataset.f;w[f]=(f==="water"||f==="steps")?Number(el.value)||0:el.value});
+    store.set(K.weeks,WEEKS);for(const k in GEN)delete GEN[k];toast("Saved");return render();
+  }
+  if(act==="reset-weeks"){WEEKS=DEFAULT_WEEKS.map(w=>({...w}));store.set(K.weeks,null);for(const k in GEN)delete GEN[k];toast("Defaults restored");return render()}
+
+  // client task controls
+  const row=b.closest("[data-k]");if(!row)return;const k=row.dataset.k;
+  if(b.dataset.type==="check"){const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);return commit(k,on)}
+  if(b.dataset.rate){const v=Number(b.dataset.rate),cur=b.getAttribute("aria-pressed")==="true";return commit(k,cur?"":v,true)}
+  if(b.dataset.water){const x=ctx(),cur=Number((logsFor(me())[x.date]||{}).water)||0;return commit(k,Math.max(0,Math.round((cur+Number(b.dataset.water))*2)/2),true)}
+  if(b.dataset.opt){const cur=b.getAttribute("aria-pressed")==="true";return commit(k,cur?"":b.dataset.opt,true)}
+});
+root.addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
+
+let timers={};
+root.addEventListener("input",e=>{
+  const row=e.target.closest("[data-k]");if(!row||!ctx())return;const k=row.dataset.k;
+  if(e.target.type==="file")return;
+  let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
+  if(k==="full_steps"){const wk=weekOf(ctx().dn),n=Number(v)||0;const bar=row.querySelector(".bar i");if(bar)bar.style.width=Math.min(100,n/wk.steps*100)+"%";const lv=row.querySelector('[data-live="steps"]');if(lv)lv.textContent=`${n.toLocaleString("en-GB")} / ${wk.steps.toLocaleString("en-GB")} (${splitSteps(wk.steps).map(x=>x.toLocaleString("en-GB")).join(" + ")})`}
+  clearTimeout(timers[k]);timers[k]=setTimeout(()=>commit(k,v),300);
+});
+root.addEventListener("change",e=>{
+  const row=e.target.closest("[data-k]");if(!row||!ctx())return;const k=row.dataset.k;
+  if(e.target.type==="file"){const f=e.target.files&&e.target.files[0];if(f)commit(k,f.name,true);return}
+  if(e.target.type==="time"){clearTimeout(timers[k]);commit(k,e.target.value,true)}
+});
+
+render();
+})();
+</script>
+
+</body>
+</html>
