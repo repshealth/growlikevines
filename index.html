@@ -211,6 +211,13 @@ button.cell{cursor:pointer}
 .nn-tag{padding:4px 10px;font-size:12px;background:var(--bg);border-style:dashed}
 .nn-tag[aria-pressed="true"]{border-style:solid}
 .row-btn{display:flex;align-items:center;gap:14px;background:none;border:0;padding:0;width:100%;text-align:left;color:inherit;min-width:0}
+.dt-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dt-opt{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:14px}
+.dt-opt b{font-family:var(--display);font-size:24px;text-transform:uppercase;font-style:italic;font-weight:800;line-height:1}
+.dt-opt small{color:var(--muted);font-size:12px}
+.dt-opt[aria-pressed="true"]{background:var(--night);border-color:var(--night);color:var(--lime);box-shadow:0 8px 24px -12px var(--lime)}
+.dt-opt[aria-pressed="true"] small{color:var(--on-night);opacity:.75}
+.daytype:has(.dt-opt[aria-pressed="true"]) .dt-opt:not([aria-pressed="true"]) b{font-size:18px}
 .ringwrap{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none}
 .nnsum{font-size:11px;color:var(--muted);text-align:center;line-height:1.2;max-width:110px}
 .nnsum b{display:block;font-family:var(--display);font-size:20px;color:var(--fg)}
@@ -371,11 +378,38 @@ function onTarget(t,v,wk){
   if(t.target==="bed"){if(m<12*60)m+=1440;if(goal<12*60)goal+=1440}
   return m<=goal+15;
 }
-const pct=(log,wk)=>log?Math.round(TASKS.filter(t=>isDone(t,log[t.k],wk)).length/TASKS.length*100):0;
+const pct=(log,wk)=>log?Math.round(TASKS.filter(t=>isDone(t,log[t.k],wk)).length/TASKS.length*100):0; // same keys on both day types
 const resetsOf=v=>Array.isArray(v)?v:(v&&v!==true?[v]:[]);
 const mealsLogged=log=>[1,2,3,4,5].filter(i=>String(log["meal"+i]||"").trim());
-const isTrainDay=log=>log.training==="Gym workout"||log.training==="Home workout";
 const TK=k=>TASKS.find(t=>t.k===k);
+const isTrainDay=log=>log.day_type?log.day_type==="train":(log.training==="Gym workout"||log.training==="Home workout");
+const TRAIN_OPTS=["Gym workout","Home workout"],MOVE_OPTS=["Mobility routine","Breath movement drill","Full rest"];
+// The list a client sees for a day, set by the first question: training day or rest day. Same task keys either way, so stats line up.
+function tasksFor(log){
+  const T=(k,o)=>({...TK(k),...(o||{})});
+  const head=["am_state","woke_at","outside_early","todo","steps1"].map(k=>T(k));
+  if(log.day_type==="train")return[...head,
+    T("meal1"),T("meal2"),T("steps2"),
+    T("meal3",{label:"Meal 3 · Pre workout",hint:"Protein + carbs, 60 to 90 mins before training",role:"pre"}),
+    T("training",{sec:"day",label:"Training session",options:TRAIN_OPTS}),
+    T("meal4",{label:"Meal 4 · Post workout",hint:"Settle first, then protein + carbs",role:"post"}),
+    T("steps3"),T("meal5"),
+    ...["pm_state","full_steps","steps_shot","water","bed","reset","brain_dump"].map(k=>T(k))];
+  const rm=k=>T(k,k==="meal1"?{}:{hint:"Protein + fats + fruit / veg"});
+  return[...head,rm("meal1"),rm("meal2"),T("steps2"),rm("meal3"),T("steps3"),rm("meal4"),rm("meal5"),
+    ...["pm_state","full_steps","steps_shot","water","bed"].map(k=>T(k)),
+    T("training",{label:"Movement",hint:"No weights today. Keep it easy.",options:MOVE_OPTS}),
+    ...["reset","brain_dump"].map(k=>T(k))];
+}
+function mealTags(t,log){
+  const train=isTrainDay(log),tags=[["p","Protein"]];
+  if(train&&(t.role==="pre"||t.role==="post"))tags.push(["cb","Carbs"]);
+  if(!train)tags.push(["ft","Fats, no carbs"]);
+  tags.push(["fv","Fruit / veg"],["ns","No added sugar"]);
+  if(train)tags.push(["cf","Not carbs + fat"]);
+  if(train&&t.k==="meal1")tags.push(["nc","No carbs"]);
+  return tags;
+}
 
 /* ---------- non negotiables (from the Recharge, Eat, Steps & Evolve pages) ---------- */
 // on = a tick chip sitting on that task row; auto = ticks itself from what's logged; both = needs both
@@ -393,15 +427,15 @@ const NN=[
   {id:"pick",p:"eat",name:"Pick it, Kill it, Grow it rule",chip:"No added sugar",src:"the No added sugar tag on every meal",auto:l=>{const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_ns"])},desc:"No added sugar. Sugar in whole fruit & honey in small amounts is permitted. Use gluten free alternatives. No overly processed foods made up from numerous extra ingredients."},
   {id:"meal_timing",p:"eat",name:"Meal volume & timings",chip:"4+ meals",src:"Meals 1 to 5",auto:l=>mealsLogged(l).length>=4,desc:"Meal 1 eaten within 90 minutes of waking & then after aim to eat evenly spread every 3-4hrs through the day totalling you to 4-5 meals minimum daily."},
   {id:"protein",p:"eat",name:"Protein",chip:"Protein every meal",src:"Protein tags on your meals",auto:l=>{const m=mealsLogged(l);return m.length>=4&&m.every(i=>l["meal"+i+"_p"])},desc:"Protein at every meal. 4-5x daily in large portions. With the largest amount in your 1st & last meal of the day."},
-  {id:"portion",p:"eat",name:"Portion size & restrictions",chip:"Not carbs + fat",src:"the Not carbs + fat tag on every meal",auto:l=>{const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_cf"])},desc:"Avoid high carbs in the same meal with high fat. Both are welcome in any amount so long as protein is always on the plate but never all 3 combined. Protein has no restriction in size for any meal."},
-  {id:"no_carbs_m1",p:"eat",name:"No carbs meal 1",chip:"No carbs meal 1",src:"the No carbs tag on Meal 1",auto:l=>!!String(l.meal1||"").trim()&&l.meal1_nc===true,desc:"No carbohydrates at Meal 1. Only protein, fats & fruit or veg. The only exception is if you lift weights early in the morning. But if possible avoid AM lifting workouts regardless."},
+  {id:"portion",p:"eat",name:"Portion size & restrictions",chip:"Not carbs + fat",when:"train",src:"the Not carbs + fat tag on every meal (rest days are fats only, so this is covered)",auto:l=>{const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_cf"])},desc:"Avoid high carbs in the same meal with high fat. Both are welcome in any amount so long as protein is always on the plate but never all 3 combined. Protein has no restriction in size for any meal."},
+  {id:"no_carbs_m1",p:"eat",name:"No carbs meal 1",chip:"No carbs meal 1",src:"the No carbs tag on Meal 1 (Fats, no carbs on rest days)",auto:l=>!!String(l.meal1||"").trim()&&(isTrainDay(l)?l.meal1_nc===true:l.meal1_ft===true),desc:"No carbohydrates at Meal 1. Only protein, fats & fruit or veg. The only exception is if you lift weights early in the morning. But if possible avoid AM lifting workouts regardless."},
   {id:"water_salt",p:"eat",name:"Water & salt",chip:"Salt with meals",on:"water",src:"hitting your water target",auto:(l,wk)=>Number(l.water)>=wk.water,desc:"Drink 500ml of water when you wake up & with every meal driving you to your targeted amount. Salt added to every meal possible, especially containing carbs."},
   {id:"fruit_veg",p:"eat",name:"Fruit & veg",chip:"Fruit & veg",src:"Fruit / veg tags on your meals",auto:l=>{const m=mealsLogged(l);return m.filter(i=>l["meal"+i+"_fv"]).length>=3&&!!l["meal"+m[0]+"_fv"]&&!!l["meal"+m[m.length-1]+"_fv"]},desc:"As much & as often as you like with & between meals when hungry, stressed or low on energy. First & last meal must have 1 fruit or veg or both. Minimum is at least 3 times a day of each."},
-  {id:"carbs_train",p:"eat",name:"Carbs on days you train. Fats on days you don't.",chip:"Carbs or fats matched to today",on:"training",desc:"Create a training day focused meal plan & a non training day plan to align with this."},
+  {id:"carbs_train",p:"eat",name:"Carbs on days you train. Fats on days you don't.",chip:"Carbs or fats matched to today",src:"the Carbs tag on your pre & post workout meals, or Fats, no carbs on every rest day meal",auto:l=>{if(isTrainDay(l))return l.meal3_cb===true&&l.meal4_cb===true;const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_ft"])},desc:"Create a training day focused meal plan & a non training day plan to align with this."},
   {id:"chew",p:"eat",name:"Move, breathe & chew first",chip:"Breathed & chewed at meals",on:"pm_state",desc:"Before each meal you must do some movement first by either hitting steps or exercise & oxygenate your body with slow, deep calming breaths. Chew your food as small as you can before swallowing."},
   {id:"caffeine",p:"eat",name:"Caffeine",chip:"Caffeine rules kept",on:"water",desc:"Maximum 2 caffeinated drinks a day. None before Meal 1. None after 1pm. Never add caffeine to an already fast working brain."},
-  {id:"pre_workout",p:"eat",name:"Pre workout",chip:"Fuelled & hydrated before",on:"training",when:"train",desc:"Never go into a workout unless you feel properly fuelled & hydrated to do so first."},
-  {id:"post_workout",p:"eat",name:"Post workout",chip:"Settled before eating",on:"training",when:"train",desc:"Settle the nervous system first, lower your heart rate & oxygenate your body before eating."},
+  {id:"pre_workout",p:"eat",name:"Pre workout",chip:"Fuelled & hydrated before",on:"meal3",onLabel:"your pre workout meal",when:"train",desc:"Never go into a workout unless you feel properly fuelled & hydrated to do so first."},
+  {id:"post_workout",p:"eat",name:"Post workout",chip:"Settled before eating",on:"meal4",onLabel:"your post workout meal",when:"train",desc:"Settle the nervous system first, lower your heart rate & oxygenate your body before eating."},
 
   {id:"hit_number",p:"steps",name:"Hit your number",chip:"Hit your number",src:"Full steps",auto:(l,wk)=>Number(l.full_steps)>=wk.steps,desc:"Your coach sets one steps number for the week. Hit it consistently every day. More 1 day doesn't mean you can do less another day. The body doesn't work like that."},
   {id:"spread",p:"steps",name:"Spread them",chip:"Spread them",src:"Steps 1, 2 & 3",auto:l=>l.steps1===true&&l.steps2===true&&l.steps3===true,desc:"Spread your steps through the day especially around meal times."},
@@ -411,13 +445,13 @@ const NN=[
   {id:"brain_walk",p:"steps",name:"Give your brain a walk",chip:"No podcast or music",on:"full_steps",desc:"Don't distract yourself with podcasts or music. Your brain will become more quiet when you finally let it run out of steam on its own. Use your step target as a reason to balance your stress. Nobody ever came back from a walk more angry than before they left."},
   {id:"breathe_walk",p:"steps",name:"Breathe & walk",chip:"Nasal breathing",on:"full_steps",desc:"Oxygen is our life supply. Controlling your breath whilst you hit your steps turns 2 of the most vital aspects of the project into a mega dose of 'Human rocket fuel' into your cells. For the upgrade, do all your breathing with your mouth closed: nasal breathing."},
 
-  {id:"weights",p:"evolve",name:"Train with weights 3 to 5 times",chip:"Weights 3 to 5x a week",track:"weekly",src:"Training (gym or home workout)",desc:"3 to 5 sessions a week."},
-  {id:"drills",p:"evolve",name:"Breath focused body movement drills",chip:"Breath movement drill",src:"Resets: Breath movement, or a Mobility routine",auto:l=>resetsOf(l.reset).includes("Breath movement")||l.training==="Mobility routine",desc:"x7 days weekly to train your breath to work in sync with your movement."},
+  {id:"weights",p:"evolve",name:"Train with weights 3 to 5 times",chip:"Weights 3 to 5x a week",track:"weekly",src:"Training session on your training days",desc:"3 to 5 sessions a week."},
+  {id:"drills",p:"evolve",name:"Breath focused body movement drills",chip:"Breath movement drill",src:"Resets: Breath movement, or a rest day Movement pick",auto:l=>resetsOf(l.reset).includes("Breath movement")||l.training==="Mobility routine"||l.training==="Breath movement drill",desc:"x7 days weekly to train your breath to work in sync with your movement."},
   {id:"prep",p:"evolve",name:"Prep your system",chip:"Warmed up 5 to 10 mins",on:"training",when:"train",desc:"Pre workout movement preps & warm ups are essential for this. 5-10 mins no matter what."},
   {id:"freq_tax",p:"evolve",name:"Follow the frequency tax",chip:"Kept to session time",on:"training",when:"train",desc:"The more you train the less time you spend. 3x per week = 60-90 mins. 5x per week = 30-40 mins."},
   {id:"muscles",p:"evolve",name:"Use the muscles not your brain",track:"mind",desc:"Strength training or intense workouts aren't exclusively paid for by your muscles & cardio. Your brain & nervous system is what picks up the tab when they tap out. Focus on workouts that don't mentally push you but do so physically in the muscle groups you are working. Build that mind muscle connection & let your brain become the passenger."},
   {id:"habits",p:"evolve",name:"Build habits not PBs",track:"mind",desc:"This isn't the phase or space for maxing out. Build your consistency first. The body works better with consistency than it does shock & can start to adapt how it uses your food properly in your system rather than gatekeeping it & letting it turn to fat."},
-  {id:"fuel",p:"evolve",name:"Train to your fuel count",chip:"Ate more after",on:"training",when:"train",desc:"Eat enough to do enough & then eat some more after that to keep you above the balance needed for workouts that use what you've got & not tap into your central nervous system energy reservoirs."},
+  {id:"fuel",p:"evolve",name:"Train to your fuel count",chip:"Ate enough to fuel it",on:"meal4",onLabel:"your post workout meal",when:"train",desc:"Eat enough to do enough & then eat some more after that to keep you above the balance needed for workouts that use what you've got & not tap into your central nervous system energy reservoirs."},
   {id:"baseline",p:"evolve",name:"Return to baseline",chip:"Reset after training",when:"train",src:"Resets",auto:l=>resetsOf(l.reset).length>0,desc:"Post workout, bring your heart rate down as soon as possible using the Reset menu. The sooner you return to baseline, the sooner you recover, the better you sleep."},
   {id:"selfish",p:"evolve",name:"Don't be selfish",chip:"Protein to match training",when:"train",src:"Protein tags on your meals",auto:l=>{const m=mealsLogged(l);return m.length>=4&&m.every(i=>l["meal"+i+"_p"])},desc:"It's not just your muscles that need the large protein allowance. Over worked muscles demand more protein, leaving less spared for all the other areas in your body in need of it too, like your over worked brain. Train hard, eat protein harder or feel the strain in your day."}
 ];
@@ -445,11 +479,11 @@ const PILLARS=[
     ">\"If you can't recover, you won't change.\"",
     "This doesn't mean train soft. It means be self aware enough to know when you have enough fuel in the tank first & an equal amount to recover with afterwards.",
     "Post workout your main focus should be lowering your heart rate as soon as possible by using the Reset menu. The sooner you can return back to baseline, the sooner you recover, the less tax you spend on your energy & the benefits of training suddenly start showing your work."],
-   extra:["#Log it","On the days you train, pick the session you did under Training in your tracker: Gym workout, Home workout or Mobility routine. One tap & it counts towards your week."]}
+   extra:["#Log it","Start each day by answering whether it's a training day. On training days your list adds pre & post workout meals and the Training session, where you pick Gym or Home. On rest days you log your Movement instead: Mobility routine, Breath movement drill or Full rest."]}
 ];
 const nnApplies=(n,log)=>n.track!=="mind"&&n.track!=="weekly"&&(n.when!=="train"||isTrainDay(log));
 const nnKept=(n,log,wk)=>(n.auto?!!n.auto(log,wk):true)&&(n.on?log["nn_"+n.id]===true:true);
-const MEAL_TAGS=[["p","Protein"],["fv","Fruit / veg"],["ns","No added sugar"],["cf","Not carbs + fat"]];
+
 function nnScore(log,wk){const a=NN.filter(n=>nnApplies(n,log));const k=a.filter(n=>nnKept(n,log,wk)).length;return{kept:k,total:a.length,pct:a.length?Math.round(k/a.length*100):0}}
 function nnRates(rows){const out={};NN.forEach(n=>{if(n.track==="mind")return;let a=0,k=0;rows.forEach(x=>{if(n.track==="weekly")return;if(nnApplies(n,x.log)){a++;if(nnKept(n,x.log,x.wk))k++}});out[n.id]={a,k,p:a?Math.round(k/a*100):null}});return out}
 const hasAny=log=>log&&Object.values(log).some(v=>v!==""&&v!==false&&v!==null&&v!==undefined);
@@ -486,18 +520,19 @@ function generated(c){
     if(c.id==="sarah"&&isToday)continue; // the demo login fills today in
     const p=clamp(c.base+c.drift*(d/14)+(rng()-.5)*.22,.08,.99);
     const L={},cut=isToday?partialCut():TASKS.length;
-    TASKS.forEach((t,i)=>{
+    if(cut>0)L.day_type=rng()<.5?"train":"rest";
+    tasksFor(L).forEach((t,i)=>{
       const r=rng();if(i>=cut)return;
       const hit=r<p;
       switch(t.type){
         case"rating":if(rng()<p+.15)L[t.k]=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));break;
         case"time":{if(rng()>p+.1)break;const base=mins(wk[t.target]);L[t.k]=hhmm(base+(rng()-.3)*(t.target==="bed"?110:70)*(1.15-p));break}
         case"check":if(hit)L[t.k]=true;break;
-        case"meal":if(hit){L[t.k]=MEALS[Math.floor(rng()*MEALS.length)];if(rng()<p+.12)L[t.k+"_p"]=true;if(rng()<p)L[t.k+"_fv"]=true;if(rng()<p+.1)L[t.k+"_ns"]=true;if(rng()<p+.05)L[t.k+"_cf"]=true;if(t.k==="meal1"&&rng()<p)L.meal1_nc=true}break;
+        case"meal":if(hit){L[t.k]=MEALS[Math.floor(rng()*MEALS.length)];mealTags(t,L).forEach(([g])=>{if(rng()<p+.08)L[t.k+"_"+g]=true})}break;
         case"steps":L[t.k]=hit?Math.round(wk.steps*(1+rng()*.35)):(rng()<.7?Math.round(wk.steps*(.35+rng()*.55)):"");break;
         case"water":L[t.k]=hit?wk.water+Math.round(rng()*2)/2:(rng()<.7?Math.round(wk.water*(.4+rng()*.5)*2)/2:"");break;
         case"upload":if(hit)L[t.k]="steps-"+date+".png";break;
-        case"select":if(hit){const q=rng();L[t.k]=q<.32?"Gym workout":q<.5?"Home workout":q<.72?"Mobility routine":"Rest day"}break;
+        case"select":if(hit)L[t.k]=t.options[Math.floor(rng()*t.options.length)];break;
         case"multi":if(hit){const n=1+Math.floor(rng()*3),pk=new Set();for(let j=0;j<n;j++)pk.add(RESETS[Math.floor(rng()*RESETS.length)]);L[t.k]=[...pk]}break;
         case"textarea":if(hit&&rng()<.7)L[t.k]=DUMPS[Math.floor(rng()*DUMPS.length)];break;
       }
@@ -707,6 +742,7 @@ function todayView(){
       ${dn!==today?`<button class="chip" data-act="day" data-d="${today}">Back to today</button>`:""}
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
+    ${dayTypeCard(log)}
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
     <div class="theme"><span class="eyebrow">Week theme</span><span class="display">${esc(wk.theme)}</span></div>
     <div class="targets">
@@ -716,9 +752,8 @@ function todayView(){
       <div class="target"><span class="eyebrow">Steps</span><b class="num">${wk.steps.toLocaleString("en-GB")}</b></div>
     </div>
     <div class="sticky"><span class="eyebrow">Sticky note</span><p>${esc(wk.note)}</p></div>
-    <p class="muted" style="font-size:13px">The small chips under a task are your non negotiables for it. Tick the ones you kept.</p>
-    ${secs.map(([s,l])=>{
-      const ts=TASKS.filter(t=>t.sec===s);
+    ${!log.day_type?`<p class="card muted" style="text-align:center">Answer the first question and today's list loads below.</p>`:`<p class="muted" style="font-size:13px">The small chips under a task are your non negotiables for it. Tick the ones you kept.</p>`+secs.map(([s,l])=>{
+      const ts=tasksFor(log).filter(t=>t.sec===s);
       return `<section class="card"><div class="sec-head"><h2 class="sec-title">${l}</h2><span class="muted num" data-count="${s}">${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}</span></div>
       <div class="tasks">${ts.map(t=>taskRow(t,log[t.k],wk,sp,log)).join("")}</div></section>`;
     }).join("")}
@@ -727,12 +762,20 @@ function todayView(){
     </section>
   </div>`;
 }
-function weekSessions(c,dn){const logs=logsFor(c),s=Math.floor((dn-1)/7)*7+1;let n=0;for(let d=s;d<=dn;d++)if(isTrainDay(logs[ymd(dateOf(c,d))]||{}))n++;return n}
+function weekSessions(c,dn){const logs=logsFor(c),s=Math.floor((dn-1)/7)*7+1;let n=0;for(let d=s;d<=dn;d++){const l=logs[ymd(dateOf(c,d))]||{};if(TRAIN_OPTS.includes(l.training))n++}return n}
 let WEEK_SESS=0;
+function dayTypeCard(log){
+  const v=log.day_type;
+  const opt=(k,t,sub)=>`<button class="dt-opt" data-daytype="${k}" aria-pressed="${v===k}"><b>${t}</b><small>${sub}</small></button>`;
+  return `<section class="card daytype"><div class="sec-head"><h2 class="sec-title">${v?"Today is a":"First up"}</h2>${v?`<span class="muted" style="font-size:12px">Tap to change</span>`:""}</div>
+  ${v?"":`<p style="font-weight:600;margin-bottom:10px">Is today a training day?</p>`}
+  <div class="dt-opts">${opt("train","Training day","Gym or home weights session")}${opt("rest","Rest day","Mobility, breath work or full rest")}</div>
+  ${v==="train"?`<p class="muted" style="font-size:13px;margin-top:10px">Meals 3 & 4 are your pre & post workout meals with carbs. ${WEEK_SESS} weights ${WEEK_SESS===1?"session":"sessions"} logged this week, target 3 to 5.</p>`:v==="rest"?`<p class="muted" style="font-size:13px;margin-top:10px">Fats, not carbs, with every meal today. Keep movement easy.</p>`:""}</section>`;
+}
 function nnSumHtml(log,wk){const sc=nnScore(log,wk);return `<b class="num">${sc.kept}/${sc.total}</b> non negotiables`}
 function nnChips(t,log){
   let html="";
-  if(t.type==="meal")html+=MEAL_TAGS.concat(t.k==="meal1"?[["nc","No carbs"]]:[]).map(([g,l])=>`<button class="chip nn-tag" data-mtag="${g}" aria-pressed="${!!log[t.k+"_"+g]}">${l}</button>`).join("");
+  if(t.type==="meal")html+=mealTags(t,log).map(([g,l])=>`<button class="chip nn-tag" data-mtag="${g}" aria-pressed="${!!log[t.k+"_"+g]}">${l}</button>`).join("");
   html+=NN.filter(n=>n.on===t.k&&nnApplies(n,log)).map(n=>`<button class="chip nn-tag" data-nn="${n.id}" aria-pressed="${log["nn_"+n.id]===true}" title="${esc(n.name)}: ${esc(n.desc)}">${esc(n.chip)}</button>`).join("");
   return html?`<div class="opts nn-tags" role="group" aria-label="${t.label} non negotiables">${html}</div>`:"";
 }
@@ -747,7 +790,7 @@ function taskRow(t,v,wk,sp,log={}){
 }
 function baseRow(t,v,wk,sp,log){
   const done=isDone(t,v,wk),cls=`row${done?" done":""}`,tick=`<span class="tick">${TICK}</span>`;
-  const hint=t.k==="training"?`${WEEK_SESS} of 3 weights sessions this week`:t.split!=null?`${t.pre||""}${sp[t.split].toLocaleString("en-GB")} steps`:(t.hint||"");
+  const hint=t.k==="training"&&t.options===TRAIN_OPTS?`${WEEK_SESS} weights ${WEEK_SESS===1?"session":"sessions"} this week · target 3 to 5`:t.split!=null?`${t.pre||""}${sp[t.split].toLocaleString("en-GB")} steps`:(t.hint||"");
   const lbl=`<span class="lbl"><strong>${t.label}</strong>${hint?`<small>${esc(hint)}</small>`:""}</span>`;
   switch(t.type){
     case"check":
@@ -793,7 +836,7 @@ function blockHtml(b){
 }
 function howTag(n){
   const tr=n.when==="train"?"Training days · ":"";
-  if(n.on)return `<span class="how tap">${tr}Tick "${esc(n.chip)}" on ${esc(TK(n.on).label)}</span>${n.auto?`<span class="how auto">plus ${esc(n.src)}</span>`:""}`;
+  if(n.on)return `<span class="how tap">${tr}Tick "${esc(n.chip)}" on ${esc(n.onLabel||TK(n.on).label)}</span>${n.auto?`<span class="how auto">plus ${esc(n.src)}</span>`:""}`;
   if(n.auto)return `<span class="how auto">${tr}Ticks itself from ${esc(n.src)}</span>`;
   if(n.track==="weekly")return `<span class="how auto">Counted weekly from Training</span>`;
   return `<span class="how">Mindset, no tick needed</span>`;
@@ -973,8 +1016,8 @@ function detailView(c){
     </div>
     <div class="two">
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">28 day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.pct}%</span></div>
-        <div class="log-list">${TASKS.map(t=>{const v=row.log[t.k],d=isDone(t,v,wk);let shown=v===undefined||v===""||v===false?"–":v===true?"Done":t.type==="water"?v+"L":t.type==="steps"?Number(v).toLocaleString("en-GB"):t.type==="rating"?v+" / 10":t.type==="multi"?resetsOf(v).join(", ")||"–":t.type==="meal"&&v?v+(row.log[t.k+"_p"]?" · P":"")+(row.log[t.k+"_fv"]?" · FV":""):v;
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.log.day_type==="train"?"Training day":row.log.day_type==="rest"?"Rest day":"Day type not set"} · ${row.pct}%</span></div>
+        <div class="log-list">${tasksFor(row.log).map(t=>{const v=row.log[t.k],d=isDone(t,v,wk);let shown=v===undefined||v===""||v===false?"–":v===true?"Done":t.type==="water"?v+"L":t.type==="steps"?Number(v).toLocaleString("en-GB"):t.type==="rating"?v+" / 10":t.type==="multi"?resetsOf(v).join(", ")||"–":t.type==="meal"&&v?v+mealTags(t,row.log).filter(([g])=>row.log[t.k+"_"+g]).map(([,l])=>" · "+l).join(""):v;
           const ot=onTarget(t,v,wk);if(ot===false)shown+=" (late)";
           return `<div class="${d?"":"miss"}"><span>${d?"✓ ":""}${t.label}</span><span>${esc(shown)}</span></div>`}).join("")}</div>
         ${(()=>{const sc=nnScore(row.log,wk);return `<div class="sec-head" style="margin-top:16px"><h3 class="sec-title" style="font-size:18px">Non negotiables</h3><span class="muted num">${sc.kept} / ${sc.total} kept</span></div>
@@ -1015,7 +1058,7 @@ function ctx(){const el=root.querySelector("[data-date]");return el?{date:el.dat
 function commit(k,v,rerenderRow,rowKey){
   const c=me(),x=ctx();if(!c||!x)return;
   saveEdit(c.id,x.date,k,v);
-  const rk=rowKey||k,wk=weekOf(x.dn),log=logsFor(c)[x.date]||{},t=TASKS.find(t=>t.k===rk);
+  const rk=rowKey||k,wk=weekOf(x.dn),log=logsFor(c)[x.date]||{},t=tasksFor(log).find(t=>t.k===rk);
   const rowEl=t?root.querySelector(`[data-k="${rk}"]`):null;
   if(rerenderRow&&rowEl){rowEl.outerHTML=taskRow(t,log[rk],wk,splitSteps(wk.steps),log)}
   else if(rowEl){rowEl.classList.toggle("done",isDone(t,log[rk],wk))}
@@ -1024,7 +1067,7 @@ function commit(k,v,rerenderRow,rowKey){
   const p=pct(log,wk),arc=root.querySelector(".ring-arc");
   if(arc){const c2=Number(arc.getAttribute("stroke-dasharray"));arc.setAttribute("stroke-dashoffset",c2*(1-p/100))}
   const rp=root.querySelector("#ringPct");if(rp)rp.textContent=p+"%";
-  ["day","done"].forEach(s=>{const el=root.querySelector(`[data-count="${s}"]`),ts=TASKS.filter(t=>t.sec===s);if(el)el.textContent=`${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}`});
+  ["day","done"].forEach(s=>{const el=root.querySelector(`[data-count="${s}"]`),ts=tasksFor(log).filter(t=>t.sec===s);if(el)el.textContent=`${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}`});
 }
 
 root.addEventListener("submit",e=>{
@@ -1038,6 +1081,7 @@ root.addEventListener("click",e=>{
   if(act==="demo-client")return login("client");
   if(act==="demo-coach")return login("coach");
   if(act==="logout"){S.session=null;store.set(K.session,null);return render()}
+  if(b.dataset.daytype){const c=me(),x=ctx(),cur=(logsFor(c)[x.date]||{}).day_type;if(cur!==b.dataset.daytype){saveEdit(c.id,x.date,"day_type",b.dataset.daytype);if(cur)saveEdit(c.id,x.date,"training","")}return render()}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();const el=document.getElementById("pillar-"+b.dataset.pillar);if(el)el.scrollIntoView({block:"start"});return}
   if(b.dataset.hview){S.hview=b.dataset.hview;return render()}
   if(b.dataset.nn){const on=b.getAttribute("aria-pressed")!=="true",rk=b.closest("[data-k]");return commit("nn_"+b.dataset.nn,on,true,rk&&rk.dataset.k)}
