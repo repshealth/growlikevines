@@ -13,7 +13,8 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 - **Day (keep energy stable):** the client builds their own list. They write their own tasks and add meals, steps, regulation tools and training from the options. A direction and suggestions come from their morning answers.
 - **Logging:** every step and task logs its time automatically. Every Day task asks one follow-up question to check it was done in the right process order.
 - **Senses:** sight, sound, smell, taste and touch fill in automatically from what was done.
-- **Points:** 1 point per completed step or task.
+- **Moving on:** each section ends with a button to the next: Open my day (once Morning is done), Move to Evening, and See my score for today (once Evening is done).
+- **Points:** 1 point per completed step or task. The score screen shows the day's points, the split across Morning, Day and Evening, process rate, senses, AM to PM state, and numbers against targets, compared with yesterday.
 
 ### Coach view
 

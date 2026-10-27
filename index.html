@@ -345,6 +345,28 @@ td.num,th.num{text-align:right}
 .kindrow{padding:8px 0;border-top:1px solid var(--line)}
 .kindrow:first-of-type{border-top:0}
 .kind-h{display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px}
+.nextbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border:2px solid var(--night);border-radius:var(--r);padding:16px 18px;background:var(--bg)}
+.nextbar p{color:var(--muted);font-size:13px}
+.nextbar .btn{flex:none}
+.scorecard{background:var(--night);color:var(--on-night);border-radius:18px;padding:22px 22px 24px;display:flex;flex-direction:column;gap:10px;box-shadow:0 18px 50px -18px var(--lime);background-image:radial-gradient(120% 80% at 50% 0%,color-mix(in srgb,var(--lime) 18%,transparent),transparent 60%)}
+.scorecard .eyebrow{color:var(--lime)}
+.sc-big{display:flex;align-items:flex-end;gap:14px}
+.sc-big b{font-family:var(--display);font-style:italic;font-weight:800;font-size:clamp(96px,26vw,140px);line-height:.8;color:var(--lime)}
+.sc-big span{font-family:var(--display);font-size:28px;text-transform:uppercase;font-weight:700;line-height:1;padding-bottom:6px}
+.sc-big small{font-family:var(--body);font-size:13px;text-transform:none;font-weight:500;opacity:.75}
+.sc-diff{align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--on-night) 12%,transparent)}
+.sc-diff.up{color:var(--lime)}
+.sc-parts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sc-part{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;background:var(--surface)}
+.sc-part span{font-size:12px;color:var(--muted);font-weight:600}
+.sc-part b{font-family:var(--display);font-size:30px;line-height:1}
+.sc-part small{font-size:16px;color:var(--muted)}
+.tile small+small{margin-top:2px}
+.sc-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sc-tiles .tile b{font-size:clamp(24px,7vw,36px)}
+.sc-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.sc-num{display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:12px}
+.sc-num b{font-family:var(--display);font-size:26px;line-height:1}
 @media (max-width:900px){
   .coach-grid{grid-template-columns:1fr}
   .two{grid-template-columns:1fr}
@@ -815,9 +837,9 @@ function todayView(){
     <nav class="phases" aria-label="Parts of the day">
       ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d,of:sc.n},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
     </nav>
-    ${phaseHead(ph)}
+    ${ph==="score"?scoreView(x):`${phaseHead(ph)}
     ${ph==="morning"?stepsView("morning",x):ph==="evening"?stepsView("evening",x):dayView(x)}
-    ${sensesPanel(sc)}
+    ${sensesPanel(sc)}`}
   </div>`;
 }
 function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goal"><div><span class="eyebrow">${P.name} · CNS goal</span><h2 class="display" style="font-size:clamp(32px,8vw,44px)">${P.goal}</h2></div><p class="muted" style="font-size:13px">${P.intro}</p></div>`}
@@ -856,8 +878,7 @@ function stepsView(ph,x){
       </div></div>`;
   });
   html+=`</div>`;
-  if(ph==="morning"&&stepsDone(log,"morning")===3)html+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>Your day is open.</b><p class="muted" style="font-size:13px">Build your list and take it on.</p></div><button class="btn primary" data-phase="day">Go to your day</button></div>`;
-  if(ph==="evening"&&stepsDone(log,"evening")===3)html+=`<div class="card"><b>Evening done.</b><p class="muted" style="font-size:13px">Tomorrow's Morning will show your plan of action${log.tmr_wake?` and your ${esc(log.tmr_wake)} wake time`:""}.</p></div>`;
+  html+=nextBar(ph,log);
   return html;
 }
 function dayView(x){
@@ -878,7 +899,40 @@ function dayView(x){
     <div class="filters" role="group" aria-label="Option type" style="margin-bottom:10px">${["meal","walk","reset","train"].map(k=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${KINDS[k].name}</button>`).join("")}</div>
     <div class="opts">${K2.opts.map(o=>`<button class="chip add" data-add="${S.cat}" data-label="${esc(o)}">${have.has(o)?"✓ ":"+ "}${esc(o)}</button>`).join("")}</div>
     ${S.cat==="meal"?`<p class="muted" style="font-size:12px;margin-top:10px">Example meal plans are on the way. For now pick the meal type that fits your day.</p>`:""}
-  </section>`;
+  </section>
+  ${nextBar("day",log)}`;
+}
+function nextBar(ph,log){
+  const card=(title,sub,btn)=>`<div class="nextbar"><div><b>${title}</b><p>${sub}</p></div>${btn}</div>`;
+  if(ph==="morning"){const ok=stepsDone(log,"morning")===3;
+    return card(ok?"Morning done. Your day is open.":"Next up: your Day",ok?"Build your list and take it on.":"Finish all 3 steps to open your day.",
+      `<button class="btn primary" data-phase="day" ${ok?"":"disabled"}>Open my day &rsaquo;</button>`)}
+  if(ph==="day"){const it=itemsOf(log),d=it.filter(i=>i.done).length;
+    return card("Next up: your Evening",`${d} of ${it.length} done on your list.${it.length>d?" You can still tick the rest later.":""}`,`<button class="btn primary" data-phase="evening">Move to Evening &rsaquo;</button>`)}
+  const ok=stepsDone(log,"evening")===3;
+  return card(ok?"Evening done. That's your day.":"Last stop: your score",ok?`Tomorrow's Morning will show your plan of action${log.tmr_wake?` and your ${esc(log.tmr_wake)} wake time`:""}.`:"Finish all 3 steps to see your score for today.",
+    `<button class="btn primary" data-phase="score" ${ok?"":"disabled"}>See my score for today &rsaquo;</button>`);
+}
+function scoreView(x){
+  const {log,wk,prev,dn}=x,sc=scoreOf(log),ps=scoreOf(prev),diff=sc.pts-ps.pts;
+  const msg=sc.pct>=80?"Standard set. Do it again tomorrow.":sc.pct>=60?"Solid day. Tomorrow, close the gaps.":"Not your best, and that's information. Settle tonight & go again tomorrow.";
+  const num=(k,label,unit)=>{const v=log[k],t=wk[k],has=v!==undefined&&v!=="";const hit=has&&Number(v)>=t;
+    return `<div class="sc-num"><span class="muted">${label}</span><b class="num">${has?Number(v).toLocaleString("en-GB")+unit:"–"}</b><small class="num">target ${Number(t).toLocaleString("en-GB")}${unit}</small>${has?`<span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</div>`};
+  const part=(l,d,o)=>`<div class="sc-part"><span>${l}</span><b class="num">${d}<small> / ${o}</small></b></div>`;
+  return `<section class="scorecard">
+      <span class="eyebrow">Day ${dn} score</span>
+      <div class="sc-big"><b class="num">${sc.pts}</b><span>${sc.pts===1?"point":"points"}<br><small class="num">${sc.pct}% of today done</small></span></div>
+      <p>${msg}</p>
+      ${dn>1?`<span class="sc-diff ${diff>=0?"up":"down"}">${diff>0?"+":""}${diff} vs yesterday (${ps.pts})</span>`:""}
+    </section>
+    <div class="sc-parts">${part("Morning",sc.m,3)}${part("Day",sc.d,sc.n)}${part("Evening",sc.e,3)}</div>
+    <div class="tiles sc-tiles">
+      <div class="tile"><small>Right process</small><b class="num">${sc.fuN?Math.round(sc.fuYes/sc.fuN*100)+"%":"–"}</b><small>${sc.fuYes} of ${sc.fuN} follow-ups</small></div>
+      <div class="tile"><small>Senses evoked</small><b class="num">${sc.senses.size} / 5</b><small>${SENSES.filter(([k])=>!sc.senses.has(k)).map(([,l])=>l).join(", ")||"All five"}${sc.senses.size<5?" missing":""}</small></div>
+      <div class="tile"><small>AM to PM state</small><b class="num">${log.am_state||"–"} &rsaquo; ${log.pm_state||"–"}</b><small>out of 10</small></div>
+    </div>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your numbers</h2></div><div class="sc-nums">${num("steps","Steps","")}${num("water","Water","L")}${num("protein","Protein","g")}</div></section>
+    <div class="nextbar"><div><b>See you in the morning.</b><p>Your plan of action is ready for tomorrow.</p></div><button class="btn" data-phase="evening">&lsaquo; Back to Evening</button></div>`;
 }
 function itemHtml(it,i){
   const K2=KINDS[it.kind]||KINDS.own,needQ=it.done&&(it.fu===undefined||it.fu===null);
