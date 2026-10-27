@@ -1,22 +1,40 @@
 # Project Reset
 
-Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, read the programme content and tick off their daily tasks. The coach gets an overview of every client's progress.
+Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, read the programme content and work through their day in three parts. The coach gets an overview of every client's progress.
 
 ## Current state
 
 `index.html` is a clickable prototype. It's a single file with no build step. Open it in a browser, or serve the folder with any static host.
 
-- **Client view:** Today (the daily checklist with targets, week theme and sticky note, with non negotiables on each task), Programme (the Notion content plus the Recharge, Eat, Steps and Evolve pillars) and Progress (the 28 day map, trend charts and non negotiable rates)
-- **Training or rest day:** the first question each day. Training days add a pre workout meal (protein + carbs), the training session and a post workout meal, with the workout non negotiables on those rows. Rest days switch every meal to fats, no carbs, and Training becomes a Movement row (mobility, breath drill or full rest).
-- **Non negotiables:** built into the task they belong to as small tick chips, for example No added sugar on each meal, Salt and Caffeine on Water, and warm up on Training. Others tick themselves from what is logged, such as Breathwork in Resets covering Breathe. Training day items only show when a gym or home workout is logged.
-- **Coach view:** a client overview table with status and non negotiable adherence, a habits breakdown for tasks or non negotiables, a detail page for each client with notes to that client, and weekly settings for themes and targets
-- **Data:** sample clients only. Edits save to the browser's localStorage, so nothing is shared between devices or users yet.
+### How a client's day works
 
-On the login screen, use "Enter as client" or "Enter as coach".
+- **Evening (reduce arousal):** 3 steps done in order: close the day (steps, water and protein against targets, plus a steps screenshot), bring it down (wind down tool, PM state) and set up tomorrow (wake time, plan of action, brain dump). New clients start here.
+- **Morning (stimulation and arousal):** 3 steps done in order: rise and breathe, light and move, open the day (energy and training check-in). The Day stays locked until all 3 are done.
+- **Day (keep energy stable):** the client builds their own list. They write their own tasks and add meals, steps, regulation tools and training from the options. A direction and suggestions come from their morning answers.
+- **Logging:** every step and task logs its time automatically. Every Day task asks one follow-up question to check it was done in the right process order.
+- **Senses:** sight, sound, smell, taste and touch fill in automatically from what was done.
+- **Points:** 1 point per completed step or task.
+
+### Coach view
+
+- **Client overview:** points, completion, morning and evening completion, process order rate, senses and steps for each client
+- **Breakdowns:** completion rate for each step, and the make-up of Day lists
+- **Client detail:** a log for each day, trend charts and a note to the client
+- **Number setter:** steps, water and protein targets, plus the theme and sticky note for each week
+
+### Data
+
+Sample clients only. Edits save to the browser's localStorage, so nothing is shared between devices or users yet.
+
+## Placeholders to replace with Ellis's content
+
+- The wording of the 3 Morning and 3 Evening steps and the questions inside them
+- The follow-up question for each type of task
+- Which options evoke which senses
+- Example meal plans and training guidance
+- Protein targets
 
 ## Next steps
 
 - Real authentication and a shared database (for example React with Supabase)
-- Import the remaining daily template fields from the Notion page
-- Fill in the remaining Toolkit pages (Get started, Mindset, My space)
 - Replace the text wordmark with the GrowLikeVines logo

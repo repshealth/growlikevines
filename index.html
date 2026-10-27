@@ -280,6 +280,71 @@ td.num,th.num{text-align:right}
 .weeks-tbl .input{padding:8px 10px;font-size:13px}
 .toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lime);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:999px;font-size:13px;z-index:20}
 
+/* phases + steps + day list */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:4}
+.phase-tab{border:0;background:none;border-radius:10px;padding:9px 4px;display:flex;flex-direction:column;align-items:center;gap:1px;font-weight:700;font-size:14px;color:var(--fg)}
+.phase-tab small{font-size:11px;color:var(--muted);font-weight:600}
+.phase-tab[aria-current="page"]{background:var(--night);color:var(--lime)}
+.phase-tab[aria-current="page"] small{color:var(--on-night);opacity:.75}
+.phase-tab.complete:not([aria-current="page"]) small{color:var(--green-ink)}
+.goal{display:flex;flex-direction:column;gap:4px}
+.steps-list{display:flex;flex-direction:column;gap:12px}
+.step{display:grid;grid-template-columns:40px minmax(0,1fr);gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.step.locked{opacity:.55}
+.step.current{border-color:var(--green-ink);box-shadow:0 0 0 3px var(--lime-dim);background:var(--bg)}
+.step-num{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-style:italic;font-weight:800;font-size:22px;background:var(--surface-2)}
+.step.current .step-num{background:var(--night);color:var(--lime)}
+.step.done .step-num{background:var(--lime)}
+.step-body{display:flex;flex-direction:column;gap:12px;min-width:0}
+.step-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.step-head h3{font-family:var(--display);font-size:24px;text-transform:uppercase;font-weight:700;line-height:1}
+.draft{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--warn);border:1px dashed currentColor;border-radius:999px;padding:1px 7px}
+.ask{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;min-width:0}
+.step-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stamp{font-weight:700;font-variant-numeric:tabular-nums;background:var(--lime-dim);color:var(--green-ink);padding:3px 9px;border-radius:999px;font-size:12px;white-space:nowrap}
+.direction{background:var(--night);color:var(--on-night);border-radius:var(--r);padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.direction .eyebrow{color:var(--lime)}
+.direction small{opacity:.8}
+.locked-day{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding-block:32px}
+.lockbig{width:52px;height:52px;border-radius:50%;background:var(--surface-2);display:grid;place-items:center;color:var(--muted)}
+.lockbig svg{width:22px;height:22px}
+.items{display:flex;flex-direction:column}
+.item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item-tick{background:none;border:0;padding:0;flex:none}
+.item-tick .tick{width:28px;height:28px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center}
+.item-tick .tick svg{opacity:0}
+.item.done .item-tick .tick{background:var(--lime);border-color:var(--lime)}
+.item.done .item-tick .tick svg{opacity:1}
+.item-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.item-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600;padding-top:3px}
+.item-title>span:first-child{overflow-wrap:anywhere}
+.kind{font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted)}
+.fu{background:var(--night);color:var(--on-night);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;margin-top:4px}
+.fu .chip{background:var(--bg);color:var(--fg);border-color:var(--bg)}
+.fu .chip[data-val="1"]{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.x{background:none;border:0;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px}
+.x:hover{color:var(--bad)}
+.composer{display:flex;gap:8px;margin-top:10px}
+.composer .input{flex:1}
+.chip.add{background:var(--bg)}
+.senses{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.sense{border:1px solid var(--line);border-radius:12px;padding:10px 4px;text-align:center;display:flex;flex-direction:column;gap:2px;font-size:12px;font-weight:600;background:var(--bg)}
+.sense b{font-family:var(--display);font-size:20px;line-height:1;color:var(--muted)}
+.sense.on{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.sense.on b{color:var(--ink)}
+.nn-item{padding:10px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:4px}
+.log-phase{display:flex;flex-direction:column;margin-top:14px}
+.log-phase:first-of-type{margin-top:4px}
+.log-phase h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--green-ink);margin:0 0 4px}
+.lp-row{padding:7px 0;border-bottom:1px solid var(--line);font-size:13px;display:flex;flex-direction:column;gap:3px}
+.lp-top{display:flex;justify-content:space-between;gap:12px}
+.lp-row.miss .lp-top{color:var(--muted)}
+.lp-ans{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px}
+.lp-ans span{overflow-wrap:anywhere}
+.kindrow{padding:8px 0;border-top:1px solid var(--line)}
+.kindrow:first-of-type{border-top:0}
+.kind-h{display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px}
 @media (max-width:900px){
   .coach-grid{grid-template-columns:1fr}
   .two{grid-template-columns:1fr}
@@ -288,7 +353,8 @@ td.num,th.num{text-align:right}
   .targets{grid-template-columns:repeat(2,1fr)}
   .log-list{grid-template-columns:1fr}
   .ctrl{width:120px}
-  .nn-tags{padding-left:0}
+  .step{grid-template-columns:1fr;gap:10px}
+  .phase-tab{font-size:13px}
   .top .proto{display:none}
   .demo-row{grid-template-columns:1fr}
 }
@@ -308,7 +374,7 @@ const store={
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-const K={session:"pr1_session",edits:"pr1_edits",notes:"pr1_notes",weeks:"pr1_weeks"};
+const K={session:"pr2_session",edits:"pr2_edits",notes:"pr2_notes",weeks:"pr2_weeks"};
 
 /* ---------- dates ---------- */
 const DAY=86400000;
@@ -325,172 +391,101 @@ const mins=t=>{if(!t)return null;const[h,m]=t.split(":").map(Number);return h*60
 const hhmm=m=>{m=((Math.round(m)%1440)+1440)%1440;return pad(Math.floor(m/60))+":"+pad(m%60)};
 const PROGRAMME_DAYS=28;
 
-/* ---------- programme config ---------- */
+/* ---------- programme config (coach's number setter) ---------- */
 const DEFAULT_WEEKS=[
-  {theme:"Build the baseline",note:"Same wake time, same bed time, every day this week. Your nervous system trusts what it can predict. Give it something to predict.",wake:"07:00",bed:"22:00",water:6,steps:10000},
-  {theme:"Make it the default",note:"Stress, poor sleep & poor recovery all lower the oxygen reaching your cells. Less oxygen means every task costs you more energy. Settle those first & the same day costs you less.",wake:"07:00",bed:"22:00",water:6,steps:10000},
-  {theme:"Raise the floor",note:"Your worst day this week should still beat your best day before you started. Protect the minimum, the rest follows.",wake:"07:00",bed:"22:00",water:6,steps:10000},
-  {theme:"Own the standard",note:"Nobody is checking anymore except you. This is the week the habits stop being tasks and become who you are.",wake:"07:00",bed:"22:00",water:6,steps:10000}
+  {theme:"Build the baseline",note:"Same wake time, same bed time, every day this week. Your nervous system trusts what it can predict. Give it something to predict.",steps:10000,water:6,protein:160},
+  {theme:"Make it the default",note:"Stress, poor sleep & poor recovery all lower the oxygen reaching your cells. Less oxygen means every task costs you more energy. Settle those first & the same day costs you less.",steps:10000,water:6,protein:160},
+  {theme:"Raise the floor",note:"Your worst day this week should still beat your best day before you started. Protect the minimum, the rest follows.",steps:10000,water:6,protein:160},
+  {theme:"Own the standard",note:"Nobody is checking anymore except you. This is the week the habits stop being tasks and become who you are.",steps:10000,water:6,protein:160}
 ];
-let WEEKS=store.get(K.weeks,null)||DEFAULT_WEEKS.map(w=>({...w}));
+let WEEKS=(store.get(K.weeks,null)||DEFAULT_WEEKS).map(w=>({...DEFAULT_WEEKS[0],...w}));
 
-const RESETS=["Breathwork","Meditation","Breath movement","Nasal walk","Heat","Massage","Cold therapy","Time out","Journalling","Grounding","Sun exposure","Brain training"];
-const TRAINING=["Gym workout","Home workout","Mobility routine","Rest day"];
-const TASKS=[
-  {k:"am_state",label:"AM state",type:"rating",sec:"day",hint:"How you feel on waking, 1 to 10"},
-  {k:"woke_at",label:"Woke at",type:"time",sec:"day",target:"wake"},
-  {k:"outside_early",label:"Outside early",type:"check",sec:"day",hint:"Daylight within the first hour"},
-  {k:"todo",label:"To-do list",type:"check",sec:"day",hint:"Today's list written"},
-  {k:"steps1",label:"Steps 1",type:"check",sec:"day",split:0,pre:"Before Meal 1 · "},
-  {k:"meal1",label:"Meal 1",type:"meal",sec:"day",hint:"Within 90 mins of waking"},
-  {k:"meal2",label:"Meal 2",type:"meal",sec:"day"},
-  {k:"steps2",label:"Steps 2",type:"check",sec:"day",split:1},
-  {k:"meal3",label:"Meal 3",type:"meal",sec:"day"},
-  {k:"steps3",label:"Steps 3",type:"check",sec:"day",split:2},
-  {k:"meal4",label:"Meal 4",type:"meal",sec:"day"},
-  {k:"meal5",label:"Meal 5",type:"meal",sec:"day"},
-  {k:"pm_state",label:"PM state",type:"rating",sec:"done",hint:"How you feel tonight, 1 to 10"},
-  {k:"full_steps",label:"Full steps",type:"steps",sec:"done"},
-  {k:"steps_shot",label:"Steps screenshot",type:"upload",sec:"done"},
-  {k:"water",label:"Water",type:"water",sec:"done"},
-  {k:"bed",label:"Bed",type:"time",sec:"done",target:"bed"},
-  {k:"training",label:"Training",type:"select",options:TRAINING,sec:"done",hint:"What did today look like?"},
-  {k:"reset",label:"Resets",type:"multi",options:RESETS,sec:"done",hint:"Every one you used today, from the Reset menu"},
-  {k:"brain_dump",label:"Brain dump",type:"textarea",sec:"done"}
+/* ---------- senses (draft mapping until Ellis's senses key arrives) ---------- */
+const SENSES=[["sight","Sight"],["sound","Sound"],["smell","Smell"],["taste","Taste"],["touch","Touch"]];
+const RESET_TOOLS=[
+  ["Breathwork",["smell","touch"]],["Meditation",["sound"]],["Breath movement",["touch"]],["Nasal walk",["sight","sound","smell"]],
+  ["Heat",["touch"]],["Massage",["touch"]],["Cold therapy",["touch"]],["Time out",["sight","sound"]],
+  ["Journalling",["sight","touch"]],["Grounding",["touch","sight"]],["Sun exposure",["sight","touch"]],["Brain training",["sight"]]
 ];
-const splitSteps=s=>{const a=Math.floor(s/3);return[a,a,s-2*a]};
+const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 
-function isDone(t,v,wk){
-  if(v===undefined||v===null||v==="")return false;
-  switch(t.type){
-    case"check":return v===true;
-    case"rating":return v>0;
-    case"steps":return Number(v)>=wk.steps;
-    case"water":return Number(v)>=wk.water;
-    case"multi":return resetsOf(v).length>0;
-    case"select":return v===true||String(v).trim().length>0;
-    default:return String(v).trim().length>0;
-  }
+/* ---------- the 3 phases ---------- */
+// Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
+const PHASES=[
+  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Three steps, in order, before the day can be taken on."},
+  {id:"day",name:"Day",goal:"Keep energy stable",intro:"Your own list. Write your tasks, add meals & regulation tools from the options, tick them off as you go."},
+  {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Three steps, in order, that set you up for tomorrow."}
+];
+const MORNING=[
+  {id:"m1",title:"Rise & breathe",text:"Out of bed at the wake time you set last night. One breathing exercise before you touch your phone.",senses:["touch"],
+   asks:[{k:"am_state",type:"rating",label:"How do you feel on waking? 1 to 10"}]},
+  {id:"m2",title:"Light & move",text:"Get outside into daylight and walk your first steps before Meal 1. Nose breathing, no headphones.",senses:["sight","sound","smell"],asks:[]},
+  {id:"m3",title:"Open the day",text:"Read last night's plan of action. Check in with your energy, then set your direction for the day.",senses:[],
+   asks:[{k:"energy",type:"choice",label:"Energy right now",options:[["low","Low"],["steady","Steady"],["wired","Wired"]]},
+         {k:"train",type:"choice",label:"Training today?",options:[["yes","Yes"],["no","No"]]}]}
+];
+const EVENING=[
+  {id:"e1",title:"Close the day",text:"Log today's numbers against your targets and add your steps screenshot. No screenshot means the steps don't count.",senses:[],
+   asks:[{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"}]},
+  {id:"e2",title:"Bring it down",text:"Phone off at least 1 hour before bed. Use one Reset tool to lower your arousal & settle your nervous system.",senses:[],
+   asks:[{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
+  {id:"e3",title:"Set up tomorrow",text:"Set tomorrow's wake time and plan of action. Brain dump whatever's left in your head so you can switch off.",senses:[],
+   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"dump",type:"textarea",label:"Brain dump"}]}
+];
+const STEPS_OF={morning:MORNING,evening:EVENING};
+
+/* ---------- day list options + follow-up (process order) questions ---------- */
+const KINDS={
+  meal:{name:"Meals",q:"Did you move & breathe before eating, then chew it slowly?",senses:["taste","smell","sight"],
+    opts:["Meal: protein + fruit / veg","Meal: protein + fats","Pre workout meal: protein + carbs","Post workout meal: protein + carbs","Snack: fruit + protein"]},
+  walk:{name:"Steps",q:"Nose breathing, no podcast or music?",senses:["sight","sound","smell"],
+    opts:["Steps block after a meal","Nasal walk outside","Walk before Meal 1"]},
+  reset:{name:"Regulation tools",q:"Did you slow your breathing right down through it?",senses:null,opts:RESET_TOOLS.map(r=>r[0])},
+  train:{name:"Training",q:"Warmed up 5 to 10 mins first & brought your heart rate down after?",senses:["touch","sound"],
+    opts:["Gym workout","Home workout","Mobility routine"]},
+  own:{name:"Your task",q:"Did you give it 100%, phone away?",senses:[]}
+};
+const itemSenses=it=>it.kind==="reset"?resetSenses(it.label):(KINDS[it.kind]||KINDS.own).senses||[];
+function direction(log){
+  const e=log.energy,t=log.train==="yes";
+  const base={low:"Energy's low. Lead with a Reset & a walk before your first big task, and keep meals on time so you're not running on the CNS.",
+    steady:"Energy's steady. Protect it: spread your steps around meals and Reset every 90 minutes.",
+    wired:"You're wired. Bring it down before you build: breathwork before tasks, nasal walks, no caffeine after 1pm."}[e]||"Set your direction in the Morning to get today's guidance.";
+  return base+(t?" Training today, so carbs go in your pre & post workout meals.":log.train==="no"?" Rest day, so fats, not carbs, with your meals.":"");
 }
-function onTarget(t,v,wk){
-  if(!t.target||!v)return null;
-  let m=mins(v),goal=mins(wk[t.target]);
-  if(t.target==="bed"){if(m<12*60)m+=1440;if(goal<12*60)goal+=1440}
-  return m<=goal+15;
-}
-const pct=(log,wk)=>log?Math.round(TASKS.filter(t=>isDone(t,log[t.k],wk)).length/TASKS.length*100):0; // same keys on both day types
-const resetsOf=v=>Array.isArray(v)?v:(v&&v!==true?[v]:[]);
-const mealsLogged=log=>[1,2,3,4,5].filter(i=>String(log["meal"+i]||"").trim());
-const TK=k=>TASKS.find(t=>t.k===k);
-const isTrainDay=log=>log.day_type?log.day_type==="train":(log.training==="Gym workout"||log.training==="Home workout");
-const TRAIN_OPTS=["Gym workout","Home workout"],MOVE_OPTS=["Mobility routine","Breath movement drill","Full rest"];
-// The list a client sees for a day, set by the first question: training day or rest day. Same task keys either way, so stats line up.
-function tasksFor(log){
-  const T=(k,o)=>({...TK(k),...(o||{})});
-  const head=["am_state","woke_at","outside_early","todo","steps1"].map(k=>T(k));
-  if(log.day_type==="train")return[...head,
-    T("meal1"),T("meal2"),T("steps2"),
-    T("meal3",{label:"Meal 3 · Pre workout",hint:"Protein + carbs, 60 to 90 mins before training",role:"pre"}),
-    T("training",{sec:"day",label:"Training session",options:TRAIN_OPTS}),
-    T("meal4",{label:"Meal 4 · Post workout",hint:"Settle first, then protein + carbs",role:"post"}),
-    T("steps3"),T("meal5"),
-    ...["pm_state","full_steps","steps_shot","water","bed","reset","brain_dump"].map(k=>T(k))];
-  const rm=k=>T(k,k==="meal1"?{}:{hint:"Protein + fats + fruit / veg"});
-  return[...head,rm("meal1"),rm("meal2"),T("steps2"),rm("meal3"),T("steps3"),rm("meal4"),rm("meal5"),
-    ...["pm_state","full_steps","steps_shot","water","bed"].map(k=>T(k)),
-    T("training",{label:"Movement",hint:"No weights today. Keep it easy.",options:MOVE_OPTS}),
-    ...["reset","brain_dump"].map(k=>T(k))];
-}
-function mealTags(t,log){
-  const train=isTrainDay(log),tags=[["p","Protein"]];
-  if(train&&(t.role==="pre"||t.role==="post"))tags.push(["cb","Carbs"]);
-  if(!train)tags.push(["ft","Fats, no carbs"]);
-  tags.push(["fv","Fruit / veg"],["ns","No added sugar"]);
-  if(train)tags.push(["cf","Not carbs + fat"]);
-  if(train&&t.k==="meal1")tags.push(["nc","No carbs"]);
-  return tags;
+function suggestions(log){
+  const s=[["meal","Meal: protein + fruit / veg"]];
+  if(log.train==="yes")s.push(["meal","Pre workout meal: protein + carbs"],["train","Gym workout"],["meal","Post workout meal: protein + carbs"]);
+  else s.push(["meal","Meal: protein + fats"]);
+  if(log.energy==="low")s.push(["reset","Breathwork"],["walk","Nasal walk outside"]);
+  if(log.energy==="wired")s.push(["reset","Breathwork"],["reset","Meditation"]);
+  if(log.energy==="steady")s.push(["walk","Steps block after a meal"]);
+  s.push(["own","Hardest task first"]);
+  const have=new Set((log.items||[]).map(i=>i.label));
+  return s.filter(([,l])=>!have.has(l));
 }
 
-/* ---------- non negotiables (from the Recharge, Eat, Steps & Evolve pages) ---------- */
-// on = a tick chip sitting on that task row; auto = ticks itself from what's logged; both = needs both
-// track: weekly = counted across the week, mind = mindset, no tick; when: train = only on gym or home workout days
-const NN=[
-  {id:"breathe",p:"recharge",name:"Breathe",chip:"Breathing exercise",src:"Resets: Breathwork or Meditation",auto:l=>resetsOf(l.reset).some(x=>x==="Breathwork"||x==="Meditation"),desc:"Oxygen is our life supply. Breathe as much as you can throughout the day. Control the speed that you breathe out. Do 1 breathing exercise per day (Wim Hof / 10 breathless minutes)."},
-  {id:"plan",p:"recharge",name:"Plan",chip:"Plan",src:"To-do list",auto:l=>l.todo===true,desc:"Write your to-do list for the day. Prep for the next day. Plan your week."},
-  {id:"do_thing",p:"recharge",name:"Do the thing",chip:"Hardest task first",on:"todo",desc:"Do the hardest tasks first. Do what your old comfort zone held you back from."},
-  {id:"start_end",p:"recharge",name:"Start right end right",chip:"Phone off 1hr before bed",on:"bed",src:"Woke at & Bed both on target",auto:(l,wk)=>onTarget(TK("woke_at"),l.woke_at,wk)===true&&onTarget(TK("bed"),l.bed,wk)===true,desc:"Your first & last waking hours determine your outcomes. Get out of bed at your set alarm time. Phone off minimum of 1hr before bed time. Wind down before you shut down."},
-  {id:"present",p:"recharge",name:"Be present",chip:"Was present",on:"pm_state",desc:"Anything you are doing, do it 100%. Work, training, family, wellness. Multi tasking is spread energy with double the rent cost on your nervous system."},
-  {id:"protect",p:"recharge",name:"Protect your energy",chip:"No scrolling till my day started",on:"woke_at",desc:"Don't lose energy on things that destroy your energy like doom scrolling. No doom scrolling or unnecessary interactive phone use until you have started your day fully & built up your own energy first."},
-  {id:"awareness",p:"recharge",name:"Awareness",chip:"Awareness",src:"AM state & PM state",auto:l=>l.am_state>0&&l.pm_state>0,desc:"The toughest ask here. You must be honest with yourself & build up incredible self awareness to know what you need to utilise in Project Reset & when. When to push & when to pull back."},
-  {id:"reset",p:"recharge",name:"Reset",chip:"Reset",src:"Resets",auto:l=>resetsOf(l.reset).length>0,desc:"As many times daily as you can or need to. Stop every 90 minutes to quiet the mind & realign by using any of the options in the Reset menu or anything else of your choice. Make them the oxygen tank to your day."},
-
-  {id:"pick",p:"eat",name:"Pick it, Kill it, Grow it rule",chip:"No added sugar",src:"the No added sugar tag on every meal",auto:l=>{const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_ns"])},desc:"No added sugar. Sugar in whole fruit & honey in small amounts is permitted. Use gluten free alternatives. No overly processed foods made up from numerous extra ingredients."},
-  {id:"meal_timing",p:"eat",name:"Meal volume & timings",chip:"4+ meals",src:"Meals 1 to 5",auto:l=>mealsLogged(l).length>=4,desc:"Meal 1 eaten within 90 minutes of waking & then after aim to eat evenly spread every 3-4hrs through the day totalling you to 4-5 meals minimum daily."},
-  {id:"protein",p:"eat",name:"Protein",chip:"Protein every meal",src:"Protein tags on your meals",auto:l=>{const m=mealsLogged(l);return m.length>=4&&m.every(i=>l["meal"+i+"_p"])},desc:"Protein at every meal. 4-5x daily in large portions. With the largest amount in your 1st & last meal of the day."},
-  {id:"portion",p:"eat",name:"Portion size & restrictions",chip:"Not carbs + fat",when:"train",src:"the Not carbs + fat tag on every meal (rest days are fats only, so this is covered)",auto:l=>{const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_cf"])},desc:"Avoid high carbs in the same meal with high fat. Both are welcome in any amount so long as protein is always on the plate but never all 3 combined. Protein has no restriction in size for any meal."},
-  {id:"no_carbs_m1",p:"eat",name:"No carbs meal 1",chip:"No carbs meal 1",src:"the No carbs tag on Meal 1 (Fats, no carbs on rest days)",auto:l=>!!String(l.meal1||"").trim()&&(isTrainDay(l)?l.meal1_nc===true:l.meal1_ft===true),desc:"No carbohydrates at Meal 1. Only protein, fats & fruit or veg. The only exception is if you lift weights early in the morning. But if possible avoid AM lifting workouts regardless."},
-  {id:"water_salt",p:"eat",name:"Water & salt",chip:"Salt with meals",on:"water",src:"hitting your water target",auto:(l,wk)=>Number(l.water)>=wk.water,desc:"Drink 500ml of water when you wake up & with every meal driving you to your targeted amount. Salt added to every meal possible, especially containing carbs."},
-  {id:"fruit_veg",p:"eat",name:"Fruit & veg",chip:"Fruit & veg",src:"Fruit / veg tags on your meals",auto:l=>{const m=mealsLogged(l);return m.filter(i=>l["meal"+i+"_fv"]).length>=3&&!!l["meal"+m[0]+"_fv"]&&!!l["meal"+m[m.length-1]+"_fv"]},desc:"As much & as often as you like with & between meals when hungry, stressed or low on energy. First & last meal must have 1 fruit or veg or both. Minimum is at least 3 times a day of each."},
-  {id:"carbs_train",p:"eat",name:"Carbs on days you train. Fats on days you don't.",chip:"Carbs or fats matched to today",src:"the Carbs tag on your pre & post workout meals, or Fats, no carbs on every rest day meal",auto:l=>{if(isTrainDay(l))return l.meal3_cb===true&&l.meal4_cb===true;const m=mealsLogged(l);return m.length>0&&m.every(i=>l["meal"+i+"_ft"])},desc:"Create a training day focused meal plan & a non training day plan to align with this."},
-  {id:"chew",p:"eat",name:"Move, breathe & chew first",chip:"Breathed & chewed at meals",on:"pm_state",desc:"Before each meal you must do some movement first by either hitting steps or exercise & oxygenate your body with slow, deep calming breaths. Chew your food as small as you can before swallowing."},
-  {id:"caffeine",p:"eat",name:"Caffeine",chip:"Caffeine rules kept",on:"water",desc:"Maximum 2 caffeinated drinks a day. None before Meal 1. None after 1pm. Never add caffeine to an already fast working brain."},
-  {id:"pre_workout",p:"eat",name:"Pre workout",chip:"Fuelled & hydrated before",on:"meal3",onLabel:"your pre workout meal",when:"train",desc:"Never go into a workout unless you feel properly fuelled & hydrated to do so first."},
-  {id:"post_workout",p:"eat",name:"Post workout",chip:"Settled before eating",on:"meal4",onLabel:"your post workout meal",when:"train",desc:"Settle the nervous system first, lower your heart rate & oxygenate your body before eating."},
-
-  {id:"hit_number",p:"steps",name:"Hit your number",chip:"Hit your number",src:"Full steps",auto:(l,wk)=>Number(l.full_steps)>=wk.steps,desc:"Your coach sets one steps number for the week. Hit it consistently every day. More 1 day doesn't mean you can do less another day. The body doesn't work like that."},
-  {id:"spread",p:"steps",name:"Spread them",chip:"Spread them",src:"Steps 1, 2 & 3",auto:l=>l.steps1===true&&l.steps2===true&&l.steps3===true,desc:"Spread your steps through the day especially around meal times."},
-  {id:"walk_first",p:"steps",name:"Walk first",chip:"Walk first",src:"Steps 1",auto:l=>l.steps1===true,desc:"Walk before Meal 1, ideally around sunrise. It sets your circadian rhythm, puts a dent in your number & helps trigger your nervous system into using fat as energy for the day ahead."},
-  {id:"keep_easy",p:"steps",name:"Keep it easy",chip:"Kept it easy",on:"full_steps",desc:"Steps aren't a reason to add hard cardio on top. Steps work best for healthy functioning of the body & mind when done in a low stress state, so don't turn a recovery & fat loss tool into a taxing nervous system demand on your system."},
-  {id:"screenshot",p:"steps",name:"Screenshot it",chip:"Screenshot",src:"Steps screenshot",auto:l=>!!String(l.steps_shot||"").trim(),desc:"At the end of the day, add a screenshot of your full step count to your tracker. No screenshot means the steps aren't counted for that day."},
-  {id:"brain_walk",p:"steps",name:"Give your brain a walk",chip:"No podcast or music",on:"full_steps",desc:"Don't distract yourself with podcasts or music. Your brain will become more quiet when you finally let it run out of steam on its own. Use your step target as a reason to balance your stress. Nobody ever came back from a walk more angry than before they left."},
-  {id:"breathe_walk",p:"steps",name:"Breathe & walk",chip:"Nasal breathing",on:"full_steps",desc:"Oxygen is our life supply. Controlling your breath whilst you hit your steps turns 2 of the most vital aspects of the project into a mega dose of 'Human rocket fuel' into your cells. For the upgrade, do all your breathing with your mouth closed: nasal breathing."},
-
-  {id:"weights",p:"evolve",name:"Train with weights 3 to 5 times",chip:"Weights 3 to 5x a week",track:"weekly",src:"Training session on your training days",desc:"3 to 5 sessions a week."},
-  {id:"drills",p:"evolve",name:"Breath focused body movement drills",chip:"Breath movement drill",src:"Resets: Breath movement, or a rest day Movement pick",auto:l=>resetsOf(l.reset).includes("Breath movement")||l.training==="Mobility routine"||l.training==="Breath movement drill",desc:"x7 days weekly to train your breath to work in sync with your movement."},
-  {id:"prep",p:"evolve",name:"Prep your system",chip:"Warmed up 5 to 10 mins",on:"training",when:"train",desc:"Pre workout movement preps & warm ups are essential for this. 5-10 mins no matter what."},
-  {id:"freq_tax",p:"evolve",name:"Follow the frequency tax",chip:"Kept to session time",on:"training",when:"train",desc:"The more you train the less time you spend. 3x per week = 60-90 mins. 5x per week = 30-40 mins."},
-  {id:"muscles",p:"evolve",name:"Use the muscles not your brain",track:"mind",desc:"Strength training or intense workouts aren't exclusively paid for by your muscles & cardio. Your brain & nervous system is what picks up the tab when they tap out. Focus on workouts that don't mentally push you but do so physically in the muscle groups you are working. Build that mind muscle connection & let your brain become the passenger."},
-  {id:"habits",p:"evolve",name:"Build habits not PBs",track:"mind",desc:"This isn't the phase or space for maxing out. Build your consistency first. The body works better with consistency than it does shock & can start to adapt how it uses your food properly in your system rather than gatekeeping it & letting it turn to fat."},
-  {id:"fuel",p:"evolve",name:"Train to your fuel count",chip:"Ate enough to fuel it",on:"meal4",onLabel:"your post workout meal",when:"train",desc:"Eat enough to do enough & then eat some more after that to keep you above the balance needed for workouts that use what you've got & not tap into your central nervous system energy reservoirs."},
-  {id:"baseline",p:"evolve",name:"Return to baseline",chip:"Reset after training",when:"train",src:"Resets",auto:l=>resetsOf(l.reset).length>0,desc:"Post workout, bring your heart rate down as soon as possible using the Reset menu. The sooner you return to baseline, the sooner you recover, the better you sleep."},
-  {id:"selfish",p:"evolve",name:"Don't be selfish",chip:"Protein to match training",when:"train",src:"Protein tags on your meals",auto:l=>{const m=mealsLogged(l);return m.length>=4&&m.every(i=>l["meal"+i+"_p"])},desc:"It's not just your muscles that need the large protein allowance. Over worked muscles demand more protein, leaving less spared for all the other areas in your body in need of it too, like your over worked brain. Train hard, eat protein harder or feel the strain in your day."}
-];
-const PILLARS=[
-  {id:"recharge",letter:"R",name:"Recharge",tag:"Recovering from stress adequately & having higher resilience to stress in the first place",approach:[
-    "Everything in this space runs off of how settled your nervous system is. We have the full waking hours to control our nervous system via our actions. Which then lead to more control within our sleeping hours. Which then cycle back round to the waking again hours again. But this time improved & with momentum gained.",
-    "The actions below are listed as non negotiables for you to focus on & have been carefully selected to cover aspects we all have the ability to control, even if at the start it feels like you cannot.",
-    "But this is where Project Reset comes in to hold you to a standard of living which you are missing. This standard of living is what leads you to reaching your goals for the future, allowing you to apply this standard to your own bespoke plan.",
-    ">Each of the non negotiables WILL link into your daily tracker either directly or indirectly. Understanding each one will lead to higher impact on the task itself & lead to greater result."],
-   extra:["#The Reset menu","Tap any of these into Resets on your tracker. Use one every 90 minutes, or whenever you need it.",
-    ["Breathwork: slow nasal breathing, exhale longer than the inhale. Ideal in the morning, at the end of the day, when energy is low or after sitting at a desk.","Meditation: 5 to 10 minutes, sat or lying still, with one point of focus: your breath, a word or a count.","Breath movement (Yoga / Pilates / Movement drill): any style, 15 minutes or more. Movement paired with breath, not a workout.","Nasal walk: a walk outside, breathing through the nose only, no headphones.","Heat (Sauna / Steam / Hot bath): 15 to 20 minutes, if you have access.","Massage: any form. Self, partner or booked.","Cold therapy (Sea dip / Cold shower / Cold plunge): start at 3 minutes & add 30 seconds each week.","Time out: 15 minutes of something you enjoy.","Journalling","Grounding: bare feet on grass, sand or earth, 10 minutes or more.","Sun exposure","Brain training"]]},
-  {id:"eat",letter:"E",name:"Eat",tag:"Nourishing correctly so your energy systems don't need to rely on the CNS for energy",approach:[
-    "The main focus for your food is protein, fruit & veg at the top of the list in high amounts. Carbs & fats next on the priority list. All packed with vital nutrients, vitamins & electrolytes that restore your energy & physique building capability.",
-    "Nourishment is the name of the game here. This works to build you into a position where more food leads to more recovery & fat loss, because a central nervous system will stop doing the work that your food should be doing instead of just being used as fat storage.",
-    "You will not gain fat eating this way by following the full formula that runs throughout the project. The methodology points below are listed as non negotiables for you to focus on the right process to repair a malfunctioning system. You do not need a specific weighed out meal plan until your body is operating to a level it can know the differences with. That comes next."]},
-  {id:"steps",letter:"S",name:"Steps",tag:"Movement to regulate the body & brain",approach:[
-    ">Focus on: easy movement every day, spread through the day.",
-    "All you need to focus on with steps is starting the habit of simply doing them to hit your target. It doesn't even need dressing up. This is a 'do don't think' section.",
-    "Make the time & you will win the time back every time, mentally & physically, in every department. This is the main mover for the entire project. Hit your steps & everything else will fall in place & follow suit, working as it should.",
-    "The most valuable time to get them in is in the morning around Meal 1 & then evenly split throughout your day after meals. If you hit them within your daily life that's a bonus. If your daily life doesn't fall within the target number, then you build them into it & change your structure to make it work, because adaptation means change."]},
-  {id:"evolve",letter:"E",name:"Evolve",tag:"Training to regulate the use of energy",approach:[
-    "Train with weights from home or gym based to drive the food into action at least 3x per week minimum. The rule for training frequency is called 'The frequency tax', meaning the more you train the less time you should spend. 3x per week = 60-90 mins. 5x per week = 30-40 mins.",
-    "Breath focused body movement drills x7 days weekly.",
-    "Train at a level you can recover from alongside work, sleep & the rest of your life. This isn't the phase for pushing harder every week. This project is to get your energy systems using the food properly again as fuel, not stressing the system into a state of survival further. Evolution comes after the stress has occurred, but only once you have recharged.",
-    ">\"If you can't recover, you won't change.\"",
-    "This doesn't mean train soft. It means be self aware enough to know when you have enough fuel in the tank first & an equal amount to recover with afterwards.",
-    "Post workout your main focus should be lowering your heart rate as soon as possible by using the Reset menu. The sooner you can return back to baseline, the sooner you recover, the less tax you spend on your energy & the benefits of training suddenly start showing your work."],
-   extra:["#Log it","Start each day by answering whether it's a training day. On training days your list adds pre & post workout meals and the Training session, where you pick Gym or Home. On rest days you log your Movement instead: Mobility routine, Breath movement drill or Full rest."]}
-];
-const nnApplies=(n,log)=>n.track!=="mind"&&n.track!=="weekly"&&(n.when!=="train"||isTrainDay(log));
-const nnKept=(n,log,wk)=>(n.auto?!!n.auto(log,wk):true)&&(n.on?log["nn_"+n.id]===true:true);
-
-function nnScore(log,wk){const a=NN.filter(n=>nnApplies(n,log));const k=a.filter(n=>nnKept(n,log,wk)).length;return{kept:k,total:a.length,pct:a.length?Math.round(k/a.length*100):0}}
-function nnRates(rows){const out={};NN.forEach(n=>{if(n.track==="mind")return;let a=0,k=0;rows.forEach(x=>{if(n.track==="weekly")return;if(nnApplies(n,x.log)){a++;if(nnKept(n,x.log,x.wk))k++}});out[n.id]={a,k,p:a?Math.round(k/a*100):null}});return out}
-const hasAny=log=>log&&Object.values(log).some(v=>v!==""&&v!==false&&v!==null&&v!==undefined);
+/* ---------- scoring: 1 point per completed step or task ---------- */
+const stepsDone=(log,ph)=>STEPS_OF[ph].filter(s=>log[s.id]).length;
+const itemsOf=log=>Array.isArray(log.items)?log.items:[];
+function scoreOf(log){
+  const items=itemsOf(log),m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),d=items.filter(i=>i.done).length;
+  const pts=m+e+d,max=6+items.length;
+  const ans=items.filter(i=>i.done&&i.fu!==undefined&&i.fu!==null),fuYes=ans.filter(i=>i.fu===true).length;
+  const sn=new Set();
+  if(log.m1)MORNING[0].senses.forEach(x=>sn.add(x));
+  if(log.m2)MORNING[1].senses.forEach(x=>sn.add(x));
+  if(log.e2&&log.pm_tool)resetSenses(log.pm_tool).forEach(x=>sn.add(x));
+  items.filter(i=>i.done).forEach(i=>itemSenses(i).forEach(x=>sn.add(x)));
+  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,fuYes,fuN:ans.length,senses:sn};
+}
+const hasAny=log=>log&&Object.keys(log).length>0;
+const nowHHMM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
+const uid=()=>Math.random().toString(36).slice(2,9);
 
 /* ---------- demo clients (sample data) ---------- */
 const CLIENTS=[
-  {id:"sarah",name:"Sarah Mitchell",email:"sarah@example.com",offset:0,base:.86,drift:.05},
+  {id:"sarah",name:"Sarah Mitchell",offset:0,base:.86,drift:.05},
   {id:"tom",name:"Tom Hughes",offset:0,base:.93,drift:.02},
   {id:"priya",name:"Priya Shah",offset:0,base:.74,drift:.12},
   {id:"dan",name:"Dan Cole",offset:0,base:.72,drift:-.3,gone:2},
@@ -499,12 +494,11 @@ const CLIENTS=[
   {id:"chloe",name:"Chloe Evans",offset:0,base:.95,drift:0},
   {id:"marcus",name:"Marcus Reid",offset:7,base:.78,drift:.1}
 ];
-const MEALS=["Eggs, sourdough, berries","Greek yoghurt, oats, honey","Chicken, rice, greens","Salmon, potatoes, broccoli","Beef chilli, rice","Protein shake, banana","Turkey wrap, salad","Steak, sweet potato, peppers","Omelette, spinach, toast","Cottage cheese, fruit"];
+const OWN=["Hardest task first: client proposal","Emails & admin","School run","Prep tomorrow's food","Team call","Gym bag ready","Call Mum","Finish report","Food shop","Clear the inbox"];
+const PLANS=["Hardest task first, walk after every meal, gym at 12.","Early meeting, so walk before Meal 1 & prep food tonight.","Rest day. Steps spread out, Reset every 90 mins.","Big work day. Breathwork before each block of work."];
 const DUMPS=["Long day at work but got everything done.","Felt flat this afternoon, walk helped.","Slept better than last week.","Struggled with the evening meal, too busy.","Good energy all day.","Kids were up early, still hit the basics."];
 function rngFor(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);let t=(h^=h>>>16)>>>0;t+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-function partialCut(){const h=NOW.getHours();return h<8?0:h<10?3:h<12?6:h<15?9:h<18?11:h<21?14:TASKS.length}
-
 const clientStart=c=>addDays(COHORT,c.offset);
 const clientDayNum=c=>clamp(diffDays(clientStart(c),TODAY)+1,1,PROGRAMME_DAYS);
 const weekOf=dayNum=>WEEKS[clamp(Math.floor((dayNum-1)/7),0,3)];
@@ -513,31 +507,35 @@ const dateOf=(c,dayNum)=>addDays(clientStart(c),dayNum-1);
 const GEN={};
 function generated(c){
   if(GEN[c.id])return GEN[c.id];
-  const rng=rngFor(c.id),out={},today=clientDayNum(c);
+  const rng=rngFor(c.id),out={},today=clientDayNum(c),nowM=NOW.getHours()*60+NOW.getMinutes();
   for(let d=1;d<=today;d++){
     const date=ymd(dateOf(c,d)),wk=weekOf(d),isToday=d===today;
     if(c.gone&&d>today-c.gone)continue;
     if(c.id==="sarah"&&isToday)continue; // the demo login fills today in
     const p=clamp(c.base+c.drift*(d/14)+(rng()-.5)*.22,.08,.99);
-    const L={},cut=isToday?partialCut():TASKS.length;
-    if(cut>0)L.day_type=rng()<.5?"train":"rest";
-    tasksFor(L).forEach((t,i)=>{
-      const r=rng();if(i>=cut)return;
-      const hit=r<p;
-      switch(t.type){
-        case"rating":if(rng()<p+.15)L[t.k]=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));break;
-        case"time":{if(rng()>p+.1)break;const base=mins(wk[t.target]);L[t.k]=hhmm(base+(rng()-.3)*(t.target==="bed"?110:70)*(1.15-p));break}
-        case"check":if(hit)L[t.k]=true;break;
-        case"meal":if(hit){L[t.k]=MEALS[Math.floor(rng()*MEALS.length)];mealTags(t,L).forEach(([g])=>{if(rng()<p+.08)L[t.k+"_"+g]=true})}break;
-        case"steps":L[t.k]=hit?Math.round(wk.steps*(1+rng()*.35)):(rng()<.7?Math.round(wk.steps*(.35+rng()*.55)):"");break;
-        case"water":L[t.k]=hit?wk.water+Math.round(rng()*2)/2:(rng()<.7?Math.round(wk.water*(.4+rng()*.5)*2)/2:"");break;
-        case"upload":if(hit)L[t.k]="steps-"+date+".png";break;
-        case"select":if(hit)L[t.k]=t.options[Math.floor(rng()*t.options.length)];break;
-        case"multi":if(hit){const n=1+Math.floor(rng()*3),pk=new Set();for(let j=0;j<n;j++)pk.add(RESETS[Math.floor(rng()*RESETS.length)]);L[t.k]=[...pk]}break;
-        case"textarea":if(hit&&rng()<.7)L[t.k]=DUMPS[Math.floor(rng()*DUMPS.length)];break;
-      }
-    });
-    if(cut===TASKS.length)NN.forEach(n=>{if(n.on&&rng()<p-.05)L["nn_"+n.id]=true});
+    const L={},pick=a=>a[Math.floor(rng()*a.length)];
+    const wake=420+Math.round((rng()-.3)*50*(1.2-p));
+    const until=isToday?nowM:1440;
+    // morning, in order
+    let t=wake;
+    for(const s of MORNING){if(t>until||rng()>p+.08)break;L[s.id]=hhmm(t);t+=10+Math.round(rng()*25)}
+    if(L.m1)L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));
+    if(L.m3){L.energy=pick(["low","steady","steady","wired"]);L.train=rng()<.5?"yes":"no"}
+    // day list
+    const items=[],add=(kind,label)=>items.push({id:uid(),kind,label});
+    add("own",pick(OWN));add("meal",L.train==="yes"?"Meal: protein + fruit / veg":"Meal: protein + fats");add("walk","Steps block after a meal");
+    if(L.train==="yes"){add("meal","Pre workout meal: protein + carbs");add("train",pick(["Gym workout","Home workout"]));add("meal","Post workout meal: protein + carbs")}
+    else{add("meal","Meal: protein + fats");add("reset",pick(RESET_TOOLS)[0])}
+    add("own",pick(OWN));add("walk","Nasal walk outside");add("reset",pick(RESET_TOOLS)[0]);add("meal","Meal: protein + fruit / veg");
+    let it=Math.max(t,wake+60);
+    items.forEach(x=>{it+=40+Math.round(rng()*50);if(it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05}});
+    if(L.m1||items.some(x=>x.done))L.items=items;
+    // evening, in order
+    let et=1230+Math.round(rng()*60);
+    for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
+    if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png"}
+    if(L.e2){L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
+    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);if(rng()<.6)L.dump=pick(DUMPS)}
     out[date]=L;
   }
   return GEN[c.id]=out;
@@ -555,25 +553,22 @@ function saveEdit(cid,date,k,v){
 /* ---------- stats ---------- */
 function statsFor(c){
   const logs=logsFor(c),today=clientDayNum(c),days=[];
-  for(let d=1;d<=today;d++){const date=ymd(dateOf(c,d)),wk=weekOf(d),log=logs[date]||{};const nn=nnScore(log,wk);days.push({d,date,wk,log,pct:pct(log,wk),nn:nn.pct,any:hasAny(log)})}
-  const past=days.filter(x=>x.d<today);
-  const last7=past.slice(-7);
-  const avg7=last7.length?Math.round(last7.reduce((a,x)=>a+x.pct,0)/last7.length):days[days.length-1].pct;
-  const nnRows=last7.length?last7:days.slice(-1);
-  const nn7=Math.round(nnRows.reduce((a,x)=>a+x.nn,0)/nnRows.length);
-  let streak=0;
-  const todayRow=days[days.length-1];
+  for(let d=1;d<=today;d++){const date=ymd(dateOf(c,d)),wk=weekOf(d),log=logs[date]||{},sc=scoreOf(log);days.push({d,date,wk,log,sc,pct:sc.pct,any:hasAny(log)})}
+  const past=days.filter(x=>x.d<today),last7=past.slice(-7),rows=last7.length?last7:days.slice(-1);
+  const avg=f=>rows.length?rows.reduce((a,x)=>a+f(x),0)/rows.length:0;
+  const avg7=Math.round(avg(x=>x.pct)),pts7=avg(x=>x.sc.pts);
+  const morn7=Math.round(avg(x=>x.sc.m===3?100:0)),eve7=Math.round(avg(x=>x.sc.e===3?100:0));
+  const fuA=rows.reduce((a,x)=>a+x.sc.fuN,0),fuY=rows.reduce((a,x)=>a+x.sc.fuYes,0);
+  const proc7=fuA?Math.round(fuY/fuA*100):null,senses7=avg(x=>x.sc.senses.size);
+  let streak=0;const todayRow=days[days.length-1];
   if(todayRow.pct>=70)streak++;
   for(let i=past.length-1;i>=0;i--){if(past[i].pct>=70)streak++;else break}
   let lastLog=null;for(let i=days.length-1;i>=0;i--){if(days[i].any){lastLog=days[i];break}}
   const since=lastLog?today-lastLog.d:today;
-  const numAvg=(k,rows)=>{const v=rows.map(x=>Number(x.log[k])).filter(n=>n>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  const bedRows=last7.filter(x=>x.log.bed);
-  const bedOn=bedRows.length?Math.round(bedRows.filter(x=>onTarget(TASKS.find(t=>t.k==="bed"),x.log.bed,x.wk)).length/last7.length*100):0;
-  let status="ok";
-  if(since>=2||avg7<45)status="bad";else if(avg7<70)status="warn";
-  return{c,days,today,todayPct:todayRow.pct,todayNN:todayRow.nn,nn7,nnRows,avg7,streak,since,lastLog,
-    steps7:numAvg("full_steps",last7),am7:numAvg("am_state",last7),pm7:numAvg("pm_state",last7),bedOn,status};
+  const numAvg=k=>{const v=rows.map(x=>Number(x.log[k])).filter(n=>n>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
+  let status="ok";if(since>=2||avg7<45)status="bad";else if(avg7<70)status="warn";
+  return{c,days,rows,today,todayRow,avg7,pts7,morn7,eve7,proc7,senses7,streak,since,status,
+    steps7:numAvg("steps"),protein7:numAvg("protein"),am7:numAvg("am_state"),pm7:numAvg("pm_state")};
 }
 const STATUS={ok:["ok","On track"],warn:["warn","Slipping"],bad:["bad","At risk"]};
 const lvl=p=>p>=70?"l3":p>=40?"l2":p>0?"l1":"";
@@ -660,24 +655,88 @@ const CONTENT=[
 const LETTERS=[["R","Recovering from stress adequately & having higher resilience to stress in the first place"],["E","Nourishing correctly so your energy systems don't need to rely on the CNS for energy"],["S","Movement to regulate the body & brain"],["E","Training to regulate the use of energy"],["T","The heartbeat the CNS relies on most. The consistency that allows the change."]];
 const TOOLKIT=[["Get started","Your morning, daytime & evening"],["Eat","Food","eat"],["Steps","Hitting your daily number","steps"],["Evolve","Workouts","evolve"],["Recharge","Reset picks","recharge"],["Mindset","A hard day"],["My space","Planning"]];
 
+
+const NN=[
+  {id:"breathe",p:"recharge",name:"Breathe",desc:"Oxygen is our life supply. Breathe as much as you can throughout the day. Control the speed that you breathe out. Do 1 breathing exercise per day (Wim Hof / 10 breathless minutes)."},
+  {id:"plan",p:"recharge",name:"Plan",desc:"Write your to-do list for the day. Prep for the next day. Plan your week."},
+  {id:"do_thing",p:"recharge",name:"Do the thing",desc:"Do the hardest tasks first. Do what your old comfort zone held you back from."},
+  {id:"start_end",p:"recharge",name:"Start right end right",desc:"Your first & last waking hours determine your outcomes. Get out of bed at your set alarm time. Phone off minimum of 1hr before bed time. Wind down before you shut down."},
+  {id:"present",p:"recharge",name:"Be present",desc:"Anything you are doing, do it 100%. Work, training, family, wellness. Multi tasking is spread energy with double the rent cost on your nervous system."},
+  {id:"protect",p:"recharge",name:"Protect your energy",desc:"Don't lose energy on things that destroy your energy like doom scrolling. No doom scrolling or unnecessary interactive phone use until you have started your day fully & built up your own energy first."},
+  {id:"awareness",p:"recharge",name:"Awareness",desc:"The toughest ask here. You must be honest with yourself & build up incredible self awareness to know what you need to utilise in Project Reset & when. When to push & when to pull back."},
+  {id:"reset",p:"recharge",name:"Reset",desc:"As many times daily as you can or need to. Stop every 90 minutes to quiet the mind & realign by using any of the options in the Reset menu or anything else of your choice. Make them the oxygen tank to your day."},
+  {id:"pick",p:"eat",name:"Pick it, Kill it, Grow it rule",desc:"No added sugar. Sugar in whole fruit & honey in small amounts is permitted. Use gluten free alternatives. No overly processed foods made up from numerous extra ingredients."},
+  {id:"meal_timing",p:"eat",name:"Meal volume & timings",desc:"Meal 1 eaten within 90 minutes of waking & then after aim to eat evenly spread every 3-4hrs through the day totalling you to 4-5 meals minimum daily."},
+  {id:"protein",p:"eat",name:"Protein",desc:"Protein at every meal. 4-5x daily in large portions. With the largest amount in your 1st & last meal of the day."},
+  {id:"portion",p:"eat",name:"Portion size & restrictions",desc:"Avoid high carbs in the same meal with high fat. Both are welcome in any amount so long as protein is always on the plate but never all 3 combined. Protein has no restriction in size for any meal."},
+  {id:"no_carbs_m1",p:"eat",name:"No carbs meal 1",desc:"No carbohydrates at Meal 1. Only protein, fats & fruit or veg. The only exception is if you lift weights early in the morning. But if possible avoid AM lifting workouts regardless."},
+  {id:"water_salt",p:"eat",name:"Water & salt",desc:"Drink 500ml of water when you wake up & with every meal driving you to your targeted amount. Salt added to every meal possible, especially containing carbs."},
+  {id:"fruit_veg",p:"eat",name:"Fruit & veg",desc:"As much & as often as you like with & between meals when hungry, stressed or low on energy. First & last meal must have 1 fruit or veg or both. Minimum is at least 3 times a day of each."},
+  {id:"carbs_train",p:"eat",name:"Carbs on days you train. Fats on days you don't.",desc:"Create a training day focused meal plan & a non training day plan to align with this."},
+  {id:"chew",p:"eat",name:"Move, breathe & chew first",desc:"Before each meal you must do some movement first by either hitting steps or exercise & oxygenate your body with slow, deep calming breaths. Chew your food as small as you can before swallowing."},
+  {id:"caffeine",p:"eat",name:"Caffeine",desc:"Maximum 2 caffeinated drinks a day. None before Meal 1. None after 1pm. Never add caffeine to an already fast working brain."},
+  {id:"pre_workout",p:"eat",name:"Pre workout",desc:"Never go into a workout unless you feel properly fuelled & hydrated to do so first."},
+  {id:"post_workout",p:"eat",name:"Post workout",desc:"Settle the nervous system first, lower your heart rate & oxygenate your body before eating."},
+  {id:"hit_number",p:"steps",name:"Hit your number",desc:"Your coach sets one steps number for the week. Hit it consistently every day. More 1 day doesn't mean you can do less another day. The body doesn't work like that."},
+  {id:"spread",p:"steps",name:"Spread them",desc:"Spread your steps through the day especially around meal times."},
+  {id:"walk_first",p:"steps",name:"Walk first",desc:"Walk before Meal 1, ideally around sunrise. It sets your circadian rhythm, puts a dent in your number & helps trigger your nervous system into using fat as energy for the day ahead."},
+  {id:"keep_easy",p:"steps",name:"Keep it easy",desc:"Steps aren't a reason to add hard cardio on top. Steps work best for healthy functioning of the body & mind when done in a low stress state, so don't turn a recovery & fat loss tool into a taxing nervous system demand on your system."},
+  {id:"screenshot",p:"steps",name:"Screenshot it",desc:"At the end of the day, add a screenshot of your full step count to your tracker. No screenshot means the steps aren't counted for that day."},
+  {id:"brain_walk",p:"steps",name:"Give your brain a walk",desc:"Don't distract yourself with podcasts or music. Your brain will become more quiet when you finally let it run out of steam on its own. Use your step target as a reason to balance your stress. Nobody ever came back from a walk more angry than before they left."},
+  {id:"breathe_walk",p:"steps",name:"Breathe & walk",desc:"Oxygen is our life supply. Controlling your breath whilst you hit your steps turns 2 of the most vital aspects of the project into a mega dose of 'Human rocket fuel' into your cells. For the upgrade, do all your breathing with your mouth closed: nasal breathing."},
+  {id:"weights",p:"evolve",name:"Train with weights 3 to 5 times",desc:"3 to 5 sessions a week."},
+  {id:"drills",p:"evolve",name:"Breath focused body movement drills",desc:"x7 days weekly to train your breath to work in sync with your movement."},
+  {id:"prep",p:"evolve",name:"Prep your system",desc:"Pre workout movement preps & warm ups are essential for this. 5-10 mins no matter what."},
+  {id:"freq_tax",p:"evolve",name:"Follow the frequency tax",desc:"The more you train the less time you spend. 3x per week = 60-90 mins. 5x per week = 30-40 mins."},
+  {id:"muscles",p:"evolve",name:"Use the muscles not your brain",desc:"Strength training or intense workouts aren't exclusively paid for by your muscles & cardio. Your brain & nervous system is what picks up the tab when they tap out. Focus on workouts that don't mentally push you but do so physically in the muscle groups you are working. Build that mind muscle connection & let your brain become the passenger."},
+  {id:"habits",p:"evolve",name:"Build habits not PBs",desc:"This isn't the phase or space for maxing out. Build your consistency first. The body works better with consistency than it does shock & can start to adapt how it uses your food properly in your system rather than gatekeeping it & letting it turn to fat."},
+  {id:"fuel",p:"evolve",name:"Train to your fuel count",desc:"Eat enough to do enough & then eat some more after that to keep you above the balance needed for workouts that use what you've got & not tap into your central nervous system energy reservoirs."},
+  {id:"baseline",p:"evolve",name:"Return to baseline",desc:"Post workout, bring your heart rate down as soon as possible using the Reset menu. The sooner you return to baseline, the sooner you recover, the better you sleep."},
+  {id:"selfish",p:"evolve",name:"Don't be selfish",desc:"It's not just your muscles that need the large protein allowance. Over worked muscles demand more protein, leaving less spared for all the other areas in your body in need of it too, like your over worked brain. Train hard, eat protein harder or feel the strain in your day."}
+];
+const PILLARS=[
+  {id:"recharge",letter:"R",name:"Recharge",tag:"Recovering from stress adequately & having higher resilience to stress in the first place",approach:[
+    "Everything in this space runs off of how settled your nervous system is. We have the full waking hours to control our nervous system via our actions. Which then lead to more control within our sleeping hours. Which then cycle back round to the waking again hours again. But this time improved & with momentum gained.",
+    "The actions below are listed as non negotiables for you to focus on & have been carefully selected to cover aspects we all have the ability to control, even if at the start it feels like you cannot.",
+    "But this is where Project Reset comes in to hold you to a standard of living which you are missing. This standard of living is what leads you to reaching your goals for the future, allowing you to apply this standard to your own bespoke plan.",
+    ">Each of the non negotiables WILL link into your daily tracker either directly or indirectly. Understanding each one will lead to higher impact on the task itself & lead to greater result."],
+   extra:["#The Reset menu","Add any of these to your Day list from Regulation tools. Use one every 90 minutes, or whenever you need it.",
+    ["Breathwork: slow nasal breathing, exhale longer than the inhale. Ideal in the morning, at the end of the day, when energy is low or after sitting at a desk.","Meditation: 5 to 10 minutes, sat or lying still, with one point of focus: your breath, a word or a count.","Breath movement (Yoga / Pilates / Movement drill): any style, 15 minutes or more. Movement paired with breath, not a workout.","Nasal walk: a walk outside, breathing through the nose only, no headphones.","Heat (Sauna / Steam / Hot bath): 15 to 20 minutes, if you have access.","Massage: any form. Self, partner or booked.","Cold therapy (Sea dip / Cold shower / Cold plunge): start at 3 minutes & add 30 seconds each week.","Time out: 15 minutes of something you enjoy.","Journalling","Grounding: bare feet on grass, sand or earth, 10 minutes or more.","Sun exposure","Brain training"]]},
+  {id:"eat",letter:"E",name:"Eat",tag:"Nourishing correctly so your energy systems don't need to rely on the CNS for energy",approach:[
+    "The main focus for your food is protein, fruit & veg at the top of the list in high amounts. Carbs & fats next on the priority list. All packed with vital nutrients, vitamins & electrolytes that restore your energy & physique building capability.",
+    "Nourishment is the name of the game here. This works to build you into a position where more food leads to more recovery & fat loss, because a central nervous system will stop doing the work that your food should be doing instead of just being used as fat storage.",
+    "You will not gain fat eating this way by following the full formula that runs throughout the project. The methodology points below are listed as non negotiables for you to focus on the right process to repair a malfunctioning system. You do not need a specific weighed out meal plan until your body is operating to a level it can know the differences with. That comes next."]},
+  {id:"steps",letter:"S",name:"Steps",tag:"Movement to regulate the body & brain",approach:[
+    ">Focus on: easy movement every day, spread through the day.",
+    "All you need to focus on with steps is starting the habit of simply doing them to hit your target. It doesn't even need dressing up. This is a 'do don't think' section.",
+    "Make the time & you will win the time back every time, mentally & physically, in every department. This is the main mover for the entire project. Hit your steps & everything else will fall in place & follow suit, working as it should.",
+    "The most valuable time to get them in is in the morning around Meal 1 & then evenly split throughout your day after meals. If you hit them within your daily life that's a bonus. If your daily life doesn't fall within the target number, then you build them into it & change your structure to make it work, because adaptation means change."]},
+  {id:"evolve",letter:"E",name:"Evolve",tag:"Training to regulate the use of energy",approach:[
+    "Train with weights from home or gym based to drive the food into action at least 3x per week minimum. The rule for training frequency is called 'The frequency tax', meaning the more you train the less time you should spend. 3x per week = 60-90 mins. 5x per week = 30-40 mins.",
+    "Breath focused body movement drills x7 days weekly.",
+    "Train at a level you can recover from alongside work, sleep & the rest of your life. This isn't the phase for pushing harder every week. This project is to get your energy systems using the food properly again as fuel, not stressing the system into a state of survival further. Evolution comes after the stress has occurred, but only once you have recharged.",
+    ">\"If you can't recover, you won't change.\"",
+    "This doesn't mean train soft. It means be self aware enough to know when you have enough fuel in the tank first & an equal amount to recover with afterwards.",
+    "Post workout your main focus should be lowering your heart rate as soon as possible by using the Reset menu. The sooner you can return back to baseline, the sooner you recover, the less tax you spend on your energy & the benefits of training suddenly start showing your work."],
+   extra:["#Log it","On days you train, add your session to your Day list from the Training options, along with your pre & post workout meals. Every tick asks whether you warmed up first & brought your heart rate down after."]}
+];
+
 /* ---------- app state ---------- */
 const S={
   session:store.get(K.session,null),
-  tab:"today", viewDay:null,
-  coachTab:"overview", detail:null, detailDay:null, sort:{k:"status",dir:1}, filter:"all"
+  tab:"today",viewDay:null,phase:null,cat:"meal",
+  coachTab:"overview",detail:null,detailDay:null,sort:{k:"status",dir:1},filter:"all",hview:"phases"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("root");
 const me=()=>CLIENTS.find(c=>c.id===S.session?.clientId);
 const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2);
 const TICK='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
+const LOCK='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M3.8 5.5V4a2.2 2.2 0 014.4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
-
 function render(){
   if(!S.session){root.innerHTML=loginView();return}
   root.innerHTML=topBar()+`<main class="wrap"><div class="${S.session.role==="coach"?"wide":"col"}">${S.session.role==="coach"?coachView():clientView()}</div></main>`;
-  window.scrollTo&&0;
 }
 
 /* ---------- login ---------- */
@@ -696,14 +755,14 @@ function loginView(){
         <button class="btn" data-act="demo-client">Enter as client</button>
         <button class="btn" data-act="demo-coach">Enter as coach</button>
       </div>
-      <p class="note">This is a clickable prototype with sample clients. Ticks you make as a client are saved in this browser only, and show up live in the coach view.</p>
+      <p class="note">This is a clickable prototype with sample clients. What you log as a client is saved in this browser only and shows up in the coach view.</p>
     </div>
   </div></div>`;
 }
 
 function topBar(){
   const coach=S.session.role==="coach";
-  const tabs=coach?[["overview","Clients"],["settings","Programme settings"]]:[["today","Today"],["programme","Programme"],["progress","Progress"]];
+  const tabs=coach?[["overview","Clients"],["settings","Number setter"]]:[["today","Today"],["programme","Programme"],["progress","Progress"]];
   const cur=coach?S.coachTab:S.tab;
   const name=coach?"Ellis Vine":me().name;
   return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
@@ -712,6 +771,8 @@ function topBar(){
     <div class="who"><span class="proto">Prototype</span><span class="avatar" title="${esc(name)}">${initials(name)}</span><button class="link" data-act="logout">Log out</button></div>
   </div></header>`;
 }
+
+
 
 /* ---------- client: today ---------- */
 function clientView(){
@@ -723,106 +784,118 @@ function ring(p,size=96){
   const r=size/2-7,c=2*Math.PI*r;
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" aria-hidden="true"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--surface-2)" stroke-width="8"/><circle class="ring-arc" cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="var(--lime)" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-p/100)}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dashoffset .35s"/></svg>`;
 }
+
+function curCtx(){
+  const c=me(),today=clientDayNum(c),dn=S.viewDay||today,date=dateOf(c,dn),dk=ymd(date),logs=logsFor(c);
+  return{c,today,dn,date,dk,wk:weekOf(dn),log:logs[dk]||{},prev:logs[ymd(addDays(date,-1))]||{}};
+}
+function autoPhase(log,isToday){
+  if(stepsDone(log,"morning")<3)return isToday&&NOW.getHours()>=19&&stepsDone(log,"evening")>0?"evening":"morning";
+  if(isToday&&NOW.getHours()>=19)return"evening";
+  return"day";
+}
 function todayView(){
-  const c=me(),today=clientDayNum(c);
-  const dn=S.viewDay||today,date=dateOf(c,dn),dk=ymd(date),wk=weekOf(dn);
-  const log=logsFor(c)[dk]||{},p=pct(log,wk);
+  const x=curCtx(),{c,today,dn,date,wk,log}=x,sc=scoreOf(log);
+  const ph=S.phase||autoPhase(log,dn===today);
   const note=(store.get(K.notes,{})[c.id]);
-  const secs=[["day","Day"],["done","Day done"]];
-  const sp=splitSteps(wk.steps);
-  WEEK_SESS=weekSessions(c,dn);
-  return `<div class="stack" data-date="${dk}" data-day="${dn}">
+  const dayOpen=sc.m===3;
+  const tab=(id,label,count,locked)=>`<button class="phase-tab${count.done===count.of&&count.of?" complete":""}" data-phase="${id}" ${ph===id?'aria-current="page"':""}><span>${locked?LOCK+" ":""}${label}</span><small class="num">${count.done} / ${count.of}${count.done===count.of&&count.of?" ✓":""}</small></button>`;
+  return `<div class="stack">
     <div class="dayhead">
       <div><div class="eyebrow">Week ${Math.floor((dn-1)/7)+1} · ${fmtLong(date)}${dn===today?" · Today":""}</div>
       <h1 class="display dayno">Day ${dn}<small class="num">/ ${PROGRAMME_DAYS}</small></h1></div>
-      <div class="ringwrap"><div class="ring" role="img" aria-label="${p}% of today's tasks done">${ring(p)}<b class="num" id="ringPct">${p}%</b></div><div class="nnsum" id="nnSum">${nnSumHtml(log,wk)}</div></div>
+      <div class="ringwrap"><div class="ring" role="img" aria-label="${sc.pct}% done">${ring(sc.pct)}<b class="num">${sc.pct}%</b></div><div class="nnsum"><b class="num">${sc.pts}</b> ${sc.pts===1?"point":"points"}</div></div>
     </div>
     <div class="daynav">
       <button class="chip" data-act="day" data-d="${dn-1}" ${dn<=1?"disabled":""}>&lsaquo; Day ${Math.max(1,dn-1)}</button>
       ${dn!==today?`<button class="chip" data-act="day" data-d="${today}">Back to today</button>`:""}
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
-    ${dayTypeCard(log)}
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
-    <div class="theme"><span class="eyebrow">Week theme</span><span class="display">${esc(wk.theme)}</span></div>
-    <div class="targets">
-      <div class="target"><span class="eyebrow">Wake</span><b class="num">${esc(wk.wake)}</b></div>
-      <div class="target"><span class="eyebrow">Bed</span><b class="num">${esc(wk.bed)}</b></div>
-      <div class="target"><span class="eyebrow">Water</span><b class="num">${wk.water}L</b></div>
-      <div class="target"><span class="eyebrow">Steps</span><b class="num">${wk.steps.toLocaleString("en-GB")}</b></div>
-    </div>
-    <div class="sticky"><span class="eyebrow">Sticky note</span><p>${esc(wk.note)}</p></div>
-    ${!log.day_type?`<p class="card muted" style="text-align:center">Answer the first question and today's list loads below.</p>`:`<p class="muted" style="font-size:13px">The small chips under a task are your non negotiables for it. Tick the ones you kept.</p>`+secs.map(([s,l])=>{
-      const ts=tasksFor(log).filter(t=>t.sec===s);
-      return `<section class="card"><div class="sec-head"><h2 class="sec-title">${l}</h2><span class="muted num" data-count="${s}">${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}</span></div>
-      <div class="tasks">${ts.map(t=>taskRow(t,log[t.k],wk,sp,log)).join("")}</div></section>`;
-    }).join("")}
-    <section class="stack" style="gap:10px"><h2 class="sec-title">Need more?</h2>
-      <div class="more">${TOOLKIT.map(([a,b,pl])=>`<button ${pl?`data-pillar="${pl}"`:`data-tab="programme"`}><b>${a}</b><small>${b}</small></button>`).join("")}</div>
-    </section>
+    <nav class="phases" aria-label="Parts of the day">
+      ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d,of:sc.n},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
+    </nav>
+    ${phaseHead(ph)}
+    ${ph==="morning"?stepsView("morning",x):ph==="evening"?stepsView("evening",x):dayView(x)}
+    ${sensesPanel(sc)}
   </div>`;
 }
-function weekSessions(c,dn){const logs=logsFor(c),s=Math.floor((dn-1)/7)*7+1;let n=0;for(let d=s;d<=dn;d++){const l=logs[ymd(dateOf(c,d))]||{};if(TRAIN_OPTS.includes(l.training))n++}return n}
-let WEEK_SESS=0;
-function dayTypeCard(log){
-  const v=log.day_type;
-  const opt=(k,t,sub)=>`<button class="dt-opt" data-daytype="${k}" aria-pressed="${v===k}"><b>${t}</b><small>${sub}</small></button>`;
-  return `<section class="card daytype"><div class="sec-head"><h2 class="sec-title">${v?"Today is a":"First up"}</h2>${v?`<span class="muted" style="font-size:12px">Tap to change</span>`:""}</div>
-  ${v?"":`<p style="font-weight:600;margin-bottom:10px">Is today a training day?</p>`}
-  <div class="dt-opts">${opt("train","Training day","Gym or home weights session")}${opt("rest","Rest day","Mobility, breath work or full rest")}</div>
-  ${v==="train"?`<p class="muted" style="font-size:13px;margin-top:10px">Meals 3 & 4 are your pre & post workout meals with carbs. ${WEEK_SESS} weights ${WEEK_SESS===1?"session":"sessions"} logged this week, target 3 to 5.</p>`:v==="rest"?`<p class="muted" style="font-size:13px;margin-top:10px">Fats, not carbs, with every meal today. Keep movement easy.</p>`:""}</section>`;
-}
-function nnSumHtml(log,wk){const sc=nnScore(log,wk);return `<b class="num">${sc.kept}/${sc.total}</b> non negotiables`}
-function nnChips(t,log){
-  let html="";
-  if(t.type==="meal")html+=mealTags(t,log).map(([g,l])=>`<button class="chip nn-tag" data-mtag="${g}" aria-pressed="${!!log[t.k+"_"+g]}">${l}</button>`).join("");
-  html+=NN.filter(n=>n.on===t.k&&nnApplies(n,log)).map(n=>`<button class="chip nn-tag" data-nn="${n.id}" aria-pressed="${log["nn_"+n.id]===true}" title="${esc(n.name)}: ${esc(n.desc)}">${esc(n.chip)}</button>`).join("");
-  return html?`<div class="opts nn-tags" role="group" aria-label="${t.label} non negotiables">${html}</div>`:"";
-}
-function taskRow(t,v,wk,sp,log={}){
-  const html=baseRow(t,v,wk,sp,log),chips=nnChips(t,log);
-  if(!chips)return html;
-  const open=html.indexOf(">")+1,close=html.lastIndexOf("</");
-  const tagOpen=html.slice(0,open);
-  if(t.type==="check"){const done=isDone(t,v,wk);return `<div class="row stacked${done?" done":""}" data-k="${t.k}"><button class="row-btn" data-type="check" aria-pressed="${done}">${html.slice(open,close)}</button>${chips}</div>`}
-  if(tagOpen.includes(" stacked"))return html.slice(0,close)+chips+"</div>";
-  return tagOpen.replace(/class="([^"]*)"/,'class="$1 stacked"')+`<div class="top-line">${html.slice(open,close)}</div>`+chips+"</div>";
-}
-function baseRow(t,v,wk,sp,log){
-  const done=isDone(t,v,wk),cls=`row${done?" done":""}`,tick=`<span class="tick">${TICK}</span>`;
-  const hint=t.k==="training"&&t.options===TRAIN_OPTS?`${WEEK_SESS} weights ${WEEK_SESS===1?"session":"sessions"} this week · target 3 to 5`:t.split!=null?`${t.pre||""}${sp[t.split].toLocaleString("en-GB")} steps`:(t.hint||"");
-  const lbl=`<span class="lbl"><strong>${t.label}</strong>${hint?`<small>${esc(hint)}</small>`:""}</span>`;
-  switch(t.type){
-    case"check":
-      return `<button class="${cls}" data-k="${t.k}" data-type="check" aria-pressed="${done}">${tick}${lbl}</button>`;
-    case"rating":
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div>
-        <div class="rating" role="group" aria-label="${t.label}">${Array.from({length:10},(_,i)=>`<button data-rate="${i+1}" aria-pressed="${v===i+1}">${i+1}</button>`).join("")}</div></div>`;
-    case"time":{
-      const ot=onTarget(t,v,wk);
-      return `<div class="${cls}" data-k="${t.k}">${tick}${lbl}${ot===null?"":`<span class="badge ${ot?"ok":"miss"}">${ot?"On target":"Late"}</span>`}<input class="input ctrl time" type="time" id="f-${t.k}" value="${esc(v||"")}" aria-label="${t.label}"></div>`;
-    }
-    case"text":
-      return `<div class="${cls}" data-k="${t.k}">${tick}${lbl}<input class="input ctrl" type="text" id="f-${t.k}" placeholder="What did you eat?" value="${esc(v||"")}" aria-label="${t.label}"></div>`;
-    case"textarea":
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div><textarea class="input" id="f-${t.k}" placeholder="Anything on your mind from today" aria-label="${t.label}">${esc(v||"")}</textarea></div>`;
-    case"steps":{
-      const n=Number(v)||0,w=Math.min(100,n/wk.steps*100);
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}<span class="lbl"><strong>Full steps</strong><small class="num" data-live="steps">${n.toLocaleString("en-GB")} / ${wk.steps.toLocaleString("en-GB")} (${sp.map(x=>x.toLocaleString("en-GB")).join(" + ")})</small></span><input class="input ctrl" type="number" inputmode="numeric" min="0" step="1" id="f-${t.k}" value="${v===undefined?"":esc(v)}" placeholder="0" aria-label="Full steps"></div><div class="bar"><i style="width:${w}%"></i></div></div>`;
-    }
-    case"water":{
-      const n=Number(v)||0,w=Math.min(100,n/wk.water*100);
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}<div class="stepper"><button data-water="-0.5" aria-label="Less water">&minus;</button><b class="num">${n}L</b><button data-water="0.5" aria-label="More water">+</button></div></div><div class="bar"><i style="width:${w}%"></i></div></div>`;
-    }
-    case"meal":
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}<input class="input ctrl" type="text" id="f-${t.k}" placeholder="What did you eat?" value="${esc(v||"")}" aria-label="${t.label}"></div></div>`;
-    case"select":
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}${lbl}</div><div class="opts">${t.options.map(o=>`<button class="chip" data-opt="${esc(o)}" aria-pressed="${v===o}">${o}</button>`).join("")}</div></div>`;
-    case"multi":{const sel=resetsOf(v);
-      return `<div class="${cls} stacked" data-k="${t.k}"><div class="top-line">${tick}<span class="lbl"><strong>${t.label}${sel.length?` <span class="num muted">${sel.length}</span>`:""}</strong><small>${esc(t.hint)}</small></span></div><div class="opts">${t.options.map(o=>`<button class="chip" data-multi="${esc(o)}" aria-pressed="${sel.includes(o)}">${o}</button>`).join("")}</div></div>`;}
-    case"upload":
-      return `<div class="${cls}" data-k="${t.k}">${tick}<span class="lbl"><strong>${t.label}</strong><small>${v?esc(v):"From your phone's health app"}</small></span><label class="chip upload" for="f-${t.k}">${v?"Replace":"Upload"}<input type="file" id="f-${t.k}" accept="image/*"></label></div>`;
+function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goal"><div><span class="eyebrow">${P.name} · CNS goal</span><h2 class="display" style="font-size:clamp(32px,8vw,44px)">${P.goal}</h2></div><p class="muted" style="font-size:13px">${P.intro}</p></div>`}
+
+function askHtml(a,log,wk,locked){
+  const v=log[a.k],dis=locked?"disabled":"",id=`a-${a.k}`;
+  switch(a.type){
+    case"rating":return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" aria-pressed="${v===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
+    case"choice":return `<div class="ask"><span>${a.label}</span><div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
+    case"number":{const tgt=a.target?wk[a.target]:null,hit=tgt!=null&&Number(v)>=tgt;
+      return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
+    case"time":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="time" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis}></label>`;
+    case"textarea":return `<label class="ask" for="${id}"><span>${a.label}</span><textarea class="input" id="${id}" data-input="${a.k}" ${dis}>${esc(v||"")}</textarea></label>`;
+    case"upload":return `<div class="ask"><span>${a.label}</span><label class="chip upload" for="${id}" style="align-self:flex-start">${v?"Replace · "+esc(v):"Upload"}<input type="file" id="${id}" data-file="${a.k}" accept="image/*" ${dis}></label></div>`;
   }
+}
+function stepsView(ph,x){
+  const {log,wk,prev}=x,steps=STEPS_OF[ph];
+  const firstOpen=steps.findIndex(s=>!log[s.id]);
+  let html=`<div class="steps-list">`;
+  if(ph==="morning"&&prev.plan)html+=`<div class="direction"><span class="eyebrow">Last night's plan of action</span><p>${esc(prev.plan)}</p>${prev.tmr_wake?`<small>Wake time set: <b class="num">${esc(prev.tmr_wake)}</b></small>`:""}</div>`;
+  steps.forEach((s,i)=>{
+    const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
+    const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
+    let extra="";
+    if(s.id==="m1"&&done&&prev.tmr_wake){const late=mins(done)>mins(prev.tmr_wake)+15;extra=`<span class="badge ${late?"miss":"ok"}">${late?"After":"On"} your ${esc(prev.tmr_wake)} wake time</span>`}
+    html+=`<div class="step ${done?"done":locked?"locked":current?"current":""}">
+      <div class="step-num">${done?TICK:i+1}</div>
+      <div class="step-body">
+        <div class="step-head"><h3>${s.title}</h3><span class="draft" title="Wording to be confirmed by Ellis">Draft</span></div>
+        <p>${s.text}</p>
+        ${s.asks.map(a=>askHtml(a,log,wk,locked)).join("")}
+        <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
+          :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
+          :`<button class="btn primary" data-step="${s.id}">Mark step ${i+1} done</button><span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
+      </div></div>`;
+  });
+  html+=`</div>`;
+  if(ph==="morning"&&stepsDone(log,"morning")===3)html+=`<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><b>Your day is open.</b><p class="muted" style="font-size:13px">Build your list and take it on.</p></div><button class="btn primary" data-phase="day">Go to your day</button></div>`;
+  if(ph==="evening"&&stepsDone(log,"evening")===3)html+=`<div class="card"><b>Evening done.</b><p class="muted" style="font-size:13px">Tomorrow's Morning will show your plan of action${log.tmr_wake?` and your ${esc(log.tmr_wake)} wake time`:""}.</p></div>`;
+  return html;
+}
+function dayView(x){
+  const {log,wk}=x;
+  if(stepsDone(log,"morning")<3)return `<div class="card locked-day"><div class="lockbig">${LOCK}</div><h3 class="sec-title">Your day isn't open yet</h3><p class="muted">Finish the 3 Morning steps first. They set your direction for the day.</p><button class="btn primary" data-phase="morning">Go to Morning</button></div>`;
+  const items=itemsOf(log),sug=suggestions(log),K2=KINDS[S.cat]||KINDS.meal;
+  const have=new Set(items.map(i=>i.label));
+  return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
+  <div class="sticky"><span class="eyebrow">Sticky note · ${esc(wk.theme)}</span><p>${esc(wk.note)}</p></div>
+  <section class="card">
+    <div class="sec-head"><h2 class="sec-title">Your list</h2><span class="muted num">${items.filter(i=>i.done).length} / ${items.length} done</span></div>
+    <div class="items">${items.length?items.map((it,i)=>itemHtml(it,i)).join(""):`<p class="muted" style="padding:10px 0">Nothing on your list yet. Write your own tasks below and add your meals & regulation tools from the options.</p>`}</div>
+    <form class="composer" id="ownForm"><input class="input" id="ownTask" placeholder="Add your own task, e.g. hardest task first" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
+  </section>
+  ${sug.length?`<section class="stack" style="gap:8px"><span class="eyebrow">Suggested from your morning</span><div class="opts">${sug.map(([k,l])=>`<button class="chip add" data-add="${k}" data-label="${esc(l)}">+ ${esc(l)}</button>`).join("")}</div></section>`:""}
+  <section class="card">
+    <div class="sec-head"><h2 class="sec-title" style="font-size:20px">Add from options</h2></div>
+    <div class="filters" role="group" aria-label="Option type" style="margin-bottom:10px">${["meal","walk","reset","train"].map(k=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${KINDS[k].name}</button>`).join("")}</div>
+    <div class="opts">${K2.opts.map(o=>`<button class="chip add" data-add="${S.cat}" data-label="${esc(o)}">${have.has(o)?"✓ ":"+ "}${esc(o)}</button>`).join("")}</div>
+    ${S.cat==="meal"?`<p class="muted" style="font-size:12px;margin-top:10px">Example meal plans are on the way. For now pick the meal type that fits your day.</p>`:""}
+  </section>`;
+}
+function itemHtml(it,i){
+  const K2=KINDS[it.kind]||KINDS.own,needQ=it.done&&(it.fu===undefined||it.fu===null);
+  return `<div class="item${it.done?" done":""}" data-item="${it.id}">
+    <button class="item-tick" data-tick="${it.id}" aria-pressed="${!!it.done}" aria-label="${it.done?"Untick":"Tick"} ${esc(it.label)}"><span class="tick">${TICK}</span></button>
+    <div class="item-main">
+      <div class="item-title"><span>${esc(it.label)}</span>${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${it.done&&it.fu===true?`<span class="badge ok">Right process</span>`:""}${it.done&&it.fu===false?`<span class="badge miss">Process missed</span>`:""}</div>
+      <span class="kind">${K2.name}${itemSenses(it).length?" · "+itemSenses(it).join(", "):""}</span>
+      ${needQ?`<div class="fu"><span>${esc(K2.q)}</span><div class="opts"><button class="chip" data-fu="${it.id}" data-val="1">Yes</button><button class="chip" data-fu="${it.id}" data-val="0">Not this time</button></div></div>`:""}
+    </div>
+    ${it.done?"":`<button class="x" data-del="${it.id}" aria-label="Remove ${esc(it.label)}">×</button>`}
+  </div>`;
+}
+function sensesPanel(sc){
+  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Senses evoked today</h2><span class="muted num">${sc.senses.size} / 5</span></div>
+  <p class="muted" style="font-size:12px;margin-bottom:10px">These fill in from what you do. The more real world connection through the day, the steadier your CNS.</p>
+  <div class="senses">${SENSES.map(([k,l])=>`<div class="sense ${sc.senses.has(k)?"on":""}"><b>${sc.senses.has(k)?"✓":"·"}</b>${l}</div>`).join("")}</div></section>`;
 }
 
 /* ---------- client: programme ---------- */
@@ -834,29 +907,34 @@ function blockHtml(b){
   if(b[0]==="!")return `<p class="muted" style="font-weight:600">${esc(b.slice(1))}</p>`;
   return `<p>${esc(b)}</p>`;
 }
-function howTag(n){
-  const tr=n.when==="train"?"Training days · ":"";
-  if(n.on)return `<span class="how tap">${tr}Tick "${esc(n.chip)}" on ${esc(n.onLabel||TK(n.on).label)}</span>${n.auto?`<span class="how auto">plus ${esc(n.src)}</span>`:""}`;
-  if(n.auto)return `<span class="how auto">${tr}Ticks itself from ${esc(n.src)}</span>`;
-  if(n.track==="weekly")return `<span class="how auto">Counted weekly from Training</span>`;
-  return `<span class="how">Mindset, no tick needed</span>`;
-}
+
 function pillarHtml(P){
   return `<details class="acc" id="pillar-${P.id}" ${S.openPillar===P.id?"open":""}><summary><div class="pillar-sum"><span class="pl">${P.letter}</span><div><h3>${P.name}</h3><small>${esc(P.tag)}</small></div></div><span class="plus" aria-hidden="true">+</span></summary>
   <div class="body"><h4>The way to approach this</h4>${P.approach.map(blockHtml).join("")}
-  <h4>Non negotiables</h4><div>${NN.filter(n=>n.p===P.id).map(n=>`<div class="nn-item"><div class="nn-item-head"><strong>${esc(n.name)}</strong>${howTag(n)}</div><p>${esc(n.desc)}</p></div>`).join("")}</div>
+  <h4>Non negotiables</h4><div>${NN.filter(n=>n.p===P.id).map(n=>`<div class="nn-item"><strong>${esc(n.name)}</strong><p>${esc(n.desc)}</p></div>`).join("")}</div>
   ${(P.extra||[]).map(blockHtml).join("")}</div></details>`;
 }
 function programmeView(){
+  const how=[
+    "Your day runs in three parts. Each one has a job for your central nervous system.",
+    "#Evening: reduce arousal",
+    "Three steps in order: close the day, bring it down, set up tomorrow. This is where you set tomorrow's wake time & plan of action. If you've just got your plan, start here tonight.",
+    "#Morning: stimulation & arousal",
+    "Three steps in order: rise & breathe, light & move, open the day. Your day doesn't open until they're done.",
+    "#Day: keep energy stable",
+    "Nobody can write your day for you. You build your own list, then fold in meals & regulation tools from the options. Every tick logs the time and asks one question to check you did it the right way.",
+    "#Senses",
+    "Sight, sound, smell, taste & touch fill in automatically from what you do. Evoke them as often as you can through real world connection.",
+    "#Points",
+    "1 point for every step & task you complete."
+  ];
   return `<div class="stack">
     <div class="hero-p"><span class="eyebrow">Welcome to Project Reset</span><h1 class="display">28 days to set a new standard</h1>
-    <p class="muted" style="max-width:56ch">Read the mission brief first. Then work through the pillars at your own pace. The more you understand why, the more the habits stick.</p></div>
-    ${CONTENT.map(s=>`<details class="acc" ${s.open?"open":""}><summary><h3>${esc(s.title)}</h3><span class="plus" aria-hidden="true">+</span></summary><div class="body">${s.blocks.map(blockHtml).join("")}</div></details>`).join("")}
+    <p class="muted" style="max-width:56ch">Read how your day works and the mission brief first. Then work through the pillars at your own pace.</p></div>
+    <details class="acc" open><summary><h3>How your day works</h3><span class="plus" aria-hidden="true">+</span></summary><div class="body">${how.map(blockHtml).join("")}</div></details>
+    ${CONTENT.map(s=>`<details class="acc"><summary><h3>${esc(s.title)}</h3><span class="plus" aria-hidden="true">+</span></summary><div class="body">${s.blocks.map(blockHtml).join("")}</div></details>`).join("")}
     <h2 class="sec-title" style="margin-top:12px">The pillars</h2>
-    <p class="muted" style="max-width:62ch;margin-top:-8px">Each pillar's non negotiables, and which task on your Today list they sit on.</p>
     ${PILLARS.map(pillarHtml).join("")}
-    <h2 class="sec-title" style="margin-top:12px">More toolkit</h2>
-    <div class="tool-grid">${TOOLKIT.filter(x=>!x[2]).map(([a,b])=>`<div class="tool"><b>${a}</b><span>${b}</span><small>Coming from the Notion page</small></div>`).join("")}</div>
   </div>`;
 }
 
@@ -897,40 +975,32 @@ function heatmap(st,{clickable,sel}={}){
   return `<div class="heat-head">${heads.map(h=>`<span>${h}</span>`).join("")}</div><div class="heat">${cells.join("")}</div>
   <div class="legend" style="margin-top:10px"><span><i style="background:var(--lime)"></i>70%+</span><span><i style="background:color-mix(in srgb,var(--lime) 45%,var(--surface))"></i>40 to 69%</span><span><i style="background:color-mix(in srgb,var(--lime) 18%,var(--surface))"></i>Under 40%</span><span><i></i>Nothing logged</span></div>`;
 }
+
 function trendCharts(st){
   const n=st.today;
-  const comp=st.days.map(x=>x.pct),nnv=st.days.map(x=>x.nn);
-  const steps=st.days.map(x=>x.log.full_steps?Number(x.log.full_steps):null);
+  const pts=st.days.map(x=>x.sc.pts),steps=st.days.map(x=>x.log.steps?Number(x.log.steps):null);
   const am=st.days.map(x=>x.log.am_state||null),pm=st.days.map(x=>x.log.pm_state||null);
-  const tgt=weekOf(n).steps;
   return `<div class="two">
-    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Daily completion</h3><div class="keyrow"><span><i style="background:var(--green-ink)"></i>Tasks</span><span><i style="background:var(--fg)"></i>Non negotiables</span></div></div>${chart({n,series:[{values:comp,color:"var(--green-ink)",area:true},{values:nnv,color:"var(--fg)"}],max:100,fmt:v=>Math.round(v)+"%"})}</section>
-    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Steps</h3></div>${chart({n,kind:"bar",series:[{values:steps,color:"var(--lime)"}],max:Math.max(16000,...steps.filter(Boolean)),target:tgt,fmt:v=>v>=1000?Math.round(v/1000)+"k":String(Math.round(v))})}</section>
+    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Points per day</h3></div>${chart({n,kind:"bar",series:[{values:pts,color:"var(--lime)"}],max:Math.max(10,...pts),fmt:v=>String(Math.round(v))})}</section>
+    <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">Steps</h3></div>${chart({n,kind:"bar",series:[{values:steps,color:"var(--lime)"}],max:Math.max(16000,...steps.filter(Boolean)),target:weekOf(n).steps,fmt:v=>v>=1000?Math.round(v/1000)+"k":String(Math.round(v))})}</section>
     <section class="card"><div class="sec-head"><h3 class="sec-title" style="font-size:20px">AM and PM state</h3><div class="keyrow"><span><i style="background:var(--green-ink)"></i>AM</span><span><i style="background:var(--fg)"></i>PM</span></div></div>${chart({n,series:[{values:am,color:"var(--green-ink)"},{values:pm,color:"var(--fg)"}],max:10,fmt:v=>String(Math.round(v))})}</section>
   </div>`;
 }
 
 /* ---------- client: progress ---------- */
-function nnBreakdown(rows,title,sub){
-  const r=nnRates(rows);
-  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${title}</h2></div><p class="muted" style="font-size:12px;margin-bottom:8px">${sub}</p>
-  ${PILLARS.map(P=>{const items=NN.filter(n=>n.p===P.id&&r[n.id]&&r[n.id].p!=null);if(!items.length)return"";
-    return `<div class="eyebrow" style="margin:10px 0 2px">${P.letter} · ${P.name}</div>`+items.map(n=>{const x=r[n.id];return `<div class="habit"><span title="${esc(n.name)}">${esc(n.chip)}</span><div class="bar"><i class="${x.p<50?"low":x.p<70?"mid":""}" style="width:${x.p}%"></i></div><span class="num" style="text-align:right">${x.p}%</span></div>`}).join("")}).join("")}</section>`;
-}
 function progressView(c){
   const st=statsFor(c);
   return `<div class="stack">
     <div><span class="eyebrow">Your 28 days</span><h1 class="display" style="font-size:clamp(44px,11vw,72px)">Day ${st.today} of ${PROGRAMME_DAYS}</h1></div>
     <div class="tiles">
-      <div class="tile"><small>Today</small><b class="num">${st.todayPct}%</b></div>
-      <div class="tile"><small>Last 7 days</small><b class="num">${st.avg7}%</b></div>
-      <div class="tile"><small>Non negotiables, 7 days</small><b class="num">${st.nn7}%</b></div>
-      <div class="tile"><small>Streak (70%+ days)</small><b class="num">${st.streak}</b></div>
-      <div class="tile"><small>Avg steps, 7 days</small><b class="num">${st.steps7?Math.round(st.steps7).toLocaleString("en-GB"):"–"}</b></div>
+      <div class="tile"><small>Points today</small><b class="num">${st.todayRow.sc.pts}</b></div>
+      <div class="tile"><small>Avg points, 7 days</small><b class="num">${st.pts7.toFixed(1)}</b></div>
+      <div class="tile"><small>Morning done, 7 days</small><b class="num">${st.morn7}%</b></div>
+      <div class="tile"><small>Evening done, 7 days</small><b class="num">${st.eve7}%</b></div>
+      <div class="tile"><small>Right process</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
     </div>
     <section class="card">${heatmap(st)}</section>
     ${trendCharts(st)}
-    ${nnBreakdown(st.nnRows,"Your non negotiables","How often you kept each one over your last 7 days, weakest shown in red.")}
   </div>`;
 }
 
@@ -943,24 +1013,26 @@ function coachView(){
 function overviewView(){
   const all=CLIENTS.map(statsFor);
   const counts={ok:0,warn:0,bad:0};all.forEach(s=>counts[s.status]++);
-  const avgToday=Math.round(all.reduce((a,s)=>a+s.todayPct,0)/all.length);
-  const avg7=Math.round(all.reduce((a,s)=>a+s.avg7,0)/all.length);
+  const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
   const order={bad:0,warn:1,ok:2};
-  const keyed={status:s=>order[s.status]*1000+s.avg7,name:s=>s.c.name,day:s=>s.today,today:s=>s.todayPct,avg7:s=>s.avg7,streak:s=>s.streak,nn:s=>s.nn7,steps:s=>s.steps7||0,bed:s=>s.bedOn,state:s=>s.am7||0,last:s=>s.since};
+  const keyed={status:s=>order[s.status]*1000+s.avg7,name:s=>s.c.name,day:s=>s.today,today:s=>s.todayRow.sc.pts,pts:s=>s.pts7,avg7:s=>s.avg7,morn:s=>s.morn7,eve:s=>s.eve7,proc:s=>s.proc7??-1,senses:s=>s.senses7,steps:s=>s.steps7||0,last:s=>s.since};
   let rows=all.filter(s=>S.filter==="all"||s.status===S.filter);
   const f=keyed[S.sort.k];rows.sort((a,b)=>{const x=f(a),y=f(b);return(x>y?1:x<y?-1:0)*S.sort.dir});
   const th=(k,l,num)=>`<th class="${num?"num":""}"><button data-sort="${k}" data-active="${S.sort.k===k}">${l}${S.sort.k===k?(S.sort.dir>0?" ↑":" ↓"):""}</button></th>`;
-
-  // habit breakdown over last 7 completed days, all clients
-  const hb=TASKS.map(t=>{let n=0,d=0;all.forEach(s=>s.days.filter(x=>x.d<s.today).slice(-7).forEach(x=>{n++;if(isDone(t,x.log[t.k],x.wk))d++}));return{t,p:n?Math.round(d/n*100):0}}).sort((a,b)=>a.p-b.p);
-
+  // breakdowns over everyone's last 7 days
+  const rws=[];all.forEach(s=>s.rows.forEach(x=>rws.push(x)));
+  const rate=(n,d)=>d?Math.round(n/d*100):0;
+  const stepRows=[...MORNING.map(s=>["Morning",s]),...EVENING.map(s=>["Evening",s])].map(([ph,s])=>({label:s.title,ph,p:rate(rws.filter(x=>x.log[s.id]).length,rws.length)}));
+  const kindRows=Object.keys(KINDS).map(k=>{let n=0,d=0,a=0,y=0;rws.forEach(x=>itemsOf(x.log).filter(i=>i.kind===k).forEach(i=>{n++;if(i.done){d++;if(i.fu!==undefined&&i.fu!==null){a++;if(i.fu)y++}}}));return{k,name:KINDS[k].name,per:rws.length?n/rws.length:0,done:rate(d,n),proc:a?rate(y,a):null}});
+  const bar=(p)=>`<div class="bar"><i class="${p<50?"low":p<70?"mid":""}" style="width:${p}%"></i></div>`;
   return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
     <div class="tiles">
       <div class="tile"><small>Active clients</small><b class="num">${all.length}</b></div>
-      <div class="tile"><small>Avg done today, so far</small><b class="num">${avgToday}%</b></div>
-      <div class="tile"><small>Avg last 7 days</small><b class="num">${avg7}%</b></div>
-      <div class="tile"><small>Non negotiables, 7 days</small><b class="num">${Math.round(all.reduce((a,s)=>a+s.nn7,0)/all.length)}%</b></div>
+      <div class="tile"><small>Avg points, 7 days</small><b class="num">${(all.reduce((a,s)=>a+s.pts7,0)/all.length).toFixed(1)}</b></div>
+      <div class="tile"><small>Morning done, 7 days</small><b class="num">${mean(s=>s.morn7)}%</b></div>
+      <div class="tile"><small>Evening done, 7 days</small><b class="num">${mean(s=>s.eve7)}%</b></div>
+      <div class="tile"><small>Right process</small><b class="num">${mean(s=>s.proc7||0)}%</b></div>
       <div class="tile"><small>Need attention</small><b class="num" style="color:${counts.bad?"var(--bad)":"var(--fg)"}">${counts.bad+counts.warn}</b></div>
     </div>
     <div class="coach-grid">
@@ -969,37 +1041,42 @@ function overviewView(){
           ${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join("")}
         </div>
         <div class="tbl-wrap"><table>
-          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Today",1)}${th("avg7","7 days",1)}<th>Last 7</th>${th("nn","Non neg. 7d",1)}${th("streak","Streak",1)}${th("steps","Steps avg",1)}${th("bed","Bed on time",1)}${th("state","AM / PM",1)}${th("last","Last log")}</tr></thead>
+          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Points today",1)}${th("pts","Avg pts 7d",1)}${th("avg7","Done 7d",1)}<th>Last 7</th>${th("morn","Morning",1)}${th("eve","Evening",1)}${th("proc","Process",1)}${th("senses","Senses",1)}${th("steps","Steps avg",1)}${th("last","Last log")}</tr></thead>
           <tbody>${rows.map(s=>{const[cls,lab]=STATUS[s.status];const l7=s.days.slice(-8,-1);
             return `<tr data-client="${s.c.id}" tabindex="0">
             <td><strong>${esc(s.c.name)}</strong></td>
             <td><span class="pill ${cls}">${lab}</span></td>
             <td class="num">${s.today}</td>
-            <td class="num">${s.todayPct}%</td>
-            <td class="num"><strong>${s.avg7}%</strong></td>
-            <td><span class="mini">${Array.from({length:7},(_,i)=>{const x=l7[l7.length-7+i];return `<i class="${x?lvl(x.pct):""}" title="${x?`Day ${x.d}: ${x.pct}%`:""}"></i>`}).join("")}</span></td>
-            <td class="num">${s.nn7}%</td>
-            <td class="num">${s.streak}</td>
+            <td class="num">${s.todayRow.sc.pts}</td>
+            <td class="num"><strong>${s.pts7.toFixed(1)}</strong></td>
+            <td class="num">${s.avg7}%</td>
+            <td><span class="mini">${Array.from({length:7},(_,i)=>{const x=l7[l7.length-7+i];return `<i class="${x?lvl(x.pct):""}" title="${x?`Day ${x.d}: ${x.sc.pts} pts`:""}"></i>`}).join("")}</span></td>
+            <td class="num">${s.morn7}%</td>
+            <td class="num">${s.eve7}%</td>
+            <td class="num">${s.proc7==null?"–":s.proc7+"%"}</td>
+            <td class="num">${s.senses7.toFixed(1)} / 5</td>
             <td class="num">${s.steps7?Math.round(s.steps7).toLocaleString("en-GB"):"–"}</td>
-            <td class="num">${s.bedOn}%</td>
-            <td class="num">${s.am7?s.am7.toFixed(1):"–"} / ${s.pm7?s.pm7.toFixed(1):"–"}</td>
             <td>${s.since===0?"Today":s.since===1?"Yesterday":`<span style="color:var(--bad)">${s.since} days ago</span>`}</td></tr>`}).join("")}</tbody>
         </table></div>
-        <p class="muted" style="font-size:12px">Status uses the last 7 full days: on track at 70%+, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged. Select a client to see their full log.</p>
+        <p class="muted" style="font-size:12px">1 point per completed step or task. Done 7d is points against everything on their list. Morning and Evening show how often all 3 steps were done. Process is how often clients said yes to the follow-up question. Status: on track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
       </div>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Habits, last 7 days</h2></div>
-        <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="tasks" aria-pressed="${S.hview!=="nn"}">Daily tasks</button><button class="chip" data-hview="nn" aria-pressed="${S.hview==="nn"}">Non negotiables</button></div>
-        ${S.hview==="nn"?(()=>{const rows=[];all.forEach(s=>s.nnRows.forEach(x=>rows.push(x)));const r=nnRates(rows);
-          const list=NN.filter(n=>r[n.id]&&r[n.id].p!=null).sort((a,b)=>r[a.id].p-r[b.id].p);
-          return `<p class="muted" style="font-size:12px;margin-bottom:8px">Share of client days each non negotiable was kept, weakest first. Training day items only count on training days.</p>`+list.map(n=>{const x=r[n.id],P=PILLARS.find(q=>q.id===n.p);return `<div class="habit"><span title="${esc(n.name)}"><span class="pl">${P.name}</span> ${esc(n.chip)}</span><div class="bar"><i class="${x.p<50?"low":x.p<70?"mid":""}" style="width:${x.p}%"></i></div><span class="num" style="text-align:right">${x.p}%</span></div>`}).join("")})()
-        :`<p class="muted" style="font-size:12px;margin-bottom:8px">Share of client days each task was completed, weakest first.</p>`+hb.map(h=>`<div class="habit"><span>${h.t.label}</span><div class="bar"><i class="${h.p<50?"low":h.p<70?"mid":""}" style="width:${h.p}%"></i></div><span class="num" style="text-align:right">${h.p}%</span></div>`).join("")}
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Last 7 days</h2></div>
+        <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="phases" aria-pressed="${S.hview!=="day"}">Morning & Evening</button><button class="chip" data-hview="day" aria-pressed="${S.hview==="day"}">Day lists</button></div>
+        ${S.hview==="day"
+          ?`<p class="muted" style="font-size:12px;margin-bottom:8px">What clients put on their lists, how much of it gets done, and how often it's done the right way.</p>`+kindRows.map(r=>`<div class="kindrow"><div class="kind-h"><b>${r.name}</b><span class="muted num">${r.per.toFixed(1)} a day</span></div><div class="habit"><span>Done</span>${bar(r.done)}<span class="num" style="text-align:right">${r.done}%</span></div><div class="habit"><span>Right process</span>${r.proc==null?`<div></div><span class="num muted" style="text-align:right">–</span>`:bar(r.proc)+`<span class="num" style="text-align:right">${r.proc}%</span>`}</div></div>`).join("")
+          :`<p class="muted" style="font-size:12px;margin-bottom:8px">How often each step gets done across all clients.</p>`+stepRows.map(r=>`<div class="habit"><span><span class="pl">${r.ph}</span> ${esc(r.label)}</span>${bar(r.p)}<span class="num" style="text-align:right">${r.p}%</span></div>`).join("")}
       </section>
     </div>
   </div>`;
 }
+function phaseLog(title,steps,log,wk){
+  return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
+    const ans=s.asks.map(a=>{const v=log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?v+"/10":a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
+    return `<div class="lp-row ${d?"":"miss"}"><div class="lp-top"><span>${d?"✓ ":""}${esc(s.title)}</span><span class="num">${d?esc(d):"–"}</span></div>${ans?`<div class="lp-ans">${ans}</div>`:""}</div>`}).join("")}</div>`;
+}
 function detailView(c){
   const st=statsFor(c),[cls,lab]=STATUS[st.status];
-  const sel=S.detailDay||st.today,row=st.days[sel-1],wk=row.wk;
+  const sel=S.detailDay||st.today,row=st.days[sel-1],wk=row.wk,log=row.log,items=itemsOf(log);
   const note=(store.get(K.notes,{})[c.id])||{};
   return `<div class="stack">
     <div><button class="chip" data-act="back">&lsaquo; All clients</button></div>
@@ -1008,124 +1085,108 @@ function detailView(c){
       <span class="pill ${cls}" style="font-size:14px">${lab}</span>
     </div>
     <div class="tiles">
-      <div class="tile"><small>Last 7 days</small><b class="num">${st.avg7}%</b></div>
-      <div class="tile"><small>Non negotiables, 7 days</small><b class="num">${st.nn7}%</b></div>
-      <div class="tile"><small>Streak</small><b class="num">${st.streak}</b></div>
-      <div class="tile"><small>Avg steps, 7 days</small><b class="num">${st.steps7?Math.round(st.steps7).toLocaleString("en-GB"):"–"}</b></div>
-      <div class="tile"><small>Bed on time, 7 days</small><b class="num">${st.bedOn}%</b></div>
+      <div class="tile"><small>Avg points, 7 days</small><b class="num">${st.pts7.toFixed(1)}</b></div>
+      <div class="tile"><small>Done, 7 days</small><b class="num">${st.avg7}%</b></div>
+      <div class="tile"><small>Morning done</small><b class="num">${st.morn7}%</b></div>
+      <div class="tile"><small>Evening done</small><b class="num">${st.eve7}%</b></div>
+      <div class="tile"><small>Right process</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
     </div>
     <div class="two">
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">28 day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.log.day_type==="train"?"Training day":row.log.day_type==="rest"?"Rest day":"Day type not set"} · ${row.pct}%</span></div>
-        <div class="log-list">${tasksFor(row.log).map(t=>{const v=row.log[t.k],d=isDone(t,v,wk);let shown=v===undefined||v===""||v===false?"–":v===true?"Done":t.type==="water"?v+"L":t.type==="steps"?Number(v).toLocaleString("en-GB"):t.type==="rating"?v+" / 10":t.type==="multi"?resetsOf(v).join(", ")||"–":t.type==="meal"&&v?v+mealTags(t,row.log).filter(([g])=>row.log[t.k+"_"+g]).map(([,l])=>" · "+l).join(""):v;
-          const ot=onTarget(t,v,wk);if(ot===false)shown+=" (late)";
-          return `<div class="${d?"":"miss"}"><span>${d?"✓ ":""}${t.label}</span><span>${esc(shown)}</span></div>`}).join("")}</div>
-        ${(()=>{const sc=nnScore(row.log,wk);return `<div class="sec-head" style="margin-top:16px"><h3 class="sec-title" style="font-size:18px">Non negotiables</h3><span class="muted num">${sc.kept} / ${sc.total} kept</span></div>
-        ${PILLARS.map(P=>{const items=NN.filter(n=>n.p===P.id&&nnApplies(n,row.log));return `<div class="nn-head" style="margin-top:8px"><span class="pl" style="font-size:22px">${P.letter}</span><span class="eyebrow">${P.name}</span></div><div class="nn-chips" style="margin-top:4px">${items.map(n=>{const k=nnKept(n,row.log,wk);return `<span class="nn-chip ${k?"kept":"miss"}" title="${esc(n.name)}">${k?"✓ ":"✗ "}${esc(n.chip)}</span>`}).join("")}</div>`}).join("")}`})()}
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.sc.pts} pts · ${row.sc.senses.size}/5 senses</span></div>
+        ${phaseLog("Morning",MORNING,log,wk)}
+        <div class="log-phase"><h4>Day list</h4>${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
+          ${items.length?items.map(i=>`<div class="lp-row ${i.done?"":"miss"}"><div class="lp-top"><span>${i.done?"✓ ":""}${esc(i.label)} <span class="kind">${(KINDS[i.kind]||KINDS.own).name}</span></span><span class="num">${i.done?esc(i.done):"–"}${i.done?(i.fu===true?' <span class="badge ok">Process</span>':i.fu===false?' <span class="badge miss">Missed</span>':""):""}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No list built.</p>`}</div>
+        ${phaseLog("Evening",EVENING,log,wk)}
       </section>
     </div>
     ${trendCharts(st)}
-    ${nnBreakdown(st.nnRows,"Non negotiables, last 7 days","How often "+esc(c.name.split(" ")[0])+" kept each one, by pillar.")}
     <section class="card stack" style="gap:10px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Note to ${esc(c.name.split(" ")[0])}</h2>${note.at?`<span class="muted" style="font-size:12px">Last sent ${fmtShort(new Date(note.at))}</span>`:""}</div>
       <label for="coachNote" class="muted" style="font-size:13px">Shows at the top of their Today screen.</label>
-      <textarea class="input" id="coachNote" placeholder="Great week. Bed time is the one to tighten up next.">${esc(note.text||"")}</textarea>
+      <textarea class="input" id="coachNote" placeholder="Great week. Your evening steps are the one to tighten up next.">${esc(note.text||"")}</textarea>
       <div><button class="btn primary" data-act="send-note" data-c="${c.id}">Send note</button></div>
     </section>
   </div>`;
 }
 function settingsView(){
   return `<div class="stack">
-    <div><span class="eyebrow">Coach only</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Your numbers</h1>
-    <p class="muted" style="max-width:62ch;margin-top:6px">Set each week's theme, sticky note and targets. Every client sees the week they are on, so changes apply to everyone at that stage.</p></div>
+    <div><span class="eyebrow">Coach only</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Number setter</h1>
+    <p class="muted" style="max-width:62ch;margin-top:6px">Set each week's targets, theme and sticky note. Clients log against these in their Evening. Wake times aren't set here because clients log them anyway.</p></div>
     <div class="tbl-wrap weeks-tbl"><table>
-      <thead><tr><th>Week</th><th>Week start</th><th>Theme</th><th>Wake</th><th>Bed by</th><th>Water (L)</th><th>Steps</th><th>Sticky note</th></tr></thead>
+      <thead><tr><th>Week</th><th>Week start</th><th>Steps</th><th>Water (L)</th><th>Protein (g)</th><th>Theme</th><th>Sticky note</th></tr></thead>
       <tbody>${WEEKS.map((w,i)=>`<tr style="cursor:default">
         <td><strong>Week ${i+1}</strong></td><td class="num">${fmtShort(addDays(COHORT,i*7))}</td>
-        <td><input class="input" id="w${i}-theme" data-w="${i}" data-f="theme" value="${esc(w.theme)}" style="width:190px"></td>
-        <td><input class="input" type="time" id="w${i}-wake" data-w="${i}" data-f="wake" value="${esc(w.wake)}"></td>
-        <td><input class="input" type="time" id="w${i}-bed" data-w="${i}" data-f="bed" value="${esc(w.bed)}"></td>
-        <td><input class="input" type="number" step="0.5" min="0" id="w${i}-water" data-w="${i}" data-f="water" value="${w.water}" style="width:80px"></td>
         <td><input class="input" type="number" step="500" min="0" id="w${i}-steps" data-w="${i}" data-f="steps" value="${w.steps}" style="width:100px"></td>
+        <td><input class="input" type="number" step="0.5" min="0" id="w${i}-water" data-w="${i}" data-f="water" value="${w.water}" style="width:80px"></td>
+        <td><input class="input" type="number" step="5" min="0" id="w${i}-protein" data-w="${i}" data-f="protein" value="${w.protein}" style="width:90px"></td>
+        <td><input class="input" id="w${i}-theme" data-w="${i}" data-f="theme" value="${esc(w.theme)}" style="width:190px"></td>
         <td style="white-space:normal"><textarea class="input" id="w${i}-note" data-w="${i}" data-f="note" style="width:280px;min-height:70px">${esc(w.note)}</textarea></td></tr>`).join("")}</tbody>
     </table></div>
     <div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-act="save-weeks">Save changes</button><button class="btn" data-act="reset-weeks">Restore defaults</button></div>
-    <p class="note">Week 2's theme and sticky note come from the Notion page. Weeks 1, 3 and 4 are sample wording for Ellis to replace. Week starts shown are for the current sample cohort.</p>
+    <p class="note">Protein targets are placeholders for Ellis to set. Week 2's theme and sticky note come from the Notion page.</p>
   </div>`;
 }
 
-/* ---------- client edits: update in place to keep focus ---------- */
-function ctx(){const el=root.querySelector("[data-date]");return el?{date:el.dataset.date,dn:Number(el.dataset.day)}:null}
-function commit(k,v,rerenderRow,rowKey){
-  const c=me(),x=ctx();if(!c||!x)return;
-  saveEdit(c.id,x.date,k,v);
-  const rk=rowKey||k,wk=weekOf(x.dn),log=logsFor(c)[x.date]||{},t=tasksFor(log).find(t=>t.k===rk);
-  const rowEl=t?root.querySelector(`[data-k="${rk}"]`):null;
-  if(rerenderRow&&rowEl){rowEl.outerHTML=taskRow(t,log[rk],wk,splitSteps(wk.steps),log)}
-  else if(rowEl){rowEl.classList.toggle("done",isDone(t,log[rk],wk))}
-  WEEK_SESS=weekSessions(c,x.dn);
-  const ns=root.querySelector("#nnSum");if(ns)ns.innerHTML=nnSumHtml(log,wk);
-  const p=pct(log,wk),arc=root.querySelector(".ring-arc");
-  if(arc){const c2=Number(arc.getAttribute("stroke-dasharray"));arc.setAttribute("stroke-dashoffset",c2*(1-p/100))}
-  const rp=root.querySelector("#ringPct");if(rp)rp.textContent=p+"%";
-  ["day","done"].forEach(s=>{const el=root.querySelector(`[data-count="${s}"]`),ts=tasksFor(log).filter(t=>t.sec===s);if(el)el.textContent=`${ts.filter(t=>isDone(t,log[t.k],wk)).length} / ${ts.length}`});
-}
+/* ---------- handlers ---------- */
+function edit(k,v){const x=curCtx();saveEdit(x.c.id,x.dk,k,v)}
+function setItems(fn){const x=curCtx();const items=itemsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"items",fn(items)||items)}
+function login(role){S.session=role==="coach"?{role}:{role,clientId:"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;S.phase=null;render();window.scrollTo(0,0)}
 
 root.addEventListener("submit",e=>{
-  if(e.target.id==="loginForm"){e.preventDefault();login("client")}
+  e.preventDefault();
+  if(e.target.id==="loginForm")return login("client");
+  if(e.target.id==="ownForm"){const inp=root.querySelector("#ownTask"),v=inp.value.trim();if(!v)return;setItems(a=>[...a,{id:uid(),kind:"own",label:v}]);render();const n=root.querySelector("#ownTask");if(n)n.focus()}
 });
-function login(role){S.session=role==="coach"?{role}:{role,clientId:"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;render();window.scrollTo(0,0)}
-
 root.addEventListener("click",e=>{
   const b=e.target.closest("button,[data-client]");if(!b)return;
   const act=b.dataset.act;
   if(act==="demo-client")return login("client");
   if(act==="demo-coach")return login("coach");
   if(act==="logout"){S.session=null;store.set(K.session,null);return render()}
-  if(b.dataset.daytype){const c=me(),x=ctx(),cur=(logsFor(c)[x.date]||{}).day_type;if(cur!==b.dataset.daytype){saveEdit(c.id,x.date,"day_type",b.dataset.daytype);if(cur)saveEdit(c.id,x.date,"training","")}return render()}
-  if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();const el=document.getElementById("pillar-"+b.dataset.pillar);if(el)el.scrollIntoView({block:"start"});return}
-  if(b.dataset.hview){S.hview=b.dataset.hview;return render()}
-  if(b.dataset.nn){const on=b.getAttribute("aria-pressed")!=="true",rk=b.closest("[data-k]");return commit("nn_"+b.dataset.nn,on,true,rk&&rk.dataset.k)}
+  if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
   if(b.dataset.tab){if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
-  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,1,t);return render()}
+  if(b.dataset.phase){S.phase=b.dataset.phase;render();const n=root.querySelector(".phases");if(n)n.scrollIntoView({block:"start"});return}
+  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,1,t);S.phase=null;return render()}
   if(b.dataset.client){S.detail=b.dataset.client;S.detailDay=null;render();window.scrollTo(0,0);return}
   if(act==="back"){S.detail=null;return render()}
   if(b.dataset.hday){S.detailDay=Number(b.dataset.hday);return render()}
   if(b.dataset.filter){S.filter=b.dataset.filter;return render()}
+  if(b.dataset.hview){S.hview=b.dataset.hview;return render()}
   if(b.dataset.sort){const k=b.dataset.sort;S.sort=S.sort.k===k?{k,dir:-S.sort.dir}:{k,dir:k==="name"||k==="status"||k==="last"?1:-1};return render()}
   if(act==="send-note"){const v=root.querySelector("#coachNote").value.trim();const all=store.get(K.notes,{});all[b.dataset.c]={text:v,at:Date.now()};store.set(K.notes,all);toast(v?"Note sent":"Note cleared");return render()}
   if(act==="save-weeks"){
-    root.querySelectorAll("[data-w]").forEach(el=>{const w=WEEKS[el.dataset.w],f=el.dataset.f;w[f]=(f==="water"||f==="steps")?Number(el.value)||0:el.value});
+    root.querySelectorAll("[data-w]").forEach(el=>{const w=WEEKS[el.dataset.w],f=el.dataset.f;w[f]=(f==="water"||f==="steps"||f==="protein")?Number(el.value)||0:el.value});
     store.set(K.weeks,WEEKS);for(const k in GEN)delete GEN[k];toast("Saved");return render();
   }
   if(act==="reset-weeks"){WEEKS=DEFAULT_WEEKS.map(w=>({...w}));store.set(K.weeks,null);for(const k in GEN)delete GEN[k];toast("Defaults restored");return render()}
-
-  // client task controls
-  const row=b.closest("[data-k]");if(!row)return;const k=row.dataset.k;
-  if(b.dataset.type==="check"){const on=b.getAttribute("aria-pressed")!=="true";b.setAttribute("aria-pressed",on);return commit(k,on)}
-  if(b.dataset.rate){const v=Number(b.dataset.rate),cur=b.getAttribute("aria-pressed")==="true";return commit(k,cur?"":v,true)}
-  if(b.dataset.water){const x=ctx(),cur=Number((logsFor(me())[x.date]||{}).water)||0;return commit(k,Math.max(0,Math.round((cur+Number(b.dataset.water))*2)/2),true)}
-  if(b.dataset.mtag){const on=b.getAttribute("aria-pressed")!=="true";return commit(k+"_"+b.dataset.mtag,on,true,k)}
-  if(b.dataset.multi){const x=ctx(),cur=resetsOf((logsFor(me())[x.date]||{})[k]),o=b.dataset.multi;return commit(k,cur.includes(o)?cur.filter(z=>z!==o):[...cur,o],true)}
-  if(b.dataset.opt){const cur=b.getAttribute("aria-pressed")==="true";return commit(k,cur?"":b.dataset.opt,true)}
+  // client: phase steps
+  if(b.dataset.step){edit(b.dataset.step,nowHHMM());toast("Logged "+nowHHMM());return render()}
+  if(b.dataset.undo){edit(b.dataset.undo,"");return render()}
+  if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=/^\d+$/.test(raw)&&k.endsWith("state")?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
+  // client: day list
+  if(b.dataset.cat){S.cat=b.dataset.cat;return render()}
+  if(b.dataset.add){const label=b.dataset.label;if(itemsOf(curCtx().log).some(i=>i.label===label)&&b.dataset.add!=="own"){toast("Already on your list");return}setItems(a=>[...a,{id:uid(),kind:b.dataset.add,label}]);toast("Added to your list");return render()}
+  if(b.dataset.del){setItems(a=>a.filter(i=>i.id!==b.dataset.del));return render()}
+  if(b.dataset.tick){const id=b.dataset.tick;setItems(a=>a.map(i=>i.id!==id?i:(i.done?{...i,done:"",fu:null}:{...i,done:nowHHMM(),fu:null})));return render()}
+  if(b.dataset.fu){const id=b.dataset.fu,v=b.dataset.val==="1";setItems(a=>a.map(i=>i.id===id?{...i,fu:v}:i));return render()}
 });
 root.addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
-
 let timers={};
 root.addEventListener("input",e=>{
-  const row=e.target.closest("[data-k]");if(!row||!ctx())return;const k=row.dataset.k;
-  if(e.target.type==="file")return;
+  const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
-  if(k==="full_steps"){const wk=weekOf(ctx().dn),n=Number(v)||0;const bar=row.querySelector(".bar i");if(bar)bar.style.width=Math.min(100,n/wk.steps*100)+"%";const lv=row.querySelector('[data-live="steps"]');if(lv)lv.textContent=`${n.toLocaleString("en-GB")} / ${wk.steps.toLocaleString("en-GB")} (${splitSteps(wk.steps).map(x=>x.toLocaleString("en-GB")).join(" + ")})`}
-  clearTimeout(timers[k]);timers[k]=setTimeout(()=>commit(k,v),300);
+  clearTimeout(timers[k]);timers[k]=setTimeout(()=>edit(k,v),300);
 });
 root.addEventListener("change",e=>{
-  const row=e.target.closest("[data-k]");if(!row||!ctx())return;const k=row.dataset.k;
-  if(e.target.type==="file"){const f=e.target.files&&e.target.files[0];if(f)commit(k,f.name,true);return}
-  if(e.target.type==="time"){clearTimeout(timers[k]);commit(k,e.target.value,true)}
+  const fk=e.target.dataset.file;if(fk){const f=e.target.files&&e.target.files[0];if(f){edit(fk,f.name);render()}return}
+  const k=e.target.dataset.input;if(!k)return;
+  let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
+  clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number")render();
 });
 
 render();
 })();
+
 </script>
 
 </body>
