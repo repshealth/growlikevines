@@ -356,7 +356,7 @@ td.num,th.num{text-align:right}
 .sc-big small{font-family:var(--body);font-size:13px;text-transform:none;font-weight:500;opacity:.75}
 .sc-diff{align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;background:color-mix(in srgb,var(--on-night) 12%,transparent)}
 .sc-diff.up{color:var(--lime)}
-.sc-parts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sc-parts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .sc-part{border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:2px;background:var(--surface)}
 .sc-part span{font-size:12px;color:var(--muted);font-weight:600}
 .sc-part b{font-family:var(--display);font-size:30px;line-height:1}
@@ -383,6 +383,16 @@ td.num,th.num{text-align:right}
 .tl-n q{font-style:italic;color:var(--fg);overflow-wrap:anywhere}
 details.raw{margin-top:12px}
 details.raw summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--muted)}
+.review,.todo-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:2px 12px}
+.todo-list:empty{display:none}
+.rv{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line);font-weight:500}
+.rv:first-child{border-top:0}
+.rv.done span:first-child{color:var(--green-ink)}
+.rv .chip{padding:4px 10px;font-size:12px;flex:none}
+.item.meal .input{padding:8px 10px;font-size:14px}
+.item.meal .meal-tags .chip{padding:4px 10px;font-size:12px}
+details.moreopts{margin-top:12px}
+details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--green-ink)}
 @media (max-width:560px){.brain{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){
   .coach-grid{grid-template-columns:1fr}
@@ -451,9 +461,9 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 /* ---------- the 3 phases ---------- */
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
-  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Raise it, bring it down, choose your next move. Three steps, in order, before the day can be taken on."},
-  {id:"day",name:"Day",goal:"Keep energy stable",intro:"Your own list. Write your tasks, add meals & regulation tools from the options, tick them off as you go."},
-  {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Three steps, in order, that set you up for tomorrow."}
+  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Raise it, bring it down, fuel it. Three steps, in order, before the day can be taken on."},
+  {id:"day",name:"Day",goal:"Keep energy stable",intro:"Last night's to-do list is waiting. Tick it off, add what comes up, and log your meals as you go."},
+  {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Review today, then build tomorrow. Three steps, in order."}
 ];
 // Morning brain targets (from Ellis's Loom: the morning action should hit all of these)
 const BRAIN=[["motor","Motor cortex"],["brainstem","Brainstem arousal"],["basal","Basal ganglia"],["circadian","Circadian rhythm"]];
@@ -461,24 +471,26 @@ const ACTIONS=[["Fast walk outside",["motor","brainstem","basal"]],["Run or jog"
 const LOWER=["Wim Hof","Slow breathwork","Meditation","Breath movement"];
 const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
 const FEELS=["Wired","Flat","Settled","Connected","Emotional","Hungry","Clear head","Weakness creeping in"];
+const NN_LIST=["Walk before Meal 1","Steps spread through the day","Morning sunlight","Evening walk & moonlight","Breathwork","Protein every meal","Fruit & veg every meal","Water & salt","No caffeine after 1pm","Reset every 90 mins","Phone off 1hr before bed"];
+const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 const MORNING=[
-  {id:"m1",title:"Action",text:"Fast & outside, straight from your alarm. Lights on, music on, out the door and move with pace. This raises your arousal and gets energy production going.",
-   asks:[{k:"am_state",type:"rating",label:"How do you feel on waking? 1 to 10"},{k:"m_action",type:"multi",label:"What did you do? Pick all that apply",options:ACTIONS.map(a=>[a[0],a[0]])}]},
+  {id:"m1",title:"Wake & action",text:"Fast & outside, straight from your alarm. Lights on, music on, out the door and move with pace. Tick the non-negotiables you applied and log your morning steps.",
+   asks:[{k:"am_state",type:"rating",label:"How did you feel waking up? 1 to 10"},{k:"m_action",type:"multi",label:"What did you apply? Pick all that apply",options:ACTIONS.map(a=>[a[0],a[0]])},{k:"am_steps",type:"number",label:"Morning steps"}]},
   {id:"m2",title:"Bring it down",text:"Straight after, lower your arousal again. Stay wired and you disconnect. Settle until you can feel something, that's the sign your system has switched back on.",
    asks:[{k:"m_lower",type:"choice",label:"How did you bring it down?",options:LOWER.map(x=>[x,x])}]},
-  {id:"m3",title:"Choose your next move",text:"Read last night's plan and what you banked. Check in with your energy, then pick what comes next.",
-   asks:[{k:"m_next",type:"choice",label:"Next move",options:NEXT},
-         {k:"energy",type:"choice",label:"Energy right now",options:[["low","Low"],["steady","Steady"],["wired","Wired"]]},
-         {k:"train",type:"choice",label:"Training today?",options:[["yes","Yes"],["no","No"]]}]}
+  {id:"m3",title:"Meal 1 & set the day",text:"Meal 1 is non-negotiable: within 90 minutes of waking, protein first, no carbs unless you're lifting early. Then tell us if you're training today.",
+   asks:[{k:"meal1",type:"text",label:"Meal 1: what did you eat?"},{k:"meal1_tags",type:"multi",label:"Meal 1 had",options:MEAL1_TAGS.map(x=>[x,x])},
+         {k:"train",type:"choice",label:"Training today?",options:[["yes","Yes"],["no","No"]]},
+         {k:"energy",type:"choice",label:"Energy right now",options:[["low","Low"],["steady","Steady"],["wired","Wired"]]}]}
 ];
 const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?log.m_action:[]).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 const EVENING=[
-  {id:"e1",title:"Close the day",text:"Log today's numbers against your targets and add your steps screenshot. No screenshot means the steps don't count.",senses:[],
-   asks:[{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"}]},
-  {id:"e2",title:"Bring it down",text:"Phone off at least 1 hour before bed. Use one Reset tool to lower your arousal & settle your nervous system.",senses:[],
-   asks:[{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
-  {id:"e3",title:"Set up tomorrow",text:"Set tomorrow's wake time and plan of action. Bank the one thing you noticed today that you want to remember. Brain dump the rest so you can switch off.",senses:[],
-   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"bank",type:"textarea",label:"One thing to bank for tomorrow, from what you noticed today"},{k:"dump",type:"textarea",label:"Brain dump"}]}
+  {id:"e1",title:"Review your day",text:"How did you get on with your list? Carry anything unfinished into tomorrow, log your numbers, then rate your day honestly.",
+   asks:[{k:"_review",type:"review",label:"Today's to-do list"},{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"},{k:"day_rating",type:"rating",label:"Self-assessment: how did today go? 1 to 10"}]},
+  {id:"e2",title:"Non-negotiables & wind down",text:"Tick every non-negotiable you kept today. Then phone off and use one Reset tool to bring your arousal down.",
+   asks:[{k:"nn_kept",type:"multi",label:"Non-negotiables you kept today",options:NN_LIST.map(x=>[x,x])},{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
+  {id:"e3",title:"Set up tomorrow",text:"Set your wake time, write your plan of action and build tomorrow's to-do list. It'll be waiting in your Day. Bank the one thing worth remembering, then brain dump the rest.",
+   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"todo_tmr",type:"todo",label:"Tomorrow's to-do list"},{k:"bank",type:"textarea",label:"One thing to bank for tomorrow, from what you noticed today"},{k:"dump",type:"textarea",label:"Brain dump"}]}
 ];
 const STEPS_OF={morning:MORNING,evening:EVENING};
 
@@ -502,9 +514,8 @@ function direction(log){
   return base+(t?" Training today, so carbs go in your pre & post workout meals.":log.train==="no"?" Rest day, so fats, not carbs, with your meals.":"");
 }
 function suggestions(log){
-  const s=[["meal","Meal: protein + fruit / veg"]];
-  if(log.train==="yes")s.push(["meal","Pre workout meal: protein + carbs"],["train","Gym workout"],["meal","Post workout meal: protein + carbs"]);
-  else s.push(["meal","Meal: protein + fats"]);
+  const s=[];
+  if(log.train==="yes")s.push(["train","Gym workout"]);
   if(log.energy==="low")s.push(["reset","Breathwork"],["walk","Nasal walk outside"]);
   if(log.energy==="wired")s.push(["reset","Breathwork"],["reset","Meditation"]);
   if(log.energy==="steady")s.push(["walk","Steps block after a meal"]);
@@ -512,21 +523,26 @@ function suggestions(log){
   const have=new Set((log.items||[]).map(i=>i.label));
   return s.filter(([,l])=>!have.has(l));
 }
+const mealTagOpts=log=>["Protein",log.train==="yes"?"Carbs":"Fats, no carbs","Fruit / veg","No added sugar"];
 
 /* ---------- scoring: 1 point per completed step or task ---------- */
 const stepsDone=(log,ph)=>STEPS_OF[ph].filter(s=>log[s.id]).length;
 const itemsOf=log=>Array.isArray(log.items)?log.items:[];
+const mealsOf=log=>Array.isArray(log.meals)?log.meals:[];
+const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
 function scoreOf(log){
-  const items=itemsOf(log),m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),d=items.filter(i=>i.done).length;
-  const pts=m+e+d,max=6+items.length;
-  const ans=items.filter(i=>i.done&&i.fu!==undefined&&i.fu!==null),fuYes=ans.filter(i=>i.fu===true).length;
+  const items=itemsOf(log),meals=mealsOf(log),nn=Array.isArray(log.nn_kept)?log.nn_kept.length:0;
+  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),d=items.filter(i=>i.done).length,ml=meals.filter(x=>x.done).length;
+  const pts=m+e+d+ml+nn,max=6+items.length+meals.length+NN_LIST.length;
+  const ans=[...items,...meals].filter(i=>i.done&&i.fu!==undefined&&i.fu!==null),fuYes=ans.filter(i=>i.fu===true).length;
   const sn=new Set();
   if(log.m1&&(Array.isArray(log.m_action)?log.m_action:[]).length)["sight","sound","smell"].forEach(x=>sn.add(x));
   if(log.m2&&log.m_lower)["smell","touch"].forEach(x=>sn.add(x));
-  if(log.m3&&log.m_next==="beach")["sight","sound","smell","touch"].forEach(x=>sn.add(x));
+  if(log.m3&&String(log.meal1||"").trim())["taste","smell"].forEach(x=>sn.add(x));
   if(log.e2&&log.pm_tool)resetSenses(log.pm_tool).forEach(x=>sn.add(x));
   items.filter(i=>i.done).forEach(i=>itemSenses(i).forEach(x=>sn.add(x)));
-  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
+  if(ml)["taste","smell","sight"].forEach(x=>sn.add(x));
+  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,ml,mn:meals.length,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
 }
 const hasAny=log=>log&&Object.keys(log).length>0;
 const nowHHMM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
@@ -557,39 +573,43 @@ const weekOf=dayNum=>WEEKS[clamp(Math.floor((dayNum-1)/7),0,3)];
 const dateOf=(c,dayNum)=>addDays(clientStart(c),dayNum-1);
 
 const GEN={};
+const MEALS_M1=["Eggs, spinach, berries","Greek yoghurt, berries, honey","Omelette, avocado","Smoked salmon, eggs, fruit"];
+const MEALS_GEN=["Chicken, rice, greens","Salmon, potatoes, broccoli","Beef chilli, rice","Steak, sweet potato, peppers","Turkey wrap, salad","Cottage cheese, fruit","Prawn stir fry"];
+const TODO_GEN=[["own","Hardest task first: client proposal"],["own","Emails & admin"],["own","School run"],["own","Prep tomorrow's food"],["own","Team call"],["own","Finish report"],["own","Food shop"],["walk","Steps block after a meal"],["reset","Breathwork"],["walk","Nasal walk outside"]];
 function generated(c){
   if(GEN[c.id])return GEN[c.id];
   const rng=rngFor(c.id),out={},today=clientDayNum(c),nowM=NOW.getHours()*60+NOW.getMinutes();
+  let prevL=null;
   for(let d=1;d<=today;d++){
     const date=ymd(dateOf(c,d)),wk=weekOf(d),isToday=d===today;
-    if(c.gone&&d>today-c.gone)continue;
-    if(c.id==="sarah"&&isToday)continue; // the demo login fills today in
+    if(c.gone&&d>today-c.gone){prevL=null;continue}
+    if(c.id==="sarah"&&isToday)continue; // the demo login fills today in, starting from last night's list
     const p=clamp(c.base+c.drift*(d/14)+(rng()-.5)*.22,.08,.99);
     const L={},pick=a=>a[Math.floor(rng()*a.length)];
-    const wake=420+Math.round((rng()-.3)*50*(1.2-p));
-    const until=isToday?nowM:1440;
-    // morning, in order
+    const wake=420+Math.round((rng()-.3)*50*(1.2-p)),until=isToday?nowM:1440;
     let t=wake;
     for(const s of MORNING){if(t>until||rng()>p+.08)break;L[s.id]=hhmm(t);t+=10+Math.round(rng()*25)}
-    if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];if(rng()<.5)L.m1_feel=[pick(["Wired","Wired","Flat"])]}
+    if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];L.am_steps=1500+Math.round(rng()*2500);if(rng()<.5)L.m1_feel=[pick(["Wired","Wired","Flat"])]}
     if(L.m2){L.m_lower=pick(LOWER);if(rng()<.7){L.m2_feel=[pick(["Settled","Connected","Emotional"]),...(rng()<.4?["Hungry"]:[])];if(rng()<.5)L.m2_note=pick(NOTES_M2)}}
-    if(L.m3){L.m_next=pick(NEXT)[0];L.energy=pick(["low","steady","steady","wired"]);L.train=rng()<.5?"yes":"no"}
-    // day list
-    const items=[],add=(kind,label)=>items.push({id:uid(),kind,label});
-    add("own",pick(OWN));add("meal",L.train==="yes"?"Meal: protein + fruit / veg":"Meal: protein + fats");add("walk","Steps block after a meal");
-    if(L.train==="yes"){add("meal","Pre workout meal: protein + carbs");add("train",pick(["Gym workout","Home workout"]));add("meal","Post workout meal: protein + carbs")}
-    else{add("meal","Meal: protein + fats");add("reset",pick(RESET_TOOLS)[0])}
-    add("own",pick(OWN));add("walk","Nasal walk outside");add("reset",pick(RESET_TOOLS)[0]);add("meal","Meal: protein + fruit / veg");
+    if(L.m3){L.meal1=pick(MEALS_M1);L.meal1_tags=MEAL1_TAGS.filter(()=>rng()<p+.1);L.train=rng()<.5?"yes":"no";L.energy=pick(["low","steady","steady","wired"])}
+    // to-do list: planned last night, plus anything added in the day
+    const items=(prevL&&todoOf(prevL).length?todoOf(prevL):[pick(TODO_GEN),pick(TODO_GEN),pick(TODO_GEN)]).map(([k,l])=>({id:uid(),kind:k,label:l,planned:!!prevL}));
+    if(L.train==="yes")items.push({id:uid(),kind:"train",label:pick(["Gym workout","Home workout"])});
+    if(rng()<.5)items.push({id:uid(),kind:"reset",label:pick(RESET_TOOLS)[0]});
+    const meals=[];const nM=2+Math.floor(rng()*3);for(let i=0;i<nM;i++)meals.push({id:uid(),slot:i+2,text:pick(MEALS_GEN),tags:mealTagOpts(L).filter(()=>rng()<p+.05)});
     let it=Math.max(t,wake+60);
-    items.forEach(x=>{it+=40+Math.round(rng()*50);if(it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(rng()<.3){x.feel=[pick(FEELS)];if(rng()<.5)x.note=pick(NOTES_DAY)}}});
-    if(L.m1||items.some(x=>x.done))L.items=items;
-    // evening, in order
+    const seq=[...items,...meals].sort(()=>rng()-.5);
+    seq.forEach(x=>{it+=35+Math.round(rng()*45);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(rng()<.3){x.feel=[pick(FEELS)];if(rng()<.5)x.note=pick(NOTES_DAY)}}});
+    if(L.m1){L.items=items;L.meals=meals}
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
-    if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png"}
-    if(L.e2){L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
-    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);if(rng()<.7)L.bank=pick(BANKS);if(rng()<.6)L.dump=pick(DUMPS)}
-    out[date]=L;
+    if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png";L.day_rating=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
+    if(L.e2){L.nn_kept=NN_LIST.filter(()=>rng()<p);L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
+    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);
+      const carry=itemsOf(L).filter(i=>!i.done&&i.kind==="own").map(i=>[i.kind,i.label]);
+      const nx=[...carry];while(nx.length<4){const q=pick(TODO_GEN);if(!nx.some(z=>z[1]===q[1]))nx.push(q)}L.todo_tmr=nx;
+      if(rng()<.7)L.bank=pick(BANKS);if(rng()<.6)L.dump=pick(DUMPS)}
+    out[date]=L;prevL=L;
   }
   return GEN[c.id]=out;
 }
@@ -777,7 +797,7 @@ const PILLARS=[
 /* ---------- app state ---------- */
 const S={
   session:store.get(K.session,null),
-  tab:"today",viewDay:null,phase:null,cat:"meal",
+  tab:"today",viewDay:null,phase:null,cat:"walk",
   coachTab:"overview",detail:null,detailDay:null,sort:{k:"status",dir:1},filter:"all",hview:"phases"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -848,7 +868,9 @@ function autoPhase(log,isToday){
   return"day";
 }
 function todayView(){
-  const x=curCtx(),{c,today,dn,date,wk,log}=x,sc=scoreOf(log);
+  let x=curCtx();
+  if(!Array.isArray(x.log.items)&&todoOf(x.prev).length){saveEdit(x.c.id,x.dk,"items",todoOf(x.prev).map(([k,l])=>({id:uid(),kind:k,label:l,planned:true})));x=curCtx()}
+  const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
   const ph=S.phase||autoPhase(log,dn===today);
   const note=(store.get(K.notes,{})[c.id]);
   const dayOpen=sc.m===3;
@@ -866,7 +888,7 @@ function todayView(){
     </div>
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
     <nav class="phases" aria-label="Parts of the day">
-      ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d,of:sc.n},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
+      ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d+sc.ml,of:sc.n+sc.mn},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
     </nav>
     ${ph==="score"?scoreView(x):`${phaseHead(ph)}
     ${ph==="morning"?stepsView("morning",x):ph==="evening"?stepsView("evening",x):dayView(x)}
@@ -885,14 +907,22 @@ function askHtml(a,log,wk,locked){
       return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
     case"time":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="time" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis}></label>`;
     case"textarea":return `<label class="ask" for="${id}"><span>${a.label}</span><textarea class="input" id="${id}" data-input="${a.k}" ${dis}>${esc(v||"")}</textarea></label>`;
+    case"text":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="text" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis} autocomplete="off"></label>`;
+    case"review":{const it=itemsOf(log),d=it.filter(i=>i.done).length,carry=new Set(todoOf(log).map(t=>t[1]));
+      return `<div class="ask"><span>${a.label} <span class="muted num">${d} of ${it.length} done</span></span>${it.length?`<div class="review">${it.map(i=>`<div class="rv ${i.done?"done":""}"><span>${i.done?"✓":"○"} ${esc(i.label)}</span>${i.done?`<span class="num muted">${esc(i.done)}</span>`:`<button class="chip" data-carry="${i.id}" aria-pressed="${carry.has(i.label)}" ${dis}>${carry.has(i.label)?"✓ Carried to tomorrow":"Carry to tomorrow"}</button>`}</div>`).join("")}</div>`:`<p class="muted" style="font-weight:500">Nothing was on today's list.</p>`}</div>`}
+    case"todo":{const list=todoOf(log),quick=[["own","Hardest task first"],["walk","Steps block after a meal"],["reset","Breathwork"],["train","Gym workout"],["walk","Nasal walk outside"]].filter(q=>!list.some(t=>t[1]===q[1]));
+      return `<div class="ask"><span>${a.label} <span class="muted num">${list.length} ${list.length===1?"task":"tasks"}</span></span>
+        <div class="todo-list">${list.map((t,i)=>`<div class="rv"><span>${esc(t[1])} <span class="kind">${(KINDS[t[0]]||KINDS.own).name}</span></span><button class="x" data-tdel="${i}" aria-label="Remove ${esc(t[1])}" ${dis}>×</button></div>`).join("")}</div>
+        <div class="composer" style="margin-top:4px"><input class="input" id="tmrInput" placeholder="Add a task for tomorrow" autocomplete="off" ${dis}><button class="btn primary" data-tadd="1" ${dis}>Add</button></div>
+        ${quick.length?`<div class="opts">${quick.map(([k,l])=>`<button class="chip add" data-tquick="${k}" data-label="${esc(l)}" ${dis}>+ ${esc(l)}</button>`).join("")}</div>`:""}</div>`}
     case"multi":{const arr=Array.isArray(v)?v:[];return `<div class="ask"><span>${a.label}</span><div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-askm="${a.k}" data-val="${esc(k)}" aria-pressed="${arr.includes(k)}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`}
     case"upload":return `<div class="ask"><span>${a.label}</span><label class="chip upload" for="${id}" style="align-self:flex-start">${v?"Replace · "+esc(v):"Upload"}<input type="file" id="${id}" data-file="${a.k}" accept="image/*" ${dis}></label></div>`;
   }
 }
 function noticeHtml(feel,note,kind,id){
   const arr=Array.isArray(feel)?feel:[];
-  const chip=f=>kind==="step"?`data-sfeel="${id}"`:`data-ifeel="${id}"`;
-  const inp=kind==="step"?`data-input="${id}_note"`:`data-inote="${id}"`;
+  const chip=f=>kind==="step"?`data-sfeel="${id}"`:kind==="meal"?`data-mfeel="${id}"`:`data-ifeel="${id}"`;
+  const inp=kind==="step"?`data-input="${id}_note"`:kind==="meal"?`data-mnote="${id}"`:`data-inote="${id}"`;
   return `<div class="notice"><span class="notice-q">What did you notice?</span><div class="opts">${FEELS.map(f=>`<button class="chip" ${chip(f)} data-val="${esc(f)}" aria-pressed="${arr.includes(f)}">${esc(f)}</button>`).join("")}</div><input class="input" ${inp} id="n-${id}" value="${esc(note||"")}" placeholder="One line, as it happens (optional)" autocomplete="off"></div>`;
 }
 function brainPanel(log){
@@ -903,9 +933,10 @@ function brainPanel(log){
 }
 function timeline(log){
   const rows=[];
-  const sum=(s)=>s.asks.filter(a=>["choice","multi"].includes(a.type)&&log[a.k]!==undefined&&log[a.k]!=="").map(a=>{const v=log[a.k];if(a.k==="train")return v==="yes"?"Training day":"Rest day";if(a.k==="energy")return "Energy "+v;return Array.isArray(v)?v.join(", "):((a.options.find(o=>o[0]===v)||[0,v])[1])}).join(" · ");
+  const sum=(s)=>(s.id==="m3"&&log.meal1?"Meal 1: "+log.meal1+" · ":"")+(s.id==="e2"&&Array.isArray(log.nn_kept)?log.nn_kept.length+" of "+NN_LIST.length+" non-negotiables · ":"")+s.asks.filter(a=>["choice","multi"].includes(a.type)&&a.k!=="nn_kept"&&a.k!=="meal1_tags"&&log[a.k]!==undefined&&log[a.k]!=="").map(a=>{const v=log[a.k];if(a.k==="train")return v==="yes"?"Training day":"Rest day";if(a.k==="energy")return "Energy "+v;return Array.isArray(v)?v.join(", "):((a.options.find(o=>o[0]===v)||[0,v])[1])}).join(" · ");
   MORNING.forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Morning",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
   itemsOf(log).forEach(i=>{if(i.done)rows.push({t:i.done,ph:"Day",title:i.label,sub:i.fu===true?"Right process":i.fu===false?"Process missed":"",feel:i.feel,note:i.note})});
+  mealsOf(log).forEach(m=>{if(m.done)rows.push({t:m.done,ph:"Day",title:`Meal ${m.slot}${m.text?": "+m.text:""}`,sub:[(m.tags||[]).join(", "),m.fu===true?"Right process":m.fu===false?"Process missed":""].filter(Boolean).join(" · "),feel:m.feel,note:m.note})});
   EVENING.forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Evening",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
   const ord={Morning:0,Day:1,Evening:2};
   rows.sort((a,b)=>ord[a.ph]-ord[b.ph]||mins(a.t)-mins(b.t));
@@ -916,7 +947,7 @@ function stepsView(ph,x){
   const {log,wk,prev}=x,steps=STEPS_OF[ph];
   const firstOpen=steps.findIndex(s=>!log[s.id]);
   let html=`<div class="steps-list">`;
-  if(ph==="morning"&&(prev.plan||prev.bank))html+=`<div class="direction">${prev.plan?`<span class="eyebrow">Last night's plan of action</span><p>${esc(prev.plan)}</p>`:""}${prev.bank?`<span class="eyebrow" style="margin-top:6px">You banked</span><p>“${esc(prev.bank)}”</p>`:""}${prev.tmr_wake?`<small>Wake time set: <b class="num">${esc(prev.tmr_wake)}</b></small>`:""}</div>`;
+  if(ph==="morning"&&(prev.plan||prev.bank||todoOf(prev).length))html+=`<div class="direction">${prev.plan?`<span class="eyebrow">Last night's plan of action</span><p>${esc(prev.plan)}</p>`:""}${prev.bank?`<span class="eyebrow" style="margin-top:6px">You banked</span><p>“${esc(prev.bank)}”</p>`:""}${todoOf(prev).length?`<span class="eyebrow" style="margin-top:6px">Your to-do list is ready</span><p>${todoOf(prev).length} tasks from last night, waiting in your Day.</p>`:""}${prev.tmr_wake?`<small>Wake time set: <b class="num">${esc(prev.tmr_wake)}</b></small>`:""}</div>`;
   steps.forEach((s,i)=>{
     const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
@@ -940,24 +971,52 @@ function stepsView(ph,x){
 }
 function dayView(x){
   const {log,wk}=x;
-  if(stepsDone(log,"morning")<3)return `<div class="card locked-day"><div class="lockbig">${LOCK}</div><h3 class="sec-title">Your day isn't open yet</h3><p class="muted">Finish the 3 Morning steps first. They set your direction for the day.</p><button class="btn primary" data-phase="morning">Go to Morning</button></div>`;
-  const items=itemsOf(log),sug=suggestions(log),K2=KINDS[S.cat]||KINDS.meal;
+  if(stepsDone(log,"morning")<3)return `<div class="card locked-day"><div class="lockbig">${LOCK}</div><h3 class="sec-title">Your day isn't open yet</h3><p class="muted">Finish the 3 Morning steps first, including Meal 1. They set your direction for the day.</p><button class="btn primary" data-phase="morning">Go to Morning</button></div>`;
+  const items=itemsOf(log),sug=suggestions(log),K2=KINDS[S.cat]||KINDS.walk,planned=items.filter(i=>i.planned).length;
   const have=new Set(items.map(i=>i.label));
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
+  <section class="card">
+    <div class="sec-head"><h2 class="sec-title">Your to-do list</h2><span class="muted num">${items.filter(i=>i.done).length} / ${items.length} done</span></div>
+    ${planned?`<p class="muted" style="font-size:12px;margin-top:-2px">${planned} planned last night. Add anything else that comes up.</p>`:""}
+    <div class="items">${items.length?items.map((it,i)=>itemHtml(it,i)).join(""):`<p class="muted" style="padding:10px 0">Nothing planned last night. Write today's tasks below. Tonight you'll build tomorrow's list in your Evening.</p>`}</div>
+    <form class="composer" id="ownForm"><input class="input" id="ownTask" placeholder="Add a task" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
+    ${sug.length?`<div class="opts" style="margin-top:10px">${sug.map(([k,l])=>`<button class="chip add" data-add="${k}" data-label="${esc(l)}">+ ${esc(l)}</button>`).join("")}</div>`:""}
+    <details class="moreopts"><summary>Add steps, regulation tools or training</summary>
+      <div class="filters" role="group" aria-label="Option type" style="margin:10px 0">${["walk","reset","train"].map(k=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${KINDS[k].name}</button>`).join("")}</div>
+      <div class="opts">${K2.opts.map(o=>`<button class="chip add" data-add="${S.cat}" data-label="${esc(o)}">${have.has(o)?"✓ ":"+ "}${esc(o)}</button>`).join("")}</div>
+    </details>
+  </section>
+  ${mealsCard(log)}
   <div class="sticky"><span class="eyebrow">Sticky note · ${esc(wk.theme)}</span><p>${esc(wk.note)}</p></div>
-  <section class="card">
-    <div class="sec-head"><h2 class="sec-title">Your list</h2><span class="muted num">${items.filter(i=>i.done).length} / ${items.length} done</span></div>
-    <div class="items">${items.length?items.map((it,i)=>itemHtml(it,i)).join(""):`<p class="muted" style="padding:10px 0">Nothing on your list yet. Write your own tasks below and add your meals & regulation tools from the options.</p>`}</div>
-    <form class="composer" id="ownForm"><input class="input" id="ownTask" placeholder="Add your own task, e.g. hardest task first" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
-  </section>
-  ${sug.length?`<section class="stack" style="gap:8px"><span class="eyebrow">Suggested from your morning</span><div class="opts">${sug.map(([k,l])=>`<button class="chip add" data-add="${k}" data-label="${esc(l)}">+ ${esc(l)}</button>`).join("")}</div></section>`:""}
-  <section class="card">
-    <div class="sec-head"><h2 class="sec-title" style="font-size:20px">Add from options</h2></div>
-    <div class="filters" role="group" aria-label="Option type" style="margin-bottom:10px">${["meal","walk","reset","train"].map(k=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${KINDS[k].name}</button>`).join("")}</div>
-    <div class="opts">${K2.opts.map(o=>`<button class="chip add" data-add="${S.cat}" data-label="${esc(o)}">${have.has(o)?"✓ ":"+ "}${esc(o)}</button>`).join("")}</div>
-    ${S.cat==="meal"?`<p class="muted" style="font-size:12px;margin-top:10px">Example meal plans are on the way. For now pick the meal type that fits your day.</p>`:""}
-  </section>
   ${nextBar("day",log)}`;
+}
+function mealsCard(log){
+  const meals=mealsOf(log),opts=mealTagOpts(log),done=meals.filter(m=>m.done).length+(log.meal1?1:0);
+  const next=2+meals.length;
+  return `<section class="card">
+    <div class="sec-head"><h2 class="sec-title">Meals</h2><span class="muted num">${done} logged</span></div>
+    <p class="muted" style="font-size:12px;margin-top:-2px">${log.train==="yes"?"Training day: carbs with your meals around training.":"Rest day: fats, not carbs, with your meals."} Every 3 to 4 hours, protein every time.</p>
+    <div class="items">
+      <div class="item done meal"><span class="item-tick"><span class="tick">${TICK}</span></span><div class="item-main"><div class="item-title"><span>Meal 1${log.meal1?": "+esc(log.meal1):""}</span>${log.m3?`<span class="stamp">${esc(log.m3)}</span>`:""}</div><span class="kind">Logged in your Morning${(log.meal1_tags||[]).length?" · "+esc(log.meal1_tags.join(", ")):""}</span></div></div>
+      ${meals.map(m=>mealHtml(m,opts)).join("")}
+    </div>
+    ${next<=6?`<button class="btn" data-madd="1" style="margin-top:10px">+ Add Meal ${next}</button>`:""}
+  </section>`;
+}
+function mealHtml(m,opts){
+  const needQ=m.done&&(m.fu===undefined||m.fu===null),tags=Array.isArray(m.tags)?m.tags:[];
+  return `<div class="item meal${m.done?" done":""}">
+    <span class="item-tick"><span class="tick">${TICK}</span></span>
+    <div class="item-main">
+      <div class="item-title"><span>Meal ${m.slot}</span>${m.done?`<span class="stamp">${esc(m.done)}</span>`:""}${m.done&&m.fu===true?`<span class="badge ok">Right process</span>`:""}${m.done&&m.fu===false?`<span class="badge miss">Process missed</span>`:""}</div>
+      <input class="input" data-mtext="${m.id}" id="mt-${m.id}" value="${esc(m.text||"")}" placeholder="What are you eating?" autocomplete="off">
+      <div class="opts meal-tags">${opts.map(o=>`<button class="chip" data-mtag="${m.id}" data-val="${esc(o)}" aria-pressed="${tags.includes(o)}">${esc(o)}</button>`).join("")}</div>
+      ${m.done?"":`<div><button class="btn primary" data-mlog="${m.id}">Log Meal ${m.slot}</button></div>`}
+      ${needQ?`<div class="fu"><span>${esc(KINDS.meal.q)}</span><div class="opts"><button class="chip" data-mfu="${m.id}" data-val="1">Yes</button><button class="chip" data-mfu="${m.id}" data-val="0">Not this time</button></div></div>`:""}
+      ${m.done&&!needQ?noticeHtml(m.feel,m.note,"meal",m.id):""}
+    </div>
+    ${m.done?`<button class="x" data-munlog="${m.id}" aria-label="Unlog Meal ${m.slot}" title="Unlog">↺</button>`:`<button class="x" data-mdel="${m.id}" aria-label="Remove Meal ${m.slot}">×</button>`}
+  </div>`;
 }
 function nextBar(ph,log){
   const card=(title,sub,btn)=>`<div class="nextbar"><div><b>${title}</b><p>${sub}</p></div>${btn}</div>`;
@@ -982,7 +1041,7 @@ function scoreView(x){
       <p>${msg}</p>
       ${dn>1?`<span class="sc-diff ${diff>=0?"up":"down"}">${diff>0?"+":""}${diff} vs yesterday (${ps.pts})</span>`:""}
     </section>
-    <div class="sc-parts">${part("Morning",sc.m,3)}${part("Day",sc.d,sc.n)}${part("Evening",sc.e,3)}</div>
+    <div class="sc-parts">${part("Morning",sc.m,3)}${part("To-do",sc.d,sc.n)}${part("Meals",sc.ml,sc.mn)}${part("Evening",sc.e,3)}${part("Non-negotiables",sc.nn,NN_LIST.length)}${log.day_rating?part("Self-assessment",log.day_rating,10):""}</div>
     <div class="tiles sc-tiles">
       <div class="tile"><small>Right process</small><b class="num">${sc.fuN?Math.round(sc.fuYes/sc.fuN*100)+"%":"–"}</b><small>${sc.fuYes} of ${sc.fuN} follow-ups</small></div>
       <div class="tile"><small>Senses evoked</small><b class="num">${sc.senses.size} / 5</b><small>${SENSES.filter(([k])=>!sc.senses.has(k)).map(([,l])=>l).join(", ")||"All five"}${sc.senses.size<5?" missing":""}</small></div>
@@ -1031,20 +1090,18 @@ function pillarHtml(P){
 }
 function programmeView(){
   const how=[
-    "Your day runs in three parts. Each one has a job for your central nervous system.",
+    "Your day runs in a loop: Evening sets up tomorrow, Morning opens it, Day is yours to run. Every day ends with a score.",
     "#Evening: reduce arousal",
-    "Three steps in order: close the day, bring it down, set up tomorrow. This is where you set tomorrow's wake time, your plan of action and the thing you're banking. If you've just got your plan, start here tonight.",
+    "Review your day: how you got on with your to-do list, carry anything unfinished, log your numbers and rate your day. Tick the non-negotiables you kept, then wind down. Finally set tomorrow's wake time, plan of action and to-do list. If you've just got your plan, start here tonight.",
     "#Morning: stimulation & arousal",
-    "Three steps in order. Action: fast & outside, straight from your alarm, to raise your arousal. Bring it down: Wim Hof or slow breathwork straight after, until you can feel something again. Choose your next move: brain training, a beach walk, food if you're hungry, or straight to work. Your day doesn't open until they're done.",
-    "Your Action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm. Hit all four by the end of the morning and you've done what the morning needs.",
-    "#Notice it, then bank it",
-    "After every step and task, tap what you noticed and add a line if you want. Writing it down as it happens is what makes it stick. The app files it all into one clean log, and each evening you bank the one thing worth remembering. It's waiting for you the next morning.",
+    "Wake & action: how you felt waking, the non-negotiables you applied, your morning steps. Bring it down: Wim Hof or slow breathwork. Meal 1 & set the day: Meal 1 is non-negotiable, then say if you're training. Your day doesn't open until all 3 are done.",
+    "Your action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm.",
     "#Day: keep energy stable",
-    "Nobody can write your day for you. You build your own list, then fold in meals & regulation tools from the options. Every tick logs the time and asks one question to check you did it the right way.",
-    "#Senses",
-    "Sight, sound, smell, taste & touch fill in automatically from what you do. Evoke them as often as you can through real world connection.",
+    "Last night's to-do list is waiting for you. Tick it off and add anything new. Your meals have their own section: log each one as you eat it. Every tick logs the time and asks one question to check you did it the right way.",
+    "#Notice it, then bank it",
+    "After every step, task and meal, tap what you noticed and add a line if you want. It's filed into one clean log, and each evening you bank the one thing worth remembering.",
     "#Points",
-    "1 point for every step & task you complete."
+    "1 point for every step, task, meal and non-negotiable you complete."
   ];
   return `<div class="stack">
     <div class="hero-p"><span class="eyebrow">Welcome to Project Reset</span><h1 class="display">28 days to set a new standard</h1>
@@ -1141,7 +1198,7 @@ function overviewView(){
   const rws=[];all.forEach(s=>s.rows.forEach(x=>rws.push(x)));
   const rate=(n,d)=>d?Math.round(n/d*100):0;
   const stepRows=[...MORNING.map(s=>["Morning",s]),...EVENING.map(s=>["Evening",s])].map(([ph,s])=>({label:s.title,ph,p:rate(rws.filter(x=>x.log[s.id]).length,rws.length)}));
-  const kindRows=Object.keys(KINDS).map(k=>{let n=0,d=0,a=0,y=0;rws.forEach(x=>itemsOf(x.log).filter(i=>i.kind===k).forEach(i=>{n++;if(i.done){d++;if(i.fu!==undefined&&i.fu!==null){a++;if(i.fu)y++}}}));return{k,name:KINDS[k].name,per:rws.length?n/rws.length:0,done:rate(d,n),proc:a?rate(y,a):null}});
+  const kindRows=Object.keys(KINDS).map(k=>{let n=0,d=0,a=0,y=0;rws.forEach(x=>(k==="meal"?mealsOf(x.log):itemsOf(x.log).filter(i=>i.kind===k)).forEach(i=>{n++;if(i.done){d++;if(i.fu!==undefined&&i.fu!==null){a++;if(i.fu)y++}}}));return{k,name:KINDS[k].name,per:rws.length?n/rws.length:0,done:rate(d,n),proc:a?rate(y,a):null}});
   const bar=(p)=>`<div class="bar"><i class="${p<50?"low":p<70?"mid":""}" style="width:${p}%"></i></div>`;
   return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
@@ -1189,7 +1246,7 @@ function overviewView(){
 }
 function phaseLog(title,steps,log,wk){
   return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
-    const ans=s.asks.map(a=>{const v=log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?v+"/10":a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):Array.isArray(v)?v.join(", "):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
+    const ans=s.asks.map(a=>{if(a.type==="review")return"";const v=a.type==="todo"?todoOf(log).map(t=>t[1]).join(", "):log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?v+"/10":a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):Array.isArray(v)?v.join(", "):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
     return `<div class="lp-row ${d?"":"miss"}"><div class="lp-top"><span>${d?"✓ ":""}${esc(s.title)}</span><span class="num">${d?esc(d):"–"}</span></div>${ans?`<div class="lp-ans">${ans}</div>`:""}</div>`}).join("")}</div>`;
 }
 function detailView(c){
@@ -1249,6 +1306,7 @@ function settingsView(){
 
 /* ---------- handlers ---------- */
 function edit(k,v){const x=curCtx();saveEdit(x.c.id,x.dk,k,v)}
+function setMeals(fn){const x=curCtx();const meals=mealsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"meals",fn(meals)||meals)}
 function setItems(fn){const x=curCtx();const items=itemsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"items",fn(items)||items)}
 function login(role){S.session=role==="coach"?{role}:{role,clientId:"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;S.phase=null;render();window.scrollTo(0,0)}
 
@@ -1288,14 +1346,26 @@ root.addEventListener("click",e=>{
   if(b.dataset.add){const label=b.dataset.label;if(itemsOf(curCtx().log).some(i=>i.label===label)&&b.dataset.add!=="own"){toast("Already on your list");return}setItems(a=>[...a,{id:uid(),kind:b.dataset.add,label}]);toast("Added to your list");return render()}
   if(b.dataset.del){setItems(a=>a.filter(i=>i.id!==b.dataset.del));return render()}
   if(b.dataset.tick){const id=b.dataset.tick;setItems(a=>a.map(i=>i.id!==id?i:(i.done?{...i,done:"",fu:null}:{...i,done:nowHHMM(),fu:null})));return render()}
+  if(b.dataset.carry){const x=curCtx(),it=itemsOf(x.log).find(i=>i.id===b.dataset.carry);if(!it)return;const list=todoOf(x.log);edit("todo_tmr",list.some(t=>t[1]===it.label)?list.filter(t=>t[1]!==it.label):[...list,[it.kind,it.label]]);return render()}
+  if(b.dataset.tdel){const list=todoOf(curCtx().log).slice();list.splice(Number(b.dataset.tdel),1);edit("todo_tmr",list);return render()}
+  if(b.dataset.tadd){const inp=root.querySelector("#tmrInput"),v=inp&&inp.value.trim();if(!v)return;edit("todo_tmr",[...todoOf(curCtx().log),["own",v]]);render();const n=root.querySelector("#tmrInput");if(n)n.focus();return}
+  if(b.dataset.tquick){edit("todo_tmr",[...todoOf(curCtx().log),[b.dataset.tquick,b.dataset.label]]);return render()}
+  if(b.dataset.madd){setMeals(a=>[...a,{id:uid(),slot:2+a.length,text:"",tags:[]}]);return render()}
+  if(b.dataset.mdel){setMeals(a=>a.filter(m=>m.id!==b.dataset.mdel).map((m,i)=>({...m,slot:i+2})));return render()}
+  if(b.dataset.mlog){const id=b.dataset.mlog,inp=root.querySelector("#mt-"+id);setMeals(a=>a.map(m=>m.id===id?{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null}:m));toast("Logged "+nowHHMM());return render()}
+  if(b.dataset.munlog){setMeals(a=>a.map(m=>m.id===b.dataset.munlog?{...m,done:"",fu:null}:m));return render()}
+  if(b.dataset.mtag){const id=b.dataset.mtag,o=b.dataset.val;setMeals(a=>a.map(m=>{if(m.id!==id)return m;const t=Array.isArray(m.tags)?m.tags:[];return{...m,tags:t.includes(o)?t.filter(z=>z!==o):[...t,o]}}));return render()}
+  if(b.dataset.mfu){const id=b.dataset.mfu,v=b.dataset.val==="1";setMeals(a=>a.map(m=>m.id===id?{...m,fu:v}:m));return render()}
+  if(b.dataset.mfeel){const id=b.dataset.mfeel,o=b.dataset.val;setMeals(a=>a.map(m=>{if(m.id!==id)return m;const t=Array.isArray(m.feel)?m.feel:[];return{...m,feel:t.includes(o)?t.filter(z=>z!==o):[...t,o]}}));return render()}
   if(b.dataset.askm){const k=b.dataset.askm,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:[];edit(k,arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]);return render()}
   if(b.dataset.sfeel){const k=b.dataset.sfeel+"_feel",o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:[];edit(k,arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]);return render()}
   if(b.dataset.ifeel){const id=b.dataset.ifeel,o=b.dataset.val;setItems(a=>a.map(i=>{if(i.id!==id)return i;const arr=Array.isArray(i.feel)?i.feel:[];return{...i,feel:arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]}}));return render()}
   if(b.dataset.fu){const id=b.dataset.fu,v=b.dataset.val==="1";setItems(a=>a.map(i=>i.id===id?{...i,fu:v}:i));return render()}
 });
-root.addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
+root.addEventListener("keydown",e=>{if(e.target.id==="tmrInput"&&e.key==="Enter"){e.preventDefault();const bt=root.querySelector("[data-tadd]");if(bt)bt.click();return}const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
 let timers={};
 root.addEventListener("input",e=>{
+  const mt=e.target.dataset.mtext||e.target.dataset.mnote;if(mt){const f=e.target.dataset.mtext?"text":"note",v=e.target.value;clearTimeout(timers["m"+mt+f]);timers["m"+mt+f]=setTimeout(()=>setMeals(a=>a.map(m=>m.id===mt?{...m,[f]:v}:m)),300);return}
   const inote=e.target.dataset.inote;if(inote){const v=e.target.value;clearTimeout(timers["i"+inote]);timers["i"+inote]=setTimeout(()=>setItems(a=>a.map(i=>i.id===inote?{...i,note:v}:i)),300);return}
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);

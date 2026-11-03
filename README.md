@@ -8,14 +8,14 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 
 ### How a client's day works
 
-- **Evening (reduce arousal):** 3 steps done in order: close the day (steps, water and protein against targets, plus a steps screenshot), bring it down (wind down tool, PM state) and set up tomorrow (wake time, plan of action, brain dump). New clients start here.
-- **Morning (stimulation and arousal):** 3 steps done in order. Action: fast and outside, to raise arousal. Bring it down: Wim Hof or breathwork, to lower it again. Choose your next move: brain training, a beach walk, food or work, plus an energy and training check-in. The Action step ticks off four brain targets (motor cortex, brainstem arousal, basal ganglia, circadian rhythm). The Day stays locked until all 3 steps are done.
-- **Notice it, bank it:** after every step and task the client taps what they noticed and can add one line. It's all filed into a clean timeline for the day. Each evening they bank one thing to remember, and it shows the next morning.
-- **Day (keep energy stable):** the client builds their own list. They write their own tasks and add meals, steps, regulation tools and training from the options. A direction and suggestions come from their morning answers.
-- **Logging:** every step and task logs its time automatically. Every Day task asks one follow-up question to check it was done in the right process order.
-- **Senses:** sight, sound, smell, taste and touch fill in automatically from what was done.
-- **Moving on:** each section ends with a button to the next: Open my day (once Morning is done), Move to Evening, and See my score for today (once Evening is done).
-- **Points:** 1 point per completed step or task. The score screen shows the day's points, the split across Morning, Day and Evening, process rate, senses, AM to PM state, and numbers against targets, compared with yesterday.
+The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the client runs the Day, and every day ends with a score.
+
+- **Evening (reduce arousal):** 3 steps in order. Review your day: tick off the to-do list (carrying unfinished tasks into tomorrow), log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. New clients start here.
+- **Morning (stimulation and arousal):** 3 steps in order. Wake and action: AM state, the non-negotiables applied (these tick the four brain targets) and morning steps. Bring it down: Wim Hof or breathwork. Meal 1 and set the day: Meal 1 (non-negotiable), training yes or no, energy. Shows last night's plan, the banked insight and the ready to-do list. The Day stays locked until all 3 steps are done.
+- **Day (keep energy stable):** last night's to-do list is loaded ready to tick off, and the client can add more. Meals have their own section: Meal 1 from the morning, then Meals 2 to 6, each with a description and tags (carbs or fats depending on training).
+- **Logging:** every step, task and meal logs its time automatically. Tasks and meals ask one process-order follow-up question. Each one also has a quick "what did you notice?" note, and everything is filed into a timeline.
+- **Moving on:** each section ends with a button to the next one, and the Evening ends with the day's score.
+- **Points:** 1 point per completed step, task, meal and non-negotiable kept.
 
 ### Coach view
 
