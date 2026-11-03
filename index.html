@@ -589,8 +589,8 @@ function generated(c){
     const wake=420+Math.round((rng()-.3)*50*(1.2-p)),until=isToday?nowM:1440;
     let t=wake;
     for(const s of MORNING){if(t>until||rng()>p+.08)break;L[s.id]=hhmm(t);t+=10+Math.round(rng()*25)}
-    if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];L.am_steps=1500+Math.round(rng()*2500);if(rng()<.5)L.m1_feel=[pick(["Wired","Wired","Flat"])]}
-    if(L.m2){L.m_lower=pick(LOWER);if(rng()<.7){L.m2_feel=[pick(["Settled","Connected","Emotional"]),...(rng()<.4?["Hungry"]:[])];if(rng()<.5)L.m2_note=pick(NOTES_M2)}}
+    if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];L.am_steps=1500+Math.round(rng()*2500)}
+    if(L.m2)L.m_lower=pick(LOWER);
     if(L.m3){L.meal1=pick(MEALS_M1);L.meal1_tags=MEAL1_TAGS.filter(()=>rng()<p+.1);L.train=rng()<.5?"yes":"no";L.energy=pick(["low","steady","steady","wired"])}
     // to-do list: planned last night, plus anything added in the day
     const items=(prevL&&todoOf(prevL).length?todoOf(prevL):[pick(TODO_GEN),pick(TODO_GEN),pick(TODO_GEN)]).map(([k,l])=>({id:uid(),kind:k,label:l,planned:!!prevL}));
@@ -959,7 +959,6 @@ function stepsView(ph,x){
         <div class="step-head"><h3>${s.title}</h3><span class="draft" title="Wording to be confirmed by Ellis">Draft</span></div>
         <p>${s.text}</p>
         ${s.asks.map(a=>askHtml(a,log,wk,locked)).join("")}
-        ${done?noticeHtml(log[s.id+"_feel"],log[s.id+"_note"],"step",s.id):""}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
           :`<button class="btn primary" data-step="${s.id}">Mark step ${i+1} done</button><span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
@@ -1099,7 +1098,7 @@ function programmeView(){
     "#Day: keep energy stable",
     "Last night's to-do list is waiting for you. Tick it off and add anything new. Your meals have their own section: log each one as you eat it. Every tick logs the time and asks one question to check you did it the right way.",
     "#Notice it, then bank it",
-    "After every step, task and meal, tap what you noticed and add a line if you want. It's filed into one clean log, and each evening you bank the one thing worth remembering.",
+    "After every task and meal in your Day, tap what you noticed and add a line if you want. It's filed into one clean log, and each evening you bank the one thing worth remembering.",
     "#Points",
     "1 point for every step, task, meal and non-negotiable you complete."
   ];
