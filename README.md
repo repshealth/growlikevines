@@ -24,6 +24,10 @@ The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the 
 - **Client detail:** a log for each day, trend charts and a note to the client
 - **Number setter:** steps, water and protein targets, plus the theme and sticky note for each week
 
+### Demo logins
+
+"Start as a new client" begins on Day 1 with nothing logged, starting from tonight's Evening, with a "Jump to tomorrow" button to step through the loop. "Sample client (Day 9)" opens a client with history, "Enter as coach" opens the dashboard, and "Reset all demo data" clears everything.
+
 ### Data
 
 Sample clients only. Edits save to the browser's localStorage, so nothing is shared between devices or users yet.

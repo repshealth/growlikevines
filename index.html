@@ -88,6 +88,12 @@ main{padding-block:24px 64px}
 .login-hero .mark span:first-child{color:var(--on-night)}
 .login-hero p{color:var(--on-night);font-weight:600}
 .demo-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.demo-row .btn.primary{grid-column:1/-1}
+.welcome{background:var(--night);color:var(--on-night);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:8px;box-shadow:0 14px 40px -18px var(--lime)}
+.welcome .eyebrow{color:var(--lime)}
+.welcome .display{color:var(--lime)}
+.demo-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border:1px dashed var(--warn);border-radius:12px;padding:8px 12px;font-size:12px;color:var(--warn)}
+.demo-bar .chip{border-color:var(--warn);color:var(--warn);background:var(--bg)}
 .note{font-size:12px;color:var(--muted);border:1px dashed var(--line);border-radius:10px;padding:10px 12px}
 
 /* Cards and sections */
@@ -423,7 +429,8 @@ const store={
   get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},
   set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 };
-const K={session:"pr2_session",edits:"pr2_edits",notes:"pr2_notes",weeks:"pr2_weeks"};
+const K={session:"pr3_session",edits:"pr3_edits",notes:"pr3_notes",weeks:"pr3_weeks",fresh:"pr3_fresh"};
+try{["pr1_session","pr1_edits","pr1_notes","pr1_weeks","pr2_session","pr2_edits","pr2_notes","pr2_weeks"].forEach(k=>localStorage.removeItem(k))}catch(e){}
 
 /* ---------- dates ---------- */
 const DAY=86400000;
@@ -510,7 +517,7 @@ function direction(log){
   const e=log.energy,t=log.train==="yes";
   const base={low:"Energy's low. Lead with a Reset & a walk before your first big task, and keep meals on time so you're not running on the CNS.",
     steady:"Energy's steady. Protect it: spread your steps around meals and Reset every 90 minutes.",
-    wired:"You're wired. Bring it down before you build: breathwork before tasks, nasal walks, no caffeine after 1pm."}[e]||"Set your direction in the Morning to get today's guidance.";
+    wired:"You're wired. Bring it down before you build: breathwork before tasks, nasal walks, no caffeine after 1pm."}[e]||"Keep your energy steady: spread your steps around meals and Reset every 90 minutes.";
   return base+(t?" Training today, so carbs go in your pre & post workout meals.":log.train==="no"?" Rest day, so fats, not carbs, with your meals.":"");
 }
 function suggestions(log){
@@ -567,8 +574,11 @@ const BANKS=["Walk fast first, then Wim Hof straight after. That combo settles m
 const DUMPS=["Long day at work but got everything done.","Felt flat this afternoon, walk helped.","Slept better than last week.","Struggled with the evening meal, too busy.","Good energy all day.","Kids were up early, still hit the basics."];
 function rngFor(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);let t=(h^=h>>>16)>>>0;t+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-const clientStart=c=>addDays(COHORT,c.offset);
-const clientDayNum=c=>clamp(diffDays(clientStart(c),TODAY)+1,1,PROGRAMME_DAYS);
+// A brand new client started from the login screen (prototype). "offset" is how many days the demo has jumped ahead.
+function freshClient(){const f=store.get(K.fresh,null);if(!f)return null;const [y,m,d]=f.start.split("-").map(Number);return{id:"new",name:f.name||"New Client",fresh:true,startDate:new Date(y,m-1,d),offset:f.offset||0}}
+const allClients=()=>{const f=freshClient();return f?[...CLIENTS,f]:CLIENTS};
+const clientStart=c=>c.fresh?c.startDate:addDays(COHORT,c.offset);
+const clientDayNum=c=>clamp(diffDays(clientStart(c),TODAY)+1+(c.fresh?c.offset:0),1,PROGRAMME_DAYS);
 const weekOf=dayNum=>WEEKS[clamp(Math.floor((dayNum-1)/7),0,3)];
 const dateOf=(c,dayNum)=>addDays(clientStart(c),dayNum-1);
 
@@ -577,6 +587,7 @@ const MEALS_M1=["Eggs, spinach, berries","Greek yoghurt, berries, honey","Omelet
 const MEALS_GEN=["Chicken, rice, greens","Salmon, potatoes, broccoli","Beef chilli, rice","Steak, sweet potato, peppers","Turkey wrap, salad","Cottage cheese, fruit","Prawn stir fry"];
 const TODO_GEN=[["own","Hardest task first: client proposal"],["own","Emails & admin"],["own","School run"],["own","Prep tomorrow's food"],["own","Team call"],["own","Finish report"],["own","Food shop"],["walk","Steps block after a meal"],["reset","Breathwork"],["walk","Nasal walk outside"]];
 function generated(c){
+  if(c.fresh)return {};
   if(GEN[c.id])return GEN[c.id];
   const rng=rngFor(c.id),out={},today=clientDayNum(c),nowM=NOW.getHours()*60+NOW.getMinutes();
   let prevL=null;
@@ -802,7 +813,7 @@ const S={
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("root");
-const me=()=>CLIENTS.find(c=>c.id===S.session?.clientId);
+const me=()=>allClients().find(c=>c.id===S.session?.clientId)||CLIENTS[0];
 const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2);
 const TICK='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const LOCK='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M3.8 5.5V4a2.2 2.2 0 014.4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
@@ -825,10 +836,12 @@ function loginView(){
     <div class="stack" style="gap:10px">
       <span class="eyebrow">Prototype demo access</span>
       <div class="demo-row">
-        <button class="btn" data-act="demo-client">Enter as client</button>
+        <button class="btn primary" data-act="demo-new">Start as a new client</button>
+        <button class="btn" data-act="demo-client">Sample client (Day 9)</button>
         <button class="btn" data-act="demo-coach">Enter as coach</button>
+        <button class="btn" data-act="demo-reset">Reset all demo data</button>
       </div>
-      <p class="note">This is a clickable prototype with sample clients. What you log as a client is saved in this browser only and shows up in the coach view.</p>
+      <p class="note">This is a clickable prototype. "Start as a new client" begins on Day 1 with nothing logged, starting from tonight's Evening. What you log is saved in this browser only and shows up in the coach view.</p>
     </div>
   </div></div>`;
 }
@@ -862,7 +875,8 @@ function curCtx(){
   const c=me(),today=clientDayNum(c),dn=S.viewDay||today,date=dateOf(c,dn),dk=ymd(date),logs=logsFor(c);
   return{c,today,dn,date,dk,wk:weekOf(dn),log:logs[dk]||{},prev:logs[ymd(addDays(date,-1))]||{}};
 }
-function autoPhase(log,isToday){
+function autoPhase(log,isToday,c,dn){
+  if(c&&c.fresh&&dn===1&&!stepsDone(log,"morning"))return"evening";
   if(stepsDone(log,"morning")<3)return isToday&&NOW.getHours()>=19&&stepsDone(log,"evening")>0?"evening":"morning";
   if(isToday&&NOW.getHours()>=19)return"evening";
   return"day";
@@ -871,7 +885,7 @@ function todayView(){
   let x=curCtx();
   if(!Array.isArray(x.log.items)&&todoOf(x.prev).length){saveEdit(x.c.id,x.dk,"items",todoOf(x.prev).map(([k,l])=>({id:uid(),kind:k,label:l,planned:true})));x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
-  const ph=S.phase||autoPhase(log,dn===today);
+  const ph=S.phase||autoPhase(log,dn===today,c,dn);
   const note=(store.get(K.notes,{})[c.id]);
   const dayOpen=sc.m===3;
   const tab=(id,label,count,locked)=>`<button class="phase-tab${count.done===count.of&&count.of?" complete":""}" data-phase="${id}" ${ph===id?'aria-current="page"':""}><span>${locked?LOCK+" ":""}${label}</span><small class="num">${count.done} / ${count.of}${count.done===count.of&&count.of?" ✓":""}</small></button>`;
@@ -887,6 +901,8 @@ function todayView(){
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
+    ${c.fresh&&dn===1&&!stepsDone(log,"evening")&&ph==="evening"?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Start tonight</h2><p>Your first job is tonight's Evening. It sets your wake time, plan of action and to-do list for your first proper Morning tomorrow. Nothing's on today's list yet, so just log your numbers and how today went.</p></div>`:""}
+    ${c.fresh&&dn===today?`<div class="demo-bar"><span><b>Prototype</b> · Day ${dn} for ${esc(c.name)}</span><button class="chip" data-act="nextday" ${dn>=PROGRAMME_DAYS?"disabled":""}>Jump to tomorrow &rsaquo;</button></div>`:""}
     <nav class="phases" aria-label="Parts of the day">
       ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d+sc.ml,of:sc.n+sc.mn},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
     </nav>
@@ -1181,11 +1197,11 @@ function progressView(c){
 /* ---------- coach ---------- */
 function coachView(){
   if(S.coachTab==="settings")return settingsView();
-  if(S.detail)return detailView(CLIENTS.find(c=>c.id===S.detail));
+  if(S.detail)return detailView(allClients().find(c=>c.id===S.detail));
   return overviewView();
 }
 function overviewView(){
-  const all=CLIENTS.map(statsFor);
+  const all=allClients().map(statsFor);
   const counts={ok:0,warn:0,bad:0};all.forEach(s=>counts[s.status]++);
   const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
   const order={bad:0,warn:1,ok:2};
@@ -1307,7 +1323,7 @@ function settingsView(){
 function edit(k,v){const x=curCtx();saveEdit(x.c.id,x.dk,k,v)}
 function setMeals(fn){const x=curCtx();const meals=mealsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"meals",fn(meals)||meals)}
 function setItems(fn){const x=curCtx();const items=itemsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"items",fn(items)||items)}
-function login(role){S.session=role==="coach"?{role}:{role,clientId:"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;S.phase=null;render();window.scrollTo(0,0)}
+function login(role,cid){S.session=role==="coach"?{role}:{role,clientId:cid||"sarah"};store.set(K.session,S.session);S.tab="today";S.coachTab="overview";S.detail=null;S.viewDay=null;S.phase=null;render();window.scrollTo(0,0)}
 
 root.addEventListener("submit",e=>{
   e.preventDefault();
@@ -1318,6 +1334,9 @@ root.addEventListener("click",e=>{
   const b=e.target.closest("button,[data-client]");if(!b)return;
   const act=b.dataset.act;
   if(act==="demo-client")return login("client");
+  if(act==="demo-new"){const f=store.get(K.fresh,null);const nm=(root.querySelector("#email")||{}).value;store.set(K.fresh,{start:ymd(TODAY),offset:0,name:(nm&&nm.split("@")[0]?nm.split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,x=>x.toUpperCase()):"New Client")});if(f){const all=store.get(K.edits,{});delete all["new"];store.set(K.edits,all)}return login("client","new")}
+  if(act==="demo-reset"){try{Object.values(K).forEach(k=>localStorage.removeItem(k))}catch(e){}for(const k in GEN)delete GEN[k];WEEKS=DEFAULT_WEEKS.map(w=>({...w}));S.session=null;toast("Demo data cleared");return render()}
+  if(act==="nextday"){const f=store.get(K.fresh,null);if(!f)return;f.offset=(f.offset||0)+1;store.set(K.fresh,f);S.viewDay=null;S.phase=null;render();window.scrollTo(0,0);toast("Moved to tomorrow");return}
   if(act==="demo-coach")return login("coach");
   if(act==="logout"){S.session=null;store.set(K.session,null);return render()}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
