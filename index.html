@@ -362,11 +362,28 @@ td.num,th.num{text-align:right}
 .sc-part b{font-family:var(--display);font-size:30px;line-height:1}
 .sc-part small{font-size:16px;color:var(--muted)}
 .tile small+small{margin-top:2px}
-.sc-tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+.sc-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
 .sc-tiles .tile b{font-size:clamp(24px,7vw,36px)}
 .sc-nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .sc-num{display:flex;flex-direction:column;gap:3px;align-items:flex-start;font-size:12px}
 .sc-num b{font-family:var(--display);font-size:26px;line-height:1}
+.brain{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.notice{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:10px}
+.notice-q{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green-ink)}
+.notice .chip{padding:4px 10px;font-size:12px;background:var(--bg)}
+.notice .input{padding:8px 10px;font-size:13px}
+.item .notice{margin-top:4px}
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tl li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.tl li:first-child{border-top:0}
+.tl-t{font-weight:700;color:var(--green-ink)}
+.tl-b{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tl-n{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.feel{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--lime-dim);color:var(--green-ink)}
+.tl-n q{font-style:italic;color:var(--fg);overflow-wrap:anywhere}
+details.raw{margin-top:12px}
+details.raw summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--muted)}
+@media (max-width:560px){.brain{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:900px){
   .coach-grid{grid-template-columns:1fr}
   .two{grid-template-columns:1fr}
@@ -434,25 +451,34 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 /* ---------- the 3 phases ---------- */
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
-  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Three steps, in order, before the day can be taken on."},
+  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Raise it, bring it down, choose your next move. Three steps, in order, before the day can be taken on."},
   {id:"day",name:"Day",goal:"Keep energy stable",intro:"Your own list. Write your tasks, add meals & regulation tools from the options, tick them off as you go."},
   {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Three steps, in order, that set you up for tomorrow."}
 ];
+// Morning brain targets (from Ellis's Loom: the morning action should hit all of these)
+const BRAIN=[["motor","Motor cortex"],["brainstem","Brainstem arousal"],["basal","Basal ganglia"],["circadian","Circadian rhythm"]];
+const ACTIONS=[["Fast walk outside",["motor","brainstem","basal"]],["Run or jog",["motor","brainstem","basal"]],["Cold air or cold water",["brainstem"]],["Music on before leaving",["brainstem"]],["Bright lights on",["brainstem"]],["Sunlight on your eyes",["circadian"]]];
+const LOWER=["Wim Hof","Slow breathwork","Meditation","Breath movement"];
+const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
+const FEELS=["Wired","Flat","Settled","Connected","Emotional","Hungry","Clear head","Weakness creeping in"];
 const MORNING=[
-  {id:"m1",title:"Rise & breathe",text:"Out of bed at the wake time you set last night. One breathing exercise before you touch your phone.",senses:["touch"],
-   asks:[{k:"am_state",type:"rating",label:"How do you feel on waking? 1 to 10"}]},
-  {id:"m2",title:"Light & move",text:"Get outside into daylight and walk your first steps before Meal 1. Nose breathing, no headphones.",senses:["sight","sound","smell"],asks:[]},
-  {id:"m3",title:"Open the day",text:"Read last night's plan of action. Check in with your energy, then set your direction for the day.",senses:[],
-   asks:[{k:"energy",type:"choice",label:"Energy right now",options:[["low","Low"],["steady","Steady"],["wired","Wired"]]},
+  {id:"m1",title:"Action",text:"Fast & outside, straight from your alarm. Lights on, music on, out the door and move with pace. This raises your arousal and gets energy production going.",
+   asks:[{k:"am_state",type:"rating",label:"How do you feel on waking? 1 to 10"},{k:"m_action",type:"multi",label:"What did you do? Pick all that apply",options:ACTIONS.map(a=>[a[0],a[0]])}]},
+  {id:"m2",title:"Bring it down",text:"Straight after, lower your arousal again. Stay wired and you disconnect. Settle until you can feel something, that's the sign your system has switched back on.",
+   asks:[{k:"m_lower",type:"choice",label:"How did you bring it down?",options:LOWER.map(x=>[x,x])}]},
+  {id:"m3",title:"Choose your next move",text:"Read last night's plan and what you banked. Check in with your energy, then pick what comes next.",
+   asks:[{k:"m_next",type:"choice",label:"Next move",options:NEXT},
+         {k:"energy",type:"choice",label:"Energy right now",options:[["low","Low"],["steady","Steady"],["wired","Wired"]]},
          {k:"train",type:"choice",label:"Training today?",options:[["yes","Yes"],["no","No"]]}]}
 ];
+const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?log.m_action:[]).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 const EVENING=[
   {id:"e1",title:"Close the day",text:"Log today's numbers against your targets and add your steps screenshot. No screenshot means the steps don't count.",senses:[],
    asks:[{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"}]},
   {id:"e2",title:"Bring it down",text:"Phone off at least 1 hour before bed. Use one Reset tool to lower your arousal & settle your nervous system.",senses:[],
    asks:[{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
-  {id:"e3",title:"Set up tomorrow",text:"Set tomorrow's wake time and plan of action. Brain dump whatever's left in your head so you can switch off.",senses:[],
-   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"dump",type:"textarea",label:"Brain dump"}]}
+  {id:"e3",title:"Set up tomorrow",text:"Set tomorrow's wake time and plan of action. Bank the one thing you noticed today that you want to remember. Brain dump the rest so you can switch off.",senses:[],
+   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"bank",type:"textarea",label:"One thing to bank for tomorrow, from what you noticed today"},{k:"dump",type:"textarea",label:"Brain dump"}]}
 ];
 const STEPS_OF={morning:MORNING,evening:EVENING};
 
@@ -495,11 +521,12 @@ function scoreOf(log){
   const pts=m+e+d,max=6+items.length;
   const ans=items.filter(i=>i.done&&i.fu!==undefined&&i.fu!==null),fuYes=ans.filter(i=>i.fu===true).length;
   const sn=new Set();
-  if(log.m1)MORNING[0].senses.forEach(x=>sn.add(x));
-  if(log.m2)MORNING[1].senses.forEach(x=>sn.add(x));
+  if(log.m1&&(Array.isArray(log.m_action)?log.m_action:[]).length)["sight","sound","smell"].forEach(x=>sn.add(x));
+  if(log.m2&&log.m_lower)["smell","touch"].forEach(x=>sn.add(x));
+  if(log.m3&&log.m_next==="beach")["sight","sound","smell","touch"].forEach(x=>sn.add(x));
   if(log.e2&&log.pm_tool)resetSenses(log.pm_tool).forEach(x=>sn.add(x));
   items.filter(i=>i.done).forEach(i=>itemSenses(i).forEach(x=>sn.add(x)));
-  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,fuYes,fuN:ans.length,senses:sn};
+  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
 }
 const hasAny=log=>log&&Object.keys(log).length>0;
 const nowHHMM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
@@ -518,6 +545,9 @@ const CLIENTS=[
 ];
 const OWN=["Hardest task first: client proposal","Emails & admin","School run","Prep tomorrow's food","Team call","Gym bag ready","Call Mum","Finish report","Food shop","Clear the inbox"];
 const PLANS=["Hardest task first, walk after every meal, gym at 12.","Early meeting, so walk before Meal 1 & prep food tonight.","Rest day. Steps spread out, Reset every 90 mins.","Big work day. Breathwork before each block of work."];
+const NOTES_M2=["Wanted to cut it to 2 rounds, not 3. Weakness creeping in, more reason to settle.","Looked at the dog after and felt it. Actually relaxed.","Hungry straight after, wasn't a few minutes before.","Heart rate came right down, head quiet."];
+const NOTES_DAY=["Hunger arrived on time for once.","Felt flat before, clearer after.","Rushed it, didn't breathe first.","Noticed the sounds on the walk, not my phone."];
+const BANKS=["Walk fast first, then Wim Hof straight after. That combo settles me.","When I can't feel anything I'm still too wired. Bring it down.","Write it as it happens, I forget otherwise.","Hunger shows up once I'm settled. Wait for it."];
 const DUMPS=["Long day at work but got everything done.","Felt flat this afternoon, walk helped.","Slept better than last week.","Struggled with the evening meal, too busy.","Good energy all day.","Kids were up early, still hit the basics."];
 function rngFor(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);let t=(h^=h>>>16)>>>0;t+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -541,8 +571,9 @@ function generated(c){
     // morning, in order
     let t=wake;
     for(const s of MORNING){if(t>until||rng()>p+.08)break;L[s.id]=hhmm(t);t+=10+Math.round(rng()*25)}
-    if(L.m1)L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));
-    if(L.m3){L.energy=pick(["low","steady","steady","wired"]);L.train=rng()<.5?"yes":"no"}
+    if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];if(rng()<.5)L.m1_feel=[pick(["Wired","Wired","Flat"])]}
+    if(L.m2){L.m_lower=pick(LOWER);if(rng()<.7){L.m2_feel=[pick(["Settled","Connected","Emotional"]),...(rng()<.4?["Hungry"]:[])];if(rng()<.5)L.m2_note=pick(NOTES_M2)}}
+    if(L.m3){L.m_next=pick(NEXT)[0];L.energy=pick(["low","steady","steady","wired"]);L.train=rng()<.5?"yes":"no"}
     // day list
     const items=[],add=(kind,label)=>items.push({id:uid(),kind,label});
     add("own",pick(OWN));add("meal",L.train==="yes"?"Meal: protein + fruit / veg":"Meal: protein + fats");add("walk","Steps block after a meal");
@@ -550,14 +581,14 @@ function generated(c){
     else{add("meal","Meal: protein + fats");add("reset",pick(RESET_TOOLS)[0])}
     add("own",pick(OWN));add("walk","Nasal walk outside");add("reset",pick(RESET_TOOLS)[0]);add("meal","Meal: protein + fruit / veg");
     let it=Math.max(t,wake+60);
-    items.forEach(x=>{it+=40+Math.round(rng()*50);if(it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05}});
+    items.forEach(x=>{it+=40+Math.round(rng()*50);if(it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(rng()<.3){x.feel=[pick(FEELS)];if(rng()<.5)x.note=pick(NOTES_DAY)}}});
     if(L.m1||items.some(x=>x.done))L.items=items;
     // evening, in order
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
     if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png"}
     if(L.e2){L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
-    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);if(rng()<.6)L.dump=pick(DUMPS)}
+    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);if(rng()<.7)L.bank=pick(BANKS);if(rng()<.6)L.dump=pick(DUMPS)}
     out[date]=L;
   }
   return GEN[c.id]=out;
@@ -839,6 +870,7 @@ function todayView(){
     </nav>
     ${ph==="score"?scoreView(x):`${phaseHead(ph)}
     ${ph==="morning"?stepsView("morning",x):ph==="evening"?stepsView("evening",x):dayView(x)}
+    ${ph==="morning"?brainPanel(log):""}
     ${sensesPanel(sc)}`}
   </div>`;
 }
@@ -853,14 +885,38 @@ function askHtml(a,log,wk,locked){
       return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
     case"time":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="time" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis}></label>`;
     case"textarea":return `<label class="ask" for="${id}"><span>${a.label}</span><textarea class="input" id="${id}" data-input="${a.k}" ${dis}>${esc(v||"")}</textarea></label>`;
+    case"multi":{const arr=Array.isArray(v)?v:[];return `<div class="ask"><span>${a.label}</span><div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-askm="${a.k}" data-val="${esc(k)}" aria-pressed="${arr.includes(k)}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`}
     case"upload":return `<div class="ask"><span>${a.label}</span><label class="chip upload" for="${id}" style="align-self:flex-start">${v?"Replace · "+esc(v):"Upload"}<input type="file" id="${id}" data-file="${a.k}" accept="image/*" ${dis}></label></div>`;
   }
+}
+function noticeHtml(feel,note,kind,id){
+  const arr=Array.isArray(feel)?feel:[];
+  const chip=f=>kind==="step"?`data-sfeel="${id}"`:`data-ifeel="${id}"`;
+  const inp=kind==="step"?`data-input="${id}_note"`:`data-inote="${id}"`;
+  return `<div class="notice"><span class="notice-q">What did you notice?</span><div class="opts">${FEELS.map(f=>`<button class="chip" ${chip(f)} data-val="${esc(f)}" aria-pressed="${arr.includes(f)}">${esc(f)}</button>`).join("")}</div><input class="input" ${inp} id="n-${id}" value="${esc(note||"")}" placeholder="One line, as it happens (optional)" autocomplete="off"></div>`;
+}
+function brainPanel(log){
+  const b=brainHit(log);
+  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Morning brain targets</h2><span class="muted num">${b.size} / 4</span></div>
+  <p class="muted" style="font-size:12px;margin-bottom:10px">Your Action step ticks these off. One action can hit several. Sunlight is the only one that hits circadian rhythm, so it stays open if the sun isn't up yet.</p>
+  <div class="brain">${BRAIN.map(([k,l])=>`<div class="sense ${b.has(k)?"on":""}"><b>${b.has(k)?"✓":"·"}</b>${l}</div>`).join("")}</div></section>`;
+}
+function timeline(log){
+  const rows=[];
+  const sum=(s)=>s.asks.filter(a=>["choice","multi"].includes(a.type)&&log[a.k]!==undefined&&log[a.k]!=="").map(a=>{const v=log[a.k];if(a.k==="train")return v==="yes"?"Training day":"Rest day";if(a.k==="energy")return "Energy "+v;return Array.isArray(v)?v.join(", "):((a.options.find(o=>o[0]===v)||[0,v])[1])}).join(" · ");
+  MORNING.forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Morning",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
+  itemsOf(log).forEach(i=>{if(i.done)rows.push({t:i.done,ph:"Day",title:i.label,sub:i.fu===true?"Right process":i.fu===false?"Process missed":"",feel:i.feel,note:i.note})});
+  EVENING.forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Evening",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
+  const ord={Morning:0,Day:1,Evening:2};
+  rows.sort((a,b)=>ord[a.ph]-ord[b.ph]||mins(a.t)-mins(b.t));
+  if(!rows.length)return `<p class="muted" style="font-size:13px">Nothing logged yet.</p>`;
+  return `<ol class="tl">${rows.map(r=>`<li><span class="tl-t num">${esc(r.t)}</span><div class="tl-b"><div><b>${esc(r.title)}</b> <span class="kind">${r.ph}</span></div>${r.sub?`<small class="muted">${esc(r.sub)}</small>`:""}${(r.feel&&r.feel.length)||r.note?`<div class="tl-n">${(r.feel||[]).map(f=>`<span class="feel">${esc(f)}</span>`).join("")}${r.note?`<q>${esc(r.note)}</q>`:""}</div>`:""}</div></li>`).join("")}</ol>`;
 }
 function stepsView(ph,x){
   const {log,wk,prev}=x,steps=STEPS_OF[ph];
   const firstOpen=steps.findIndex(s=>!log[s.id]);
   let html=`<div class="steps-list">`;
-  if(ph==="morning"&&prev.plan)html+=`<div class="direction"><span class="eyebrow">Last night's plan of action</span><p>${esc(prev.plan)}</p>${prev.tmr_wake?`<small>Wake time set: <b class="num">${esc(prev.tmr_wake)}</b></small>`:""}</div>`;
+  if(ph==="morning"&&(prev.plan||prev.bank))html+=`<div class="direction">${prev.plan?`<span class="eyebrow">Last night's plan of action</span><p>${esc(prev.plan)}</p>`:""}${prev.bank?`<span class="eyebrow" style="margin-top:6px">You banked</span><p>“${esc(prev.bank)}”</p>`:""}${prev.tmr_wake?`<small>Wake time set: <b class="num">${esc(prev.tmr_wake)}</b></small>`:""}</div>`;
   steps.forEach((s,i)=>{
     const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
@@ -872,6 +928,7 @@ function stepsView(ph,x){
         <div class="step-head"><h3>${s.title}</h3><span class="draft" title="Wording to be confirmed by Ellis">Draft</span></div>
         <p>${s.text}</p>
         ${s.asks.map(a=>askHtml(a,log,wk,locked)).join("")}
+        ${done?noticeHtml(log[s.id+"_feel"],log[s.id+"_note"],"step",s.id):""}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
           :`<button class="btn primary" data-step="${s.id}">Mark step ${i+1} done</button><span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
@@ -929,9 +986,12 @@ function scoreView(x){
     <div class="tiles sc-tiles">
       <div class="tile"><small>Right process</small><b class="num">${sc.fuN?Math.round(sc.fuYes/sc.fuN*100)+"%":"–"}</b><small>${sc.fuYes} of ${sc.fuN} follow-ups</small></div>
       <div class="tile"><small>Senses evoked</small><b class="num">${sc.senses.size} / 5</b><small>${SENSES.filter(([k])=>!sc.senses.has(k)).map(([,l])=>l).join(", ")||"All five"}${sc.senses.size<5?" missing":""}</small></div>
+      <div class="tile"><small>Morning brain targets</small><b class="num">${sc.brain.size} / 4</b><small>${BRAIN.filter(([k])=>!sc.brain.has(k)).map(([,l])=>l).join(", ")||"All four"}${sc.brain.size<4?" open":""}</small></div>
       <div class="tile"><small>AM to PM state</small><b class="num">${log.am_state||"–"} &rsaquo; ${log.pm_state||"–"}</b><small>out of 10</small></div>
     </div>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your numbers</h2></div><div class="sc-nums">${num("steps","Steps","")}${num("water","Water","L")}${num("protein","Protein","g")}</div></section>
+    ${log.bank?`<div class="direction"><span class="eyebrow">Banked for tomorrow</span><p>“${esc(log.bank)}”</p></div>`:""}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's log</h2><span class="muted" style="font-size:12px">Filed for you</span></div>${timeline(log)}</section>
     <div class="nextbar"><div><b>See you in the morning.</b><p>Your plan of action is ready for tomorrow.</p></div><button class="btn" data-phase="evening">&lsaquo; Back to Evening</button></div>`;
 }
 function itemHtml(it,i){
@@ -942,6 +1002,7 @@ function itemHtml(it,i){
       <div class="item-title"><span>${esc(it.label)}</span>${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${it.done&&it.fu===true?`<span class="badge ok">Right process</span>`:""}${it.done&&it.fu===false?`<span class="badge miss">Process missed</span>`:""}</div>
       <span class="kind">${K2.name}${itemSenses(it).length?" · "+itemSenses(it).join(", "):""}</span>
       ${needQ?`<div class="fu"><span>${esc(K2.q)}</span><div class="opts"><button class="chip" data-fu="${it.id}" data-val="1">Yes</button><button class="chip" data-fu="${it.id}" data-val="0">Not this time</button></div></div>`:""}
+      ${it.done&&!needQ?noticeHtml(it.feel,it.note,"item",it.id):""}
     </div>
     ${it.done?"":`<button class="x" data-del="${it.id}" aria-label="Remove ${esc(it.label)}">×</button>`}
   </div>`;
@@ -972,9 +1033,12 @@ function programmeView(){
   const how=[
     "Your day runs in three parts. Each one has a job for your central nervous system.",
     "#Evening: reduce arousal",
-    "Three steps in order: close the day, bring it down, set up tomorrow. This is where you set tomorrow's wake time & plan of action. If you've just got your plan, start here tonight.",
+    "Three steps in order: close the day, bring it down, set up tomorrow. This is where you set tomorrow's wake time, your plan of action and the thing you're banking. If you've just got your plan, start here tonight.",
     "#Morning: stimulation & arousal",
-    "Three steps in order: rise & breathe, light & move, open the day. Your day doesn't open until they're done.",
+    "Three steps in order. Action: fast & outside, straight from your alarm, to raise your arousal. Bring it down: Wim Hof or slow breathwork straight after, until you can feel something again. Choose your next move: brain training, a beach walk, food if you're hungry, or straight to work. Your day doesn't open until they're done.",
+    "Your Action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm. Hit all four by the end of the morning and you've done what the morning needs.",
+    "#Notice it, then bank it",
+    "After every step and task, tap what you noticed and add a line if you want. Writing it down as it happens is what makes it stick. The app files it all into one clean log, and each evening you bank the one thing worth remembering. It's waiting for you the next morning.",
     "#Day: keep energy stable",
     "Nobody can write your day for you. You build your own list, then fold in meals & regulation tools from the options. Every tick logs the time and asks one question to check you did it the right way.",
     "#Senses",
@@ -1125,7 +1189,7 @@ function overviewView(){
 }
 function phaseLog(title,steps,log,wk){
   return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
-    const ans=s.asks.map(a=>{const v=log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?v+"/10":a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
+    const ans=s.asks.map(a=>{const v=log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?v+"/10":a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):Array.isArray(v)?v.join(", "):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
     return `<div class="lp-row ${d?"":"miss"}"><div class="lp-top"><span>${d?"✓ ":""}${esc(s.title)}</span><span class="num">${d?esc(d):"–"}</span></div>${ans?`<div class="lp-ans">${ans}</div>`:""}</div>`}).join("")}</div>`;
 }
 function detailView(c){
@@ -1147,11 +1211,13 @@ function detailView(c){
     </div>
     <div class="two">
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">28 day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.sc.pts} pts · ${row.sc.senses.size}/5 senses</span></div>
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.sc.pts} pts · ${row.sc.brain.size}/4 brain · ${row.sc.senses.size}/5 senses</span></div>
+        <div class="log-phase"><h4>Timeline</h4>${timeline(log)}${log.bank?`<p style="font-size:13px;margin-top:8px"><span class="muted">Banked:</span> “${esc(log.bank)}”</p>`:""}</div>
+        <details class="raw"><summary>Full answers by section</summary>
         ${phaseLog("Morning",MORNING,log,wk)}
         <div class="log-phase"><h4>Day list</h4>${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
           ${items.length?items.map(i=>`<div class="lp-row ${i.done?"":"miss"}"><div class="lp-top"><span>${i.done?"✓ ":""}${esc(i.label)} <span class="kind">${(KINDS[i.kind]||KINDS.own).name}</span></span><span class="num">${i.done?esc(i.done):"–"}${i.done?(i.fu===true?' <span class="badge ok">Process</span>':i.fu===false?' <span class="badge miss">Missed</span>':""):""}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No list built.</p>`}</div>
-        ${phaseLog("Evening",EVENING,log,wk)}
+        ${phaseLog("Evening",EVENING,log,wk)}</details>
       </section>
     </div>
     ${trendCharts(st)}
@@ -1222,11 +1288,15 @@ root.addEventListener("click",e=>{
   if(b.dataset.add){const label=b.dataset.label;if(itemsOf(curCtx().log).some(i=>i.label===label)&&b.dataset.add!=="own"){toast("Already on your list");return}setItems(a=>[...a,{id:uid(),kind:b.dataset.add,label}]);toast("Added to your list");return render()}
   if(b.dataset.del){setItems(a=>a.filter(i=>i.id!==b.dataset.del));return render()}
   if(b.dataset.tick){const id=b.dataset.tick;setItems(a=>a.map(i=>i.id!==id?i:(i.done?{...i,done:"",fu:null}:{...i,done:nowHHMM(),fu:null})));return render()}
+  if(b.dataset.askm){const k=b.dataset.askm,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:[];edit(k,arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]);return render()}
+  if(b.dataset.sfeel){const k=b.dataset.sfeel+"_feel",o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:[];edit(k,arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]);return render()}
+  if(b.dataset.ifeel){const id=b.dataset.ifeel,o=b.dataset.val;setItems(a=>a.map(i=>{if(i.id!==id)return i;const arr=Array.isArray(i.feel)?i.feel:[];return{...i,feel:arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]}}));return render()}
   if(b.dataset.fu){const id=b.dataset.fu,v=b.dataset.val==="1";setItems(a=>a.map(i=>i.id===id?{...i,fu:v}:i));return render()}
 });
 root.addEventListener("keydown",e=>{const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
 let timers={};
 root.addEventListener("input",e=>{
+  const inote=e.target.dataset.inote;if(inote){const v=e.target.value;clearTimeout(timers["i"+inote]);timers["i"+inote]=setTimeout(()=>setItems(a=>a.map(i=>i.id===inote?{...i,note:v}:i)),300);return}
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
   clearTimeout(timers[k]);timers[k]=setTimeout(()=>edit(k,v),300);

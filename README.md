@@ -9,7 +9,8 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 ### How a client's day works
 
 - **Evening (reduce arousal):** 3 steps done in order: close the day (steps, water and protein against targets, plus a steps screenshot), bring it down (wind down tool, PM state) and set up tomorrow (wake time, plan of action, brain dump). New clients start here.
-- **Morning (stimulation and arousal):** 3 steps done in order: rise and breathe, light and move, open the day (energy and training check-in). The Day stays locked until all 3 are done.
+- **Morning (stimulation and arousal):** 3 steps done in order. Action: fast and outside, to raise arousal. Bring it down: Wim Hof or breathwork, to lower it again. Choose your next move: brain training, a beach walk, food or work, plus an energy and training check-in. The Action step ticks off four brain targets (motor cortex, brainstem arousal, basal ganglia, circadian rhythm). The Day stays locked until all 3 steps are done.
+- **Notice it, bank it:** after every step and task the client taps what they noticed and can add one line. It's all filed into a clean timeline for the day. Each evening they bank one thing to remember, and it shows the next morning.
 - **Day (keep energy stable):** the client builds their own list. They write their own tasks and add meals, steps, regulation tools and training from the options. A direction and suggestions come from their morning answers.
 - **Logging:** every step and task logs its time automatically. Every Day task asks one follow-up question to check it was done in the right process order.
 - **Senses:** sight, sound, smell, taste and touch fill in automatically from what was done.
