@@ -24,6 +24,7 @@
   --pale:#eefbe8;
   --done-bg:#e4e7e2;
   --done-fg:#8d948a;
+  --g-track:#2e322b;
   --green-ink:#14861a;
   --night:#0a0b0a;
   --on-night:#f2f5f1;
@@ -287,7 +288,7 @@ td.num,th.num{text-align:right}
 .weeks-tbl table{min-width:820px}
 .weeks-tbl td{vertical-align:top}
 .weeks-tbl .input{padding:8px 10px;font-size:13px}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lime);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:999px;font-size:13px;z-index:20}
+.toast{position:fixed;left:50%;bottom:calc(104px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--lime);color:var(--ink);font-weight:700;padding:10px 16px;border-radius:999px;font-size:13px;z-index:20}
 
 /* phases + steps + day list */
 .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:4}
@@ -460,6 +461,28 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .fcat.off{opacity:.45;cursor:not-allowed}
 .fopts .chip{padding:5px 10px;font-size:12px;background:var(--bg)}
 .fsum{display:flex;flex-direction:column;gap:2px;font-size:13px}
+.gauge-dock{position:fixed;left:0;right:0;bottom:0;z-index:15;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));pointer-events:none}
+.gauge-bar,.gauge-panel{pointer-events:auto;width:100%;max-width:520px;background:var(--night);color:var(--on-night);border-radius:18px;box-shadow:0 12px 36px -12px rgba(0,0,0,.45),0 0 0 1px var(--night)}
+.gauge-bar{display:flex;align-items:center;justify-content:space-around;gap:6px;padding:8px 10px;border:0}
+.gauge{display:grid;grid-template-columns:48px auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;text-align:left}
+.gauge svg{grid-row:1/3}
+.g-l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;opacity:.7;align-self:end}
+.g-v{font-family:var(--display);font-size:18px;font-weight:700;line-height:1;align-self:start}
+.g-v small{font-family:var(--body);font-size:10px;opacity:.6;font-weight:600}
+.gauge.hit .g-v{color:var(--lime)}
+.g-edit{font-size:11px;font-weight:800;color:var(--lime);text-decoration:underline;text-underline-offset:3px}
+.gauge-panel{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.gauge-panel .ask{color:var(--on-night)}
+.gauge-panel .input{background:color-mix(in srgb,var(--on-night) 10%,transparent);color:var(--on-night);border-color:transparent}
+.gauge-panel .muted{color:var(--on-night);opacity:.7}
+.gauge-space{height:96px}
+.checkin{border:2px solid var(--lime);background:var(--bg);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
+.checkin.done{flex-direction:row;align-items:center;gap:12px;border:1px solid var(--line);box-shadow:none;background:var(--surface);padding:10px 14px}
+.checkin.done>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.checkin.done .pb-num{width:32px;height:32px;background:var(--lime);color:var(--ink)}
+.checkin.done small{font-size:12px;color:var(--muted)}
+.nextbar.ready{border-color:var(--green-ink);background:var(--pale)}
+@media (max-width:420px){.gauge{grid-template-columns:40px;grid-template-rows:auto auto auto;justify-items:center;text-align:center}.gauge svg{grid-row:auto;width:40px;height:40px}.g-v{font-size:15px}}
 .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .togo{font-size:11px;font-weight:700;color:var(--warn)}
 .cue{align-self:flex-start;font-size:12px;font-weight:800;color:var(--ink);background:var(--lime);padding:3px 10px;border-radius:999px}
@@ -954,7 +977,7 @@ const PILLARS=[
 /* ---------- app state ---------- */
 const S={
   session:store.get(K.session,null),
-  tab:"today",viewDay:null,phase:null,cat:"walk",open:{},scrollTo:null,openMeal:null,fcat:{},openPick:null,wopen:false,
+  tab:"today",viewDay:null,phase:null,cat:"walk",open:{},scrollTo:null,openMeal:null,fcat:{},openPick:null,wopen:false,gopen:false,
   coachTab:"overview",detail:null,detailDay:null,sort:{k:"status",dir:1},filter:"all",hview:"phases"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -1106,6 +1129,7 @@ function todayView(){
     ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup night",goal:"Get ready for Day 1",intro:"Three steps tonight and your first day is planned."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
       :allDone?`<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
+    ${dn>0?gaugeBar(log,wk)+`<div class="gauge-space" aria-hidden="true"></div>`:""}
   </div>`;
 }
 function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goal"><div><span class="eyebrow">${P.name} · CNS goal</span><h2 class="display" style="font-size:clamp(32px,8vw,44px)">${P.goal}</h2></div><p class="muted" style="font-size:13px">${P.intro}</p></div>`}
@@ -1216,16 +1240,14 @@ function dayView(x){
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
   ${prev.plan||todo.length?`<section class="card plan-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your plan for today</h2><span class="muted" style="font-size:12px">From last night</span></div>
     ${prev.plan?`<p>${esc(prev.plan)}</p>`:""}${todo.length?`<ul class="plan-list">${todo.map(t=>`<li>${esc(t[1])}</li>`).join("")}</ul>`:""}</section>`:""}
-  <section class="card nums-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's numbers</h2><span class="muted" style="font-size:12px">Update as you go</span></div>
-    <div class="nums">${[{k:"steps",label:"Steps",target:"steps",remaining:true,idp:"d-"},{k:"protein",label:"Protein (g)",target:"protein",remaining:true,idp:"d-"},{k:"water",label:"Water (L)",target:"water",step:0.5,remaining:true,idp:"d-"}].map(a=>askHtml({...a,type:"number"},log,x.wk,false)).join("")}</div>
-    <p class="muted" style="font-size:12px">Saying yes to water with a meal adds 500ml.</p></section>
   <section class="card">
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after.</p>
-    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false;pairs.forEach(q=>{h+=pairHtml(q,ta);if(ta&&q.slot===ta){h+=trainHtml(log);placed=true}});if(ta&&!placed)h+=trainHtml(log);return h})()}</div>
+    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk);if(!log["chk"+q.slot])pending=q.slot}if(ta&&q.slot===ta){h+=trainHtml(log);placed=true}});if(ta&&!placed)h+=trainHtml(log);return h})()}</div>
     ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add Meal ${next}</button>`:""}
   </section>
   ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
+    :pairs.length&&pairs.every(q=>q.done)?`<div class="nextbar ready"><div><b>Last meal done.</b><p>Head to your Evening and give your final numbers for today.</p></div><button class="btn primary" data-finishday="1">Go to my Evening</button></div>`
     :`<div class="nextbar"><div><b>Done for the day?</b><p>${sc.pd} ${sc.pd===1?"meal":"meals"} and ${sc.wk} walk ${sc.wk===1?"block":"blocks"} ticked.</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
 }
 function trainHtml(log){
@@ -1239,12 +1261,34 @@ function trainHtml(log){
     </div>
   </div></div>`;
 }
-function pairHtml(p,ta){
+const CHECKINS=[2,3]; // after these meals, update your numbers before the next meal
+const NUM_ASKS=[{k:"steps",label:"Steps",target:"steps",remaining:true},{k:"protein",label:"Protein (g)",target:"protein",remaining:true},{k:"water",label:"Water (L)",target:"water",step:0.5,remaining:true}];
+function gauge(v,t,label,unit){
+  const n=Number(v)||0,pctv=t?Math.min(1,n/t):0,hit=t&&n>=t,r=19,c=2*Math.PI*r;
+  const fmt=x=>unit==="steps"?(x>=1000?(Math.round(x/100)/10)+"k":String(x)):x+unit;
+  return `<div class="gauge${hit?" hit":""}"><svg width="48" height="48" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="${r}" fill="none" stroke="var(--g-track)" stroke-width="6"/><circle cx="24" cy="24" r="${r}" fill="none" stroke="${hit?"var(--lime)":"color-mix(in srgb,var(--lime) 60%,var(--g-track))"}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-pctv)}" transform="rotate(-90 24 24)"/>${hit?`<path d="M17 24.5l4.5 4.5L31 19.5" fill="none" stroke="var(--lime)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`:`<text x="24" y="28" text-anchor="middle" font-size="11" font-weight="800" fill="var(--on-night)">${Math.round(pctv*100)}%</text>`}</svg>
+    <span class="g-l">${label}</span><span class="g-v num">${fmt(n)}<small> / ${fmt(t)}</small></span></div>`;
+}
+function gaugeBar(log,wk){
+  return `<div class="gauge-dock">
+    ${S.gopen?`<div class="gauge-panel"><div class="sec-head"><b>Update your numbers</b><button class="link" data-gauges="1" style="color:var(--on-night)">Close</button></div><div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"g-"},log,wk,false)).join("")}</div><small style="opacity:.75">Saying yes to water with a meal adds 500ml.</small></div>`:""}
+    <button class="gauge-bar" data-gauges="1" aria-label="Your targets today. Tap to update your numbers">${gauge(log.steps,wk.steps,"Steps","steps")}${gauge(log.protein,wk.protein,"Protein","g")}${gauge(log.water,wk.water,"Water","L")}<span class="g-edit">${S.gopen?"Close":"Update"}</span></button>
+  </div>`;
+}
+function checkinHtml(slot,log,wk){
+  const t=log["chk"+slot];
+  if(t)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Numbers updated ${esc(t)}</b><small>${[log.steps&&Number(log.steps).toLocaleString("en-GB")+" steps",log.protein&&log.protein+"g protein",log.water&&log.water+"L water"].filter(Boolean).join(" · ")}</small></div><button class="link" data-chkundo="${slot}">Redo</button></div>`;
+  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Number check-in</span><h3 class="sec-title" style="font-size:22px">Now you've done ${slot} meals. Time to update your numbers.</h3><p class="muted" style="font-size:13px">Your most recent steps, protein and water. Your next meal unlocks once they're in.</p></div>
+    <div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"c"+slot+"-"},log,wk,false)).join("")}</div>
+    <div><button class="btn primary" data-chk="${slot}">Numbers updated</button></div></div>`;
+}
+function pairHtml(p,ta,lockedBy){
   const waterQ=p.done&&(p.water===undefined||p.water===null);
   return `<div class="pair">
     <div class="pi${p.done?" done":""}">
-      <button class="item-tick" ${p.fixed?"disabled":`data-mealtick="${p.key}"`} aria-pressed="${!!p.done}" aria-label="${p.done?"Untick":"Tick"} Meal ${p.slot}"><span class="tick">${TICK}</span></button>
+      <button class="item-tick" ${p.fixed||(lockedBy&&!p.done)?"disabled":`data-mealtick="${p.key}"`} aria-pressed="${!!p.done}" aria-label="${p.done?"Untick":"Tick"} Meal ${p.slot}"><span class="tick">${TICK}</span></button>
       <div class="item-main">
+        ${lockedBy&&!p.done?`<span class="kind" style="color:var(--warn)">${LOCK} Update your numbers after Meal ${lockedBy} first</span>`:""}
         <div class="item-title"><span>Meal ${p.slot}${mealRole(p.slot,ta)?` <span class="role">${mealRole(p.slot,ta)}</span>`:""}</span>${p.done?`<span class="stamp">${esc(p.done)}</span>`:""}${p.fixed?`<span class="kind">From your Morning</span>`:p.planned&&!p.done?`<span class="kind">Planned last night</span>`:""}${p.done&&p.water===true?`<span class="badge ok">Water ✓</span>`:""}${p.done&&p.water===false?`<span class="badge miss">No water</span>`:""}</div>
         ${foodsCount(p.foods)?`<div class="fsum">${FOOD_CATS.filter(c=>(p.foods[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(p.foods[c.k].join(", "))}</span>`).join("")}</div>`:p.text?`<span class="muted" style="font-size:13px">${p.planned&&!p.done?"Planned: ":""}${esc(p.text)}</span>`:""}
         <button class="link mealopen" data-mealopen="${p.key}">${S.openMeal===p.key?"Close foods":foodsCount(p.foods)?"Change":"Choose what's in it"}</button>
@@ -1253,7 +1297,7 @@ function pairHtml(p,ta){
       </div>
       ${!p.done&&!p.fixed?`<button class="x" data-mdel="${p.key}" aria-label="Remove Meal ${p.slot}">×</button>`:""}
     </div>
-    ${S.openMeal===p.key?`<div class="pick-wrap">${foodPicker(p.key,p.slot,p.foods,false)}<div class="pick-foot">${p.done?`<button class="btn" data-mealopen="${p.key}">Done</button>`:`<button class="btn primary" data-mealtick="${p.key}">Log Meal ${p.slot}</button><span class="muted" style="font-size:12px">${foodsCount(p.foods)} picked</span>`}</div></div>`:""}
+    ${S.openMeal===p.key?`<div class="pick-wrap">${foodPicker(p.key,p.slot,p.foods,false)}<div class="pick-foot">${p.done||lockedBy?`<button class="btn" data-mealopen="${p.key}">Done</button>`:`<button class="btn primary" data-mealtick="${p.key}">Log Meal ${p.slot}</button><span class="muted" style="font-size:12px">${foodsCount(p.foods)} picked</span>`}</div></div>`:""}
     <div class="pi walk${p.walk?" done":""}${p.done?"":" locked"}">
       <button class="item-tick" data-walktick="${p.key}" aria-pressed="${!!p.walk}" ${p.done?"":"disabled"} aria-label="${p.walk?"Untick":"Tick"} walk after Meal ${p.slot}"><span class="tick">${TICK}</span></button>
       <div class="item-main"><div class="item-title"><span>Walk block after Meal ${p.slot}</span>${p.walk?`<span class="stamp">${esc(p.walk)}</span>`:""}</div>${p.done?"":`<span class="kind">${LOCK} Unlocks when Meal ${p.slot} is ticked</span>`}</div>
@@ -1633,6 +1677,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.carry){const x=curCtx(),it=itemsOf(x.log).find(i=>i.id===b.dataset.carry);if(!it)return;const list=todoOf(x.log);edit("todo_tmr",list.some(t=>t[1]===it.label)?list.filter(t=>t[1]!==it.label):[...list,[it.kind,it.label]]);return render()}
   if(b.dataset.tdel){const list=todoOf(curCtx().log).slice();list.splice(Number(b.dataset.tdel),1);edit("todo_tmr",list);return render()}
   if(b.dataset.tadd){const inp=root.querySelector("#tmrInput"),v=inp&&inp.value.trim();if(!v)return;edit("todo_tmr",[...todoOf(curCtx().log),["own",v]]);render();const n=root.querySelector("#tmrInput");if(n)n.focus();return}
+  if(b.dataset.chk){const sl=b.dataset.chk;root.querySelectorAll(`[id^="a-c${sl}-"]`).forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Numbers updated");return render()}
+  if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
+  if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
   if(b.dataset.pickopen){S.openPick=S.openPick===b.dataset.pickopen?null:b.dataset.pickopen;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
   if(b.dataset.trainstart){edit("train_start",nowHHMM());S.wopen=true;return render()}
