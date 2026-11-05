@@ -533,6 +533,8 @@ select.input{appearance:auto}
 .dd-box svg{opacity:0;width:12px;height:12px}
 .dd-opt[aria-pressed=true] .dd-box{background:var(--lime);border-color:var(--lime)}
 .dd-opt[aria-pressed=true] .dd-box svg{opacity:1}
+.train-row .guide-link{align-self:flex-start;color:var(--lime);font-size:13px;font-weight:700;margin:0 0 2px 4px;text-decoration:underline}
+.guide-list{margin:4px 0 2px 0;padding-left:18px;display:flex;flex-direction:column;gap:2px}
 .tstep-row{display:flex;align-items:center;gap:8px}
 .tstep-row .tstep{flex:1}
 .tedit{display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--on-night) 8%,transparent);border-radius:10px;padding:10px;font-size:12px}
@@ -658,8 +660,8 @@ const INFO={
   "Time out (15 mins of something you enjoy)":"Nothing specific. 15 minutes doing something you enjoy, phone away.",
   "Journalling":"Write down what's on your mind. No rules, just get it out of your head.",
   meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs come in from Meal 2 and around your training. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
-  pre:"Your pre-workout meal fuels the session: protein and carbs, at least an hour before you train.",
-  workout:"Warm up for 5 to 10 minutes first, then follow your session.",
+  pre:"Your pre-workout meal (protein and carbs, at least an hour before) and a 5 to 10 minute warm up. Tick this once both are done.",
+  workout:"Follow your session from the workout library, or your own workout.",
   base:"Bring your heart rate back down after training: an easy walk with nose breathing, then a short Reset, before your post-workout meal."
 };
 const infoBtn=(id,label)=>INFO[id]?`<button class="info-btn${S.info===id?" on":""}" data-info="${esc(id)}" aria-expanded="${S.info===id}" aria-label="About ${esc(label||id)}">i</button>`:"";
@@ -854,7 +856,7 @@ function generated(c){
     const meals=[];const nM=3+Math.floor(rng()*3);for(let i=0;i<nM;i++){const f=genFoods(i+1,rng);meals.push({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),planned:!!prevL})};
     let it=Math.max(t,wake+60);
     meals.forEach(x=>{if(x.slot===1){if(L.mm){x.done=L.mm;x.fu=L.meal1_water==="yes";if(rng()<p)x.walk=hhmm(mins(L.mm)+25)}return}it+=150+Math.round(rng()*60);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
-    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_wo=hhmm(mins(L.train_time)+50);L.train_done=L.train_base=hhmm(mins(L.train_time)+60)}
+    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_pre=L.train_time;L.train_wo=hhmm(mins(L.train_time)+50);L.train_done=L.train_base=hhmm(mins(L.train_time)+60)}
     if(L.m1)L.meals=meals;
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
@@ -1355,7 +1357,7 @@ function dayView(x){
 }
 function trainHtml(log,lockedBy){
   const w=log.workout||"",lk=lockedBy&&!log.train_done,ta=dayTrainAfter(log),pre=dayPairs(log).find(q=>q.slot===ta),preDone=!pre||!!pre.done;
-  const n=(preDone?1:0)+["train_wo","train_base"].filter(k=>log[k]).length;
+  const n=["train_pre","train_wo","train_base"].filter(k=>log[k]).length;
   const row=(k,label,info,ok)=>{const on=!!log[k];ok=!lk&&(on||ok);return `<div class="tstep-row"><button class="tstep${on?" done":""}${ok?"":" off"}" ${ok?`data-tstep="${k}"`:"disabled"}><span class="tick">${TICK}</span><span>${label}${on?` <small>${esc(log[k])}</small>`:""}</span></button>${infoBtn(info,label)}</div>${infoBox(info)}`};
   return `<div class="pair train-row" id="train-row"><div class="pi${log.train_done?" done":""}">
     <span class="item-tick" aria-label="Training session ${log.train_done?"done":"not done"}"><span class="tick">${TICK}</span></span>
@@ -1365,8 +1367,10 @@ function trainHtml(log,lockedBy){
       <span class="muted" style="font-size:13px">${w?esc(w==="My own workout"&&log.workout_name?log.workout_name:w):"No workout picked"}${log.train_done?"":` · <button class="link" data-tedit="1" style="color:var(--lime)">${S.tedit?"Done":"Time changed?"}</button>`}</span>
       ${S.tedit&&!log.train_done?`<div class="tedit"><label class="ask" for="a-train_time"><span>New training time</span><input class="input" type="time" id="a-train_time" data-input="train_time" value="${esc(log.train_time||"")}"></label><small>Your pre and post-workout meals move with it: Meal ${ta} is now your pre-workout meal and Meal ${ta+1} your post-workout meal.</small><div class="opts">${mealsOf(log).filter(m=>m.slot<MAX_MEALS).map(m=>`<button class="chip" data-dtrainafter="${m.slot}" aria-pressed="${ta===m.slot}">After Meal ${m.slot}</button>`).join("")}</div></div>`:""}
       <div class="tsteps">
-        <div class="tstep-row"><div class="tstep${preDone?" done":" off"}"><span class="tick">${TICK}</span><span>1 · Pre-workout meal${pre?` (Meal ${pre.slot})`:""}${pre&&pre.done?` <small>${esc(pre.done)}</small>`:pre?" · tick it above":""}</span></div>${infoBtn("pre","Pre-workout meal")}</div>${infoBox("pre")}
-        ${row("train_wo","2 · Workout: warm up 5 to 10 mins, then your session","workout",preDone)}
+        ${row("train_pre","1 · Completed pre-workout tasks","_none",true)}
+        ${lk?"":`<button class="link guide-link" data-guide="1">${S.guide?"Hide the workout guide":"Here's the workout guide to see the tasks →"}</button>`}
+        ${S.guide&&!lk?`<div class="info-box"><b>Pre-workout tasks</b><ul class="guide-list"><li>Eat your pre-workout meal${pre?` (Meal ${pre.slot}${pre.done?", ticked "+esc(pre.done):""})`:""}: protein and carbs, at least an hour before</li><li>Warm up for 5 to 10 minutes</li></ul><span class="info-soon">Ellis's full workout guide (PDF) is coming soon.</span></div>`:""}
+        ${row("train_wo","2 · Workout","workout",!!log.train_pre)}
         ${row("train_base","3 · Post-workout: back to baseline","base",!!log.train_wo)}
       </div>
       ${log.train_done?`<span class="cue">Session done. Your post-workout meal is next ↓</span>`:lk?"":`<div><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Open workout"}</button></div>`}
@@ -1800,15 +1804,16 @@ root.addEventListener("click",e=>{
   if(b.dataset.dd){const k=b.dataset.dd;S.dd=S.dd===k?null:k;S.info=null;return render()}
   if(b.dataset.info){S.info=S.info===b.dataset.info?null:b.dataset.info;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
-  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
+  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_pre","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
     if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
     return render()}
+  if(b.dataset.guide){S.guide=!S.guide;return render()}
   if(b.dataset.tedit){S.tedit=!S.tedit;return render()}
   if(b.dataset.dtrainafter){edit("train_after",Number(b.dataset.dtrainafter));return render()}
   if(b.dataset.trainstart){edit("train_start",nowHHMM());S.wopen=true;return render()}
   if(b.dataset.wopen){S.wopen=!S.wopen;return render()}
   if(b.dataset.trainafter){edit("tmr_train_after",Number(b.dataset.trainafter));return render()}
-  if(b.dataset.traintick){const l=curCtx().log,t=l.train_done?"":nowHHMM();edit("train_wo",t);edit("train_base",t);edit("train_done",t);if(!l.train_start&&!l.train_done)edit("train_start",nowHHMM());S.wopen=false;return render()}
+  if(b.dataset.traintick){const l=curCtx().log,t=l.train_done?"":nowHHMM();edit("train_pre",t);edit("train_wo",t);edit("train_base",t);edit("train_done",t);if(!l.train_start&&!l.train_done)edit("train_start",nowHHMM());S.wopen=false;return render()}
   if(b.dataset.planclear){const i=Number(b.dataset.planclear),plan=planFoodsOf(curCtx().log);plan[i]={};edit("plan_foods",plan);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));return render()}
   if(b.dataset.mpdel){const l=mealPlanOf(curCtx().log).slice();l.splice(Number(b.dataset.mpdel),1);edit("meals_tmr",l);return render()}
   if(b.dataset.mpadd){const inp=root.querySelector("#mpInput"),v=inp&&inp.value.trim();if(!v)return;edit("meals_tmr",[...mealPlanOf(curCtx().log),v]);render();const n=root.querySelector("#mpInput");if(n)n.focus();return}
