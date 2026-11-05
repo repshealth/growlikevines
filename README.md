@@ -14,7 +14,7 @@ The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the 
 
 - **Evening (reduce arousal):** 3 steps in order. Review your day: log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. Each Evening also plans tomorrow's meals.
 - **Morning (stimulation and arousal):** 3 steps in order. Wake and action: AM state, the non-negotiables applied (these tick the four brain targets) and morning steps. Bring it down: Wim Hof or breathwork. Meal 1 and set the day: Meal 1 (non-negotiable), training yes or no, energy. Shows last night's plan, the banked insight and the ready to-do list. The Day stays locked until all 3 steps are done.
-- **Day (keep energy stable):** kept simple. The Day is a list of non-negotiables: each meal (Meal 1 from the morning, then the meals planned last night, plus any added), each followed by a walk block. Ticking a meal asks "Did you have water with it?". A walk block unlocks once its meal is ticked. Last night's plan and to-do list show as a read-only plan for the day.
+- **Day (keep energy stable):** kept simple. The Day is a list of non-negotiables: each meal (Meal 1 from the morning, then the meals planned last night, plus any added), each followed by a walk block. Tapping a meal opens the approved foods picker (Protein, Fruit, Veg, Fat, Carbs). Carbs are only available from Meal 2, and up to 5 meals can be logged. Meal 1 uses the same picker in the Morning. Ticking a meal asks "Did you have water with it?". A walk block unlocks once its meal is ticked. Last night's plan and to-do list show as a read-only plan for the day.
 - **Logging:** every step, meal and walk block logs its time automatically, and everything is filed into a timeline.
 - **One page:** Morning, Day and Evening sit on one page as blocks, in order. The block they're on is open in pale green, finished blocks fold into a large grey box with a big tick (tap Edit to reopen), and blocks still to come are faded white and locked. The Morning folds once its 3 steps are done, the Day folds when the client taps Finish my day, and the Evening folds into the day's score.
 - **Points:** 1 point per completed step, meal, walk block and non-negotiable kept.
@@ -39,7 +39,7 @@ Sample clients only. Edits save to the browser's localStorage, so nothing is sha
 - The wording of the 3 Morning and 3 Evening steps and the questions inside them
 - The follow-up question for each type of task
 - Which options evoke which senses
-- Example meal plans and training guidance
+- Example meal plans and training guidance (the approved foods list is in, from the meal plans)
 - Protein targets
 
 ## Next steps
