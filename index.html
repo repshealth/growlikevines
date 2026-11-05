@@ -1090,7 +1090,7 @@ function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goa
 function askHtml(a,log,wk,locked){
   const v=log[a.k],dis=locked?"disabled":"",id=`a-${a.k}`;
   switch(a.type){
-    case"rating":return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" aria-pressed="${v===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
+    case"rating":return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
     case"choice":return `<div class="ask"><span>${a.label}</span><div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
     case"number":{const tgt=a.target?wk[a.target]:null,hit=tgt!=null&&Number(v)>=tgt;
       return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
@@ -1570,7 +1570,7 @@ root.addEventListener("click",e=>{
   // client: phase steps
   if(b.dataset.step){const id=b.dataset.step;edit(id,nowHHMM());toast("Logged "+nowHHMM());if(id==="m3"){S.open.morning=false;S.scrollTo="day"}if(id==="e3"){S.open.evening=false;S.scrollTo="score"}return render()}
   if(b.dataset.undo){edit(b.dataset.undo,"");return render()}
-  if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=/^\d+$/.test(raw)&&k.endsWith("state")?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
+  if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=b.dataset.num?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
   // client: day list
   if(b.dataset.cat){S.cat=b.dataset.cat;return render()}
   if(b.dataset.add){const label=b.dataset.label;if(itemsOf(curCtx().log).some(i=>i.label===label)&&b.dataset.add!=="own"){toast("Already on your list");return}setItems(a=>[...a,{id:uid(),kind:b.dataset.add,label}]);toast("Added to your list");return render()}
