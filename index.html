@@ -423,6 +423,17 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .pblock.upcoming .pb-sum,.pblock.skipped .pb-sum{background:var(--bg);border:2px dashed var(--line);color:var(--muted);opacity:.55}
 .pblock.upcoming .pb-num,.pblock.skipped .pb-num{width:68px;height:68px;background:var(--surface);color:var(--muted)}
 .pblock.upcoming .pb-num svg{width:24px;height:24px}
+.pairs{display:flex;flex-direction:column;gap:10px}
+.pair{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--bg)}
+.pi{display:flex;align-items:flex-start;gap:12px;padding:12px 14px}
+.pi.walk{border-top:1px dashed var(--line);background:var(--surface);padding-left:30px}
+.pi.walk.locked{opacity:.55}
+.pi .item-tick:disabled{cursor:default}
+.pi.done .item-tick .tick{background:var(--lime);border-color:var(--lime)}
+.pi.done .item-tick .tick svg{opacity:1}
+.pi .item-main .input{padding:8px 10px;font-size:14px;margin-top:4px}
+.plan-card p{font-size:14px}
+.plan-list{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:14px}
 .ready-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .ready-list div{background:color-mix(in srgb,var(--on-night) 10%,transparent);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .ready-list span{font-size:11px;opacity:.75;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
@@ -503,7 +514,7 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
   {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Raise it, bring it down, fuel it. Three steps, in order, before the day can be taken on."},
-  {id:"day",name:"Day",goal:"Keep energy stable",intro:"Last night's to-do list is waiting. Tick it off, add what comes up, and log your meals as you go."},
+  {id:"day",name:"Day",goal:"Keep energy stable",intro:"Keep it simple: each meal, then a walk block straight after it."},
   {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Review today, then build tomorrow. Three steps, in order."}
 ];
 // Morning brain targets (from Ellis's Loom: the morning action should hit all of these)
@@ -526,8 +537,8 @@ const MORNING=[
 ];
 const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?log.m_action:[]).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 const EVENING=[
-  {id:"e1",title:"Review your day",text:"How did you get on with your list? Carry anything unfinished into tomorrow, log your numbers, then rate your day honestly.",
-   asks:[{k:"_review",type:"review",label:"Today's to-do list"},{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"},{k:"day_rating",type:"rating",label:"Self-assessment: how did today go? 1 to 10"}]},
+  {id:"e1",title:"Review your day",text:"Log your numbers against your targets, add your steps screenshot, then rate your day honestly.",
+   asks:[{k:"steps",type:"number",label:"Full steps",target:"steps"},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5},{k:"protein",type:"number",label:"Protein (g)",target:"protein"},{k:"shot",type:"upload",label:"Steps screenshot"},{k:"day_rating",type:"rating",label:"Self-assessment: how did today go? 1 to 10"}]},
   {id:"e2",title:"Non-negotiables & wind down",text:"Tick every non-negotiable you kept today. Then phone off and use one Reset tool to bring your arousal down.",
    asks:[{k:"nn_kept",type:"multi",label:"Non-negotiables you kept today",options:NN_LIST.map(x=>[x,x])},{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
   {id:"e3",title:"Set up tomorrow",text:"Set your wake time, write your plan of action and build tomorrow's to-do list. It'll be waiting in your Day. Bank the one thing worth remembering, then brain dump the rest.",
@@ -583,19 +594,26 @@ const stepsDone=(log,ph)=>STEPS_OF[ph].filter(s=>log[s.id]).length;
 const itemsOf=log=>Array.isArray(log.items)?log.items:[];
 const mealsOf=log=>Array.isArray(log.meals)?log.meals:[];
 const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
+// The Day is a simple list of non-negotiables: each meal, then a walk block after it. Meal 1 comes from the Morning.
+function dayPairs(log){
+  const pairs=[];
+  if(log.m3)pairs.push({key:"m1",slot:1,text:log.meal1||"",done:log.m3,water:log.meal1_water,walk:log.meal1_walk||"",fixed:true});
+  mealsOf(log).forEach(m=>pairs.push({key:m.id,slot:m.slot,text:m.text||"",done:m.done||"",water:m.fu,walk:m.walk||"",planned:m.planned}));
+  return pairs;
+}
 function scoreOf(log){
-  const items=itemsOf(log),meals=mealsOf(log),nn=Array.isArray(log.nn_kept)?log.nn_kept.length:0;
-  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),d=items.filter(i=>i.done).length,ml=meals.filter(x=>x.done).length;
-  const pts=m+e+d+ml+nn,max=6+items.length+meals.length+NN_LIST.length;
-  const ans=[...items,...meals].filter(i=>i.done&&i.fu!==undefined&&i.fu!==null),fuYes=ans.filter(i=>i.fu===true).length;
+  const meals=mealsOf(log),pairs=dayPairs(log),nn=Array.isArray(log.nn_kept)?log.nn_kept.length:0;
+  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),ml=meals.filter(x=>x.done).length,wk=pairs.filter(x=>x.walk).length;
+  const pts=m+e+ml+wk+nn,max=6+meals.length+pairs.length+NN_LIST.length;
+  const ans=pairs.filter(x=>x.done&&x.water!==undefined&&x.water!==null),fuYes=ans.filter(x=>x.water===true).length;
+  const pd=pairs.filter(x=>x.done).length;
   const sn=new Set();
   if(log.m1&&(Array.isArray(log.m_action)?log.m_action:[]).length)["sight","sound","smell"].forEach(x=>sn.add(x));
   if(log.m2&&log.m_lower)["smell","touch"].forEach(x=>sn.add(x));
-  if(log.m3&&String(log.meal1||"").trim())["taste","smell"].forEach(x=>sn.add(x));
+  if(pd)["taste","smell"].forEach(x=>sn.add(x));
+  if(wk)["sight","sound","touch"].forEach(x=>sn.add(x));
   if(log.e2&&log.pm_tool)resetSenses(log.pm_tool).forEach(x=>sn.add(x));
-  items.filter(i=>i.done).forEach(i=>itemSenses(i).forEach(x=>sn.add(x)));
-  if(ml)["taste","smell","sight"].forEach(x=>sn.add(x));
-  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d,n:items.length,ml,mn:meals.length,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
+  return{pts,max,pct:max?Math.round(pts/max*100):0,m,e,d:0,n:0,ml,mn:meals.length,pd,pn:pairs.length,wk,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
 }
 const hasAny=log=>log&&Object.keys(log).length>0;
 const nowHHMM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
@@ -649,22 +667,17 @@ function generated(c){
     if(L.m1){L.am_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10));const acts=new Set([pick(["Fast walk outside","Fast walk outside","Run or jog"])]);if(rng()<.6)acts.add(pick(["Music on before leaving","Bright lights on","Cold air or cold water"]));if(wake>425&&rng()<.5)acts.add("Sunlight on your eyes");L.m_action=[...acts];L.am_steps=1500+Math.round(rng()*2500)}
     if(L.m2)L.m_lower=pick(LOWER);
     if(L.m3){L.meal1=pick(MEALS_M1);L.meal1_tags=MEAL1_TAGS.filter(()=>rng()<p+.1);L.train=rng()<.5?"yes":"no";L.energy=pick(["low","steady","steady","wired"])}
-    // to-do list: planned last night, plus anything added in the day
-    const items=(prevL&&todoOf(prevL).length?todoOf(prevL):[pick(TODO_GEN),pick(TODO_GEN),pick(TODO_GEN)]).map(([k,l])=>({id:uid(),kind:k,label:l,planned:!!prevL}));
-    if(L.train==="yes")items.push({id:uid(),kind:"train",label:pick(["Gym workout","Home workout"])});
-    if(rng()<.5)items.push({id:uid(),kind:"reset",label:pick(RESET_TOOLS)[0]});
-    const meals=[];const nM=2+Math.floor(rng()*3);for(let i=0;i<nM;i++)meals.push({id:uid(),slot:i+2,text:pick(MEALS_GEN),tags:mealTagOpts(L).filter(()=>rng()<p+.05)});
+    const meals=[];const nM=2+Math.floor(rng()*3);for(let i=0;i<nM;i++)meals.push({id:uid(),slot:i+2,text:pick(MEALS_GEN),planned:!!prevL});
     let it=Math.max(t,wake+60);
-    const seq=[...items,...meals].sort(()=>rng()-.5);
-    seq.forEach(x=>{it+=35+Math.round(rng()*45);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(rng()<.3){x.feel=[pick(FEELS)];if(rng()<.5)x.note=pick(NOTES_DAY)}}});
-    if(L.m1){L.items=items;L.meals=meals}
+    if(L.m3){L.meal1_water=rng()<p+.05;if(rng()<p)L.meal1_walk=hhmm(mins(L.m3)+25)}
+    meals.forEach(x=>{it+=150+Math.round(rng()*60);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
+    if(L.m1)L.meals=meals;
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
     if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png";L.day_rating=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
     if(L.e2){L.nn_kept=NN_LIST.filter(()=>rng()<p);L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
-    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);
-      const carry=itemsOf(L).filter(i=>!i.done&&i.kind==="own").map(i=>[i.kind,i.label]);
-      const nx=[...carry];while(nx.length<4){const q=pick(TODO_GEN);if(!nx.some(z=>z[1]===q[1]))nx.push(q)}L.todo_tmr=nx;
+    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);L.meals_tmr=[pick(MEALS_M1),pick(MEALS_GEN),pick(MEALS_GEN),pick(MEALS_GEN)];
+      const nx=[];while(nx.length<4){const q=pick(TODO_GEN);if(!nx.some(z=>z[1]===q[1]))nx.push(q)}L.todo_tmr=nx;
       if(rng()<.7)L.bank=pick(BANKS);if(rng()<.6)L.dump=pick(DUMPS)}
     out[date]=L;prevL=L;
   }
@@ -688,7 +701,7 @@ function statsFor(c){
   const avg=f=>rows.length?rows.reduce((a,x)=>a+f(x),0)/rows.length:0;
   const avg7=Math.round(avg(x=>x.pct)),pts7=avg(x=>x.sc.pts);
   const morn7=Math.round(avg(x=>x.sc.m===3?100:0)),eve7=Math.round(avg(x=>x.sc.e===3?100:0));
-  const fuA=rows.reduce((a,x)=>a+x.sc.fuN,0),fuY=rows.reduce((a,x)=>a+x.sc.fuYes,0);
+  const fuA=rows.reduce((a,x)=>a+x.sc.fuN,0),fuY=rows.reduce((a,x)=>a+x.sc.fuYes,0); // water with meals
   const proc7=fuA?Math.round(fuY/fuA*100):null,senses7=avg(x=>x.sc.senses.size);
   let streak=0;const todayRow=days[days.length-1];
   if(todayRow.pct>=70)streak++;
@@ -955,7 +968,7 @@ function readyCard(x){
 function blockSummary(id,log){
   const sc=scoreOf(log);
   if(id==="morning")return [log.m3&&`Done ${log.m3}`,log.am_state&&`Woke ${log.am_state}/10`,log.m_lower,log.meal1&&`Meal 1: ${log.meal1}`,log.train==="yes"?"Training day":log.train==="no"?"Rest day":""].filter(Boolean).join(" · ");
-  if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,`${sc.d} of ${sc.n} tasks`,`${sc.ml+(log.meal1?1:0)} meals logged`].filter(Boolean).join(" · ");
+  if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   return [log.e3&&`Done ${log.e3}`,log.day_rating&&`Day rated ${log.day_rating}/10`,`${todoOf(log).length} ${todoOf(log).length===1?"task":"tasks"} & ${mealPlanOf(log).length} ${mealPlanOf(log).length===1?"meal":"meals"} planned for tomorrow`].filter(Boolean).join(" · ");
 }
 function pblock(id,num,state,body,log,ov){
@@ -973,7 +986,6 @@ function pblock(id,num,state,body,log,ov){
 function todayView(){
   let x=curCtx();
   if(x.dn===0&&!x.log.zero){saveEdit(x.c.id,x.dk,"zero",true);x=curCtx()}
-  if(x.dn>0&&!Array.isArray(x.log.items)&&todoOf(x.prev).length){saveEdit(x.c.id,x.dk,"items",todoOf(x.prev).map(([k,l])=>({id:uid(),kind:k,label:l,planned:true})));x=curCtx()}
   if(x.dn>0&&!Array.isArray(x.log.meals)&&mealPlanOf(x.prev).length){const pl=mealPlanOf(x.prev);saveEdit(x.c.id,x.dk,"meals",pl.slice(1).map((t,i)=>({id:uid(),slot:i+2,text:t,tags:[],planned:true})));if(!x.log.meal1&&pl[0])saveEdit(x.c.id,x.dk,"meal1",pl[0]);x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
   const note=(store.get(K.notes,{})[c.id]);
@@ -1045,8 +1057,9 @@ function timeline(log){
   const rows=[];
   const sum=(s)=>(s.id==="m3"&&log.meal1?"Meal 1: "+log.meal1+" · ":"")+(s.id==="e2"&&Array.isArray(log.nn_kept)?log.nn_kept.length+" of "+NN_LIST.length+" non-negotiables · ":"")+s.asks.filter(a=>["choice","multi"].includes(a.type)&&a.k!=="nn_kept"&&a.k!=="meal1_tags"&&log[a.k]!==undefined&&log[a.k]!=="").map(a=>{const v=log[a.k];if(a.k==="train")return v==="yes"?"Training day":"Rest day";if(a.k==="energy")return "Energy "+v;return Array.isArray(v)?v.join(", "):((a.options.find(o=>o[0]===v)||[0,v])[1])}).join(" · ");
   MORNING.forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Morning",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
-  itemsOf(log).forEach(i=>{if(i.done)rows.push({t:i.done,ph:"Day",title:i.label,sub:i.fu===true?"Right process":i.fu===false?"Process missed":"",feel:i.feel,note:i.note})});
-  mealsOf(log).forEach(m=>{if(m.done)rows.push({t:m.done,ph:"Day",title:`Meal ${m.slot}${m.text?": "+m.text:""}`,sub:[(m.tags||[]).join(", "),m.fu===true?"Right process":m.fu===false?"Process missed":""].filter(Boolean).join(" · "),feel:m.feel,note:m.note})});
+  dayPairs(log).forEach(pp=>{if(pp.walk)rows.push({t:pp.walk,ph:"Day",title:`Walk after Meal ${pp.slot}`,sub:""})});
+  if(log.m3&&log.meal1_water!=null)rows.push({t:log.m3,ph:"Day",title:"Meal 1 water",sub:log.meal1_water?"Water with it":"No water"});
+  mealsOf(log).forEach(m=>{if(m.done)rows.push({t:m.done,ph:"Day",title:`Meal ${m.slot}${m.text?": "+m.text:""}`,sub:m.fu===true?"Water with it":m.fu===false?"No water":"",feel:m.feel,note:m.note})});
   eveningSteps(log).forEach(s=>{if(log[s.id])rows.push({t:log[s.id],ph:"Evening",title:s.title,sub:sum(s),feel:log[s.id+"_feel"],note:log[s.id+"_note"]})});
   const ord={Morning:0,Day:1,Evening:2};
   rows.sort((a,b)=>ord[a.ph]-ord[b.ph]||mins(a.t)-mins(b.t));
@@ -1078,27 +1091,37 @@ function stepsView(ph,x){
   return html;
 }
 function dayView(x){
-  const {log,wk}=x;
-  if(stepsDone(log,"morning")<3)return `<div class="card locked-day"><div class="lockbig">${LOCK}</div><h3 class="sec-title">Your day isn't open yet</h3><p class="muted">Finish the 3 Morning steps first, including Meal 1. They set your direction for the day.</p><button class="btn primary" data-phase="morning">Go to Morning</button></div>`;
-  const items=itemsOf(log),sug=suggestions(log),K2=KINDS[S.cat]||KINDS.walk,planned=items.filter(i=>i.planned).length;
-  const have=new Set(items.map(i=>i.label));
+  const {log,prev}=x,pairs=dayPairs(log),sc=scoreOf(log),todo=todoOf(prev);
+  const total=pairs.length*2,doneN=pairs.filter(p=>p.done).length+sc.wk,next=2+mealsOf(log).length;
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
+  ${prev.plan||todo.length?`<section class="card plan-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your plan for today</h2><span class="muted" style="font-size:12px">From last night</span></div>
+    ${prev.plan?`<p>${esc(prev.plan)}</p>`:""}${todo.length?`<ul class="plan-list">${todo.map(t=>`<li>${esc(t[1])}</li>`).join("")}</ul>`:""}</section>`:""}
   <section class="card">
-    <div class="sec-head"><h2 class="sec-title">Your to-do list</h2><span class="muted num">${items.filter(i=>i.done).length} / ${items.length} done</span></div>
-    ${planned?`<p class="muted" style="font-size:12px;margin-top:-2px">${planned} planned last night. Add anything else that comes up.</p>`:""}
-    <div class="items">${items.length?items.map((it,i)=>itemHtml(it,i)).join(""):`<p class="muted" style="padding:10px 0">Nothing planned last night. Write today's tasks below. Tonight you'll build tomorrow's list in your Evening.</p>`}</div>
-    <form class="composer" id="ownForm"><input class="input" id="ownTask" placeholder="Add a task" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
-    ${sug.length?`<div class="opts" style="margin-top:10px">${sug.map(([k,l])=>`<button class="chip add" data-add="${k}" data-label="${esc(l)}">+ ${esc(l)}</button>`).join("")}</div>`:""}
-    <details class="moreopts"><summary>Add steps, regulation tools or training</summary>
-      <div class="filters" role="group" aria-label="Option type" style="margin:10px 0">${["walk","reset","train"].map(k=>`<button class="chip" data-cat="${k}" aria-pressed="${S.cat===k}">${KINDS[k].name}</button>`).join("")}</div>
-      <div class="opts">${K2.opts.map(o=>`<button class="chip add" data-add="${S.cat}" data-label="${esc(o)}">${have.has(o)?"✓ ":"+ "}${esc(o)}</button>`).join("")}</div>
-    </details>
+    <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
+    <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after.</p>
+    <div class="pairs">${pairs.map(pairHtml).join("")}</div>
+    ${next<=6?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add Meal ${next}</button>`:""}
   </section>
-  ${mealsCard(log)}
-  <div class="sticky"><span class="eyebrow">Sticky note · ${esc(wk.theme)}</span><p>${esc(wk.note)}</p></div>
-  ${sensesPanel(scoreOf(log))}
   ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
-    :`<div class="nextbar"><div><b>Done for the day?</b><p>${items.filter(i=>i.done).length} of ${items.length} tasks done.${items.some(i=>!i.done)?" You can carry the rest into tomorrow in your Evening.":""}</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
+    :`<div class="nextbar"><div><b>Done for the day?</b><p>${sc.pd} ${sc.pd===1?"meal":"meals"} and ${sc.wk} walk ${sc.wk===1?"block":"blocks"} ticked.</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
+}
+function pairHtml(p){
+  const waterQ=p.done&&(p.water===undefined||p.water===null);
+  return `<div class="pair">
+    <div class="pi${p.done?" done":""}">
+      <button class="item-tick" ${p.fixed?"disabled":`data-mealtick="${p.key}"`} aria-pressed="${!!p.done}" aria-label="${p.done?"Untick":"Tick"} Meal ${p.slot}"><span class="tick">${TICK}</span></button>
+      <div class="item-main">
+        <div class="item-title"><span>Meal ${p.slot}</span>${p.done?`<span class="stamp">${esc(p.done)}</span>`:""}${p.fixed?`<span class="kind">From your Morning</span>`:p.planned&&!p.done?`<span class="kind">Planned last night</span>`:""}${p.done&&p.water===true?`<span class="badge ok">Water ✓</span>`:""}${p.done&&p.water===false?`<span class="badge miss">No water</span>`:""}</div>
+        ${p.done||p.fixed?(p.text?`<span class="muted" style="font-size:13px">${esc(p.text)}</span>`:""):`<input class="input" data-mtext="${p.key}" id="mt-${p.key}" value="${esc(p.text)}" placeholder="What are you eating?" autocomplete="off">`}
+        ${waterQ?`<div class="fu"><span>Did you have water with it?</span><div class="opts"><button class="chip" data-water="${p.key}" data-val="1">Yes</button><button class="chip" data-water="${p.key}" data-val="0">No</button></div></div>`:""}
+      </div>
+      ${!p.done&&!p.fixed?`<button class="x" data-mdel="${p.key}" aria-label="Remove Meal ${p.slot}">×</button>`:""}
+    </div>
+    <div class="pi walk${p.walk?" done":""}${p.done?"":" locked"}">
+      <button class="item-tick" data-walktick="${p.key}" aria-pressed="${!!p.walk}" ${p.done?"":"disabled"} aria-label="${p.walk?"Untick":"Tick"} walk after Meal ${p.slot}"><span class="tick">${TICK}</span></button>
+      <div class="item-main"><div class="item-title"><span>Walk block after Meal ${p.slot}</span>${p.walk?`<span class="stamp">${esc(p.walk)}</span>`:""}</div>${p.done?"":`<span class="kind">${LOCK} Unlocks when Meal ${p.slot} is ticked</span>`}</div>
+    </div>
+  </div>`;
 }
 function mealsCard(log){
   const meals=mealsOf(log),opts=mealTagOpts(log),done=meals.filter(m=>m.done).length+(log.meal1?1:0);
@@ -1151,9 +1174,9 @@ function scoreView(x){
       <p>${msg}</p>
       ${dn>1?`<span class="sc-diff ${diff>=0?"up":"down"}">${diff>0?"+":""}${diff} vs yesterday (${ps.pts})</span>`:""}
     </section>
-    <div class="sc-parts">${part("Morning",sc.m,3)}${part("To-do",sc.d,sc.n)}${part("Meals",sc.ml,sc.mn)}${part("Evening",sc.e,3)}${part("Non-negotiables",sc.nn,NN_LIST.length)}${log.day_rating?part("Self-assessment",log.day_rating,10):""}</div>
+    <div class="sc-parts">${part("Morning",sc.m,3)}${part("Meals",sc.pd,sc.pn)}${part("Walk blocks",sc.wk,sc.pn)}${part("Evening",sc.e,3)}${part("Non-negotiables",sc.nn,NN_LIST.length)}${log.day_rating?part("Self-assessment",log.day_rating,10):""}</div>
     <div class="tiles sc-tiles">
-      <div class="tile"><small>Right process</small><b class="num">${sc.fuN?Math.round(sc.fuYes/sc.fuN*100)+"%":"–"}</b><small>${sc.fuYes} of ${sc.fuN} follow-ups</small></div>
+      <div class="tile"><small>Water with meals</small><b class="num">${sc.fuN?Math.round(sc.fuYes/sc.fuN*100)+"%":"–"}</b><small>${sc.fuYes} of ${sc.fuN} meals</small></div>
       <div class="tile"><small>Senses evoked</small><b class="num">${sc.senses.size} / 5</b><small>${SENSES.filter(([k])=>!sc.senses.has(k)).map(([,l])=>l).join(", ")||"All five"}${sc.senses.size<5?" missing":""}</small></div>
       <div class="tile"><small>Morning brain targets</small><b class="num">${sc.brain.size} / 4</b><small>${BRAIN.filter(([k])=>!sc.brain.has(k)).map(([,l])=>l).join(", ")||"All four"}${sc.brain.size<4?" open":""}</small></div>
       <div class="tile"><small>AM to PM state</small><b class="num">${log.am_state||"–"} &rsaquo; ${log.pm_state||"–"}</b><small>out of 10</small></div>
@@ -1207,11 +1230,11 @@ function programmeView(){
     "Wake & action: how you felt waking, the non-negotiables you applied, your morning steps. Bring it down: Wim Hof or slow breathwork. Meal 1 & set the day: Meal 1 is non-negotiable, then say if you're training. Your day doesn't open until all 3 are done.",
     "Your action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm.",
     "#Day: keep energy stable",
-    "Last night's to-do list is waiting for you. Tick it off and add anything new. Your meals have their own section: log each one as you eat it. Every tick logs the time and asks one question to check you did it the right way.",
+    "Keep it simple. Your Day is your non-negotiables: tick each meal as you eat it, answer whether you had water with it, then tick the walk block straight after. Your plan and to-do list from last night are there to guide you.",
     "#Notice it, then bank it",
     "After every task and meal in your Day, tap what you noticed and add a line if you want. It's filed into one clean log, and each evening you bank the one thing worth remembering.",
     "#Points",
-    "1 point for every step, task, meal and non-negotiable you complete."
+    "1 point for every step, meal, walk block and non-negotiable you complete."
   ];
   return `<div class="stack">
     <div class="hero-p"><span class="eyebrow">Welcome to Project Reset</span><h1 class="display">28 days to set a new standard</h1>
@@ -1282,7 +1305,7 @@ function progressView(c){
       <div class="tile"><small>Avg points, 7 days</small><b class="num">${st.pts7.toFixed(1)}</b></div>
       <div class="tile"><small>Morning done, 7 days</small><b class="num">${st.morn7}%</b></div>
       <div class="tile"><small>Evening done, 7 days</small><b class="num">${st.eve7}%</b></div>
-      <div class="tile"><small>Right process</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
+      <div class="tile"><small>Water with meals</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
     </div>
     <section class="card">${heatmap(st)}</section>
     ${trendCharts(st)}
@@ -1308,6 +1331,7 @@ function overviewView(){
   const rws=[];all.forEach(s=>s.rows.forEach(x=>rws.push(x)));
   const rate=(n,d)=>d?Math.round(n/d*100):0;
   const stepRows=[...MORNING.map(s=>["Morning",s]),...EVENING.map(s=>["Evening",s])].map(([ph,s])=>({label:s.title,ph,p:rate(rws.filter(x=>x.log[s.id]).length,rws.length)}));
+  const dayRates=(()=>{let pn=0,pd=0,wk=0,wa=0,wy=0;rws.forEach(x=>{dayPairs(x.log).forEach(q=>{pn++;if(q.done){pd++;if(q.walk)wk++;if(q.water!=null){wa++;if(q.water)wy++}}})});return{meals:rws.length?pd/rws.length:0,walk:pd?Math.round(wk/pd*100):0,water:wa?Math.round(wy/wa*100):0,done:pn?Math.round(pd/pn*100):0}})();
   const kindRows=Object.keys(KINDS).map(k=>{let n=0,d=0,a=0,y=0;rws.forEach(x=>(k==="meal"?mealsOf(x.log):itemsOf(x.log).filter(i=>i.kind===k)).forEach(i=>{n++;if(i.done){d++;if(i.fu!==undefined&&i.fu!==null){a++;if(i.fu)y++}}}));return{k,name:KINDS[k].name,per:rws.length?n/rws.length:0,done:rate(d,n),proc:a?rate(y,a):null}});
   const bar=(p)=>`<div class="bar"><i class="${p<50?"low":p<70?"mid":""}" style="width:${p}%"></i></div>`;
   return `<div class="stack">
@@ -1317,7 +1341,7 @@ function overviewView(){
       <div class="tile"><small>Avg points, 7 days</small><b class="num">${(all.reduce((a,s)=>a+s.pts7,0)/all.length).toFixed(1)}</b></div>
       <div class="tile"><small>Morning done, 7 days</small><b class="num">${mean(s=>s.morn7)}%</b></div>
       <div class="tile"><small>Evening done, 7 days</small><b class="num">${mean(s=>s.eve7)}%</b></div>
-      <div class="tile"><small>Right process</small><b class="num">${mean(s=>s.proc7||0)}%</b></div>
+      <div class="tile"><small>Water with meals</small><b class="num">${mean(s=>s.proc7||0)}%</b></div>
       <div class="tile"><small>Need attention</small><b class="num" style="color:${counts.bad?"var(--bad)":"var(--fg)"}">${counts.bad+counts.warn}</b></div>
     </div>
     <div class="coach-grid">
@@ -1326,7 +1350,7 @@ function overviewView(){
           ${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join("")}
         </div>
         <div class="tbl-wrap"><table>
-          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Points today",1)}${th("pts","Avg pts 7d",1)}${th("avg7","Done 7d",1)}<th>Last 7</th>${th("morn","Morning",1)}${th("eve","Evening",1)}${th("proc","Process",1)}${th("senses","Senses",1)}${th("steps","Steps avg",1)}${th("last","Last log")}</tr></thead>
+          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Points today",1)}${th("pts","Avg pts 7d",1)}${th("avg7","Done 7d",1)}<th>Last 7</th>${th("morn","Morning",1)}${th("eve","Evening",1)}${th("proc","Water",1)}${th("senses","Senses",1)}${th("steps","Steps avg",1)}${th("last","Last log")}</tr></thead>
           <tbody>${rows.map(s=>{const[cls,lab]=STATUS[s.status];const l7=s.days.slice(-8,-1);
             return `<tr data-client="${s.c.id}" tabindex="0">
             <td><strong>${esc(s.c.name)}</strong></td>
@@ -1343,12 +1367,15 @@ function overviewView(){
             <td class="num">${s.steps7?Math.round(s.steps7).toLocaleString("en-GB"):"–"}</td>
             <td>${s.since===0?"Today":s.since===1?"Yesterday":`<span style="color:var(--bad)">${s.since} days ago</span>`}</td></tr>`}).join("")}</tbody>
         </table></div>
-        <p class="muted" style="font-size:12px">1 point per completed step or task. Done 7d is points against everything on their list. Morning and Evening show how often all 3 steps were done. Process is how often clients said yes to the follow-up question. Status: on track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
+        <p class="muted" style="font-size:12px">1 point per completed step, meal, walk block and non-negotiable. Done 7d is points against everything available. Morning and Evening show how often all 3 steps were done. Water is how often clients had water with their meals. Status: on track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
       </div>
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Last 7 days</h2></div>
-        <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="phases" aria-pressed="${S.hview!=="day"}">Morning & Evening</button><button class="chip" data-hview="day" aria-pressed="${S.hview==="day"}">Day lists</button></div>
+        <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="phases" aria-pressed="${S.hview!=="day"}">Morning & Evening</button><button class="chip" data-hview="day" aria-pressed="${S.hview==="day"}">Meals & walks</button></div>
         ${S.hview==="day"
-          ?`<p class="muted" style="font-size:12px;margin-bottom:8px">What clients put on their lists, how much of it gets done, and how often it's done the right way.</p>`+kindRows.map(r=>`<div class="kindrow"><div class="kind-h"><b>${r.name}</b><span class="muted num">${r.per.toFixed(1)} a day</span></div><div class="habit"><span>Done</span>${bar(r.done)}<span class="num" style="text-align:right">${r.done}%</span></div><div class="habit"><span>Right process</span>${r.proc==null?`<div></div><span class="num muted" style="text-align:right">–</span>`:bar(r.proc)+`<span class="num" style="text-align:right">${r.proc}%</span>`}</div></div>`).join("")
+          ?`<p class="muted" style="font-size:12px;margin-bottom:8px">How the Day's non-negotiables are going across all clients.</p>
+            <div class="kindrow"><div class="kind-h"><b>Meals logged</b><span class="muted num">${dayRates.meals.toFixed(1)} a day</span></div><div class="habit"><span>Planned meals eaten</span>${bar(dayRates.done)}<span class="num" style="text-align:right">${dayRates.done}%</span></div></div>
+            <div class="kindrow"><div class="habit"><span>Walk after meal</span>${bar(dayRates.walk)}<span class="num" style="text-align:right">${dayRates.walk}%</span></div></div>
+            <div class="kindrow"><div class="habit"><span>Water with meal</span>${bar(dayRates.water)}<span class="num" style="text-align:right">${dayRates.water}%</span></div></div>`
           :`<p class="muted" style="font-size:12px;margin-bottom:8px">How often each step gets done across all clients.</p>`+stepRows.map(r=>`<div class="habit"><span><span class="pl">${r.ph}</span> ${esc(r.label)}</span>${bar(r.p)}<span class="num" style="text-align:right">${r.p}%</span></div>`).join("")}
       </section>
     </div>
@@ -1374,7 +1401,7 @@ function detailView(c){
       <div class="tile"><small>Done, 7 days</small><b class="num">${st.avg7}%</b></div>
       <div class="tile"><small>Morning done</small><b class="num">${st.morn7}%</b></div>
       <div class="tile"><small>Evening done</small><b class="num">${st.eve7}%</b></div>
-      <div class="tile"><small>Right process</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
+      <div class="tile"><small>Water with meals</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
     </div>
     <div class="two">
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">28 day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
@@ -1382,8 +1409,8 @@ function detailView(c){
         <div class="log-phase"><h4>Timeline</h4>${timeline(log)}${log.bank?`<p style="font-size:13px;margin-top:8px"><span class="muted">Banked:</span> “${esc(log.bank)}”</p>`:""}</div>
         <details class="raw"><summary>Full answers by section</summary>
         ${phaseLog("Morning",MORNING,log,wk)}
-        <div class="log-phase"><h4>Day list</h4>${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
-          ${items.length?items.map(i=>`<div class="lp-row ${i.done?"":"miss"}"><div class="lp-top"><span>${i.done?"✓ ":""}${esc(i.label)} <span class="kind">${(KINDS[i.kind]||KINDS.own).name}</span></span><span class="num">${i.done?esc(i.done):"–"}${i.done?(i.fu===true?' <span class="badge ok">Process</span>':i.fu===false?' <span class="badge miss">Missed</span>':""):""}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No list built.</p>`}</div>
+        <div class="log-phase"><h4>Day: meals & walks</h4>${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
+          ${dayPairs(log).length?dayPairs(log).map(q=>`<div class="lp-row ${q.done?"":"miss"}"><div class="lp-top"><span>${q.done?"✓ ":""}Meal ${q.slot}${q.text?": "+esc(q.text):""}</span><span class="num">${q.done?esc(q.done):"–"}${q.done?(q.water===true?' <span class="badge ok">Water</span>':q.water===false?' <span class="badge miss">No water</span>':""):""}</span></div></div><div class="lp-row ${q.walk?"":"miss"}"><div class="lp-top"><span>${q.walk?"✓ ":""}Walk after Meal ${q.slot}</span><span class="num">${q.walk?esc(q.walk):"–"}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No meals logged.</p>`}</div>
         ${phaseLog("Evening",eveningSteps(log),log,wk)}</details>
       </section>
     </div>
@@ -1470,7 +1497,10 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpadd){const inp=root.querySelector("#mpInput"),v=inp&&inp.value.trim();if(!v)return;edit("meals_tmr",[...mealPlanOf(curCtx().log),v]);render();const n=root.querySelector("#mpInput");if(n)n.focus();return}
   if(b.dataset.mpquick){edit("meals_tmr",[...mealPlanOf(curCtx().log),b.dataset.mpquick]);return render()}
   if(b.dataset.tquick){edit("todo_tmr",[...todoOf(curCtx().log),[b.dataset.tquick,b.dataset.label]]);return render()}
-  if(b.dataset.madd){setMeals(a=>[...a,{id:uid(),slot:2+a.length,text:"",tags:[]}]);return render()}
+  if(b.dataset.mealtick){const id=b.dataset.mealtick,inp=root.querySelector("#mt-"+id);setMeals(a=>a.map(m=>m.id!==id?m:(m.done?{...m,done:"",fu:null,walk:""}:{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null})));return render()}
+  if(b.dataset.water){const id=b.dataset.water,v=b.dataset.val==="1";if(id==="m1")edit("meal1_water",v);else setMeals(a=>a.map(m=>m.id===id?{...m,fu:v}:m));return render()}
+  if(b.dataset.walktick){const id=b.dataset.walktick;if(id==="m1"){edit("meal1_walk",curCtx().log.meal1_walk?"":nowHHMM())}else setMeals(a=>a.map(m=>m.id===id?{...m,walk:m.walk?"":nowHHMM()}:m));return render()}
+  if(b.dataset.madd){setMeals(a=>[...a,{id:uid(),slot:2+a.length,text:""}]);return render()}
   if(b.dataset.mdel){setMeals(a=>a.filter(m=>m.id!==b.dataset.mdel).map((m,i)=>({...m,slot:i+2})));return render()}
   if(b.dataset.mlog){const id=b.dataset.mlog,inp=root.querySelector("#mt-"+id);setMeals(a=>a.map(m=>m.id===id?{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null}:m));toast("Logged "+nowHHMM());return render()}
   if(b.dataset.munlog){setMeals(a=>a.map(m=>m.id===b.dataset.munlog?{...m,done:"",fu:null}:m));return render()}

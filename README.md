@@ -12,12 +12,12 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 
 The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the client runs the Day, and every day ends with a score.
 
-- **Evening (reduce arousal):** 3 steps in order. Review your day: tick off the to-do list (carrying unfinished tasks into tomorrow), log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. Each Evening also plans tomorrow's meals.
+- **Evening (reduce arousal):** 3 steps in order. Review your day: log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. Each Evening also plans tomorrow's meals.
 - **Morning (stimulation and arousal):** 3 steps in order. Wake and action: AM state, the non-negotiables applied (these tick the four brain targets) and morning steps. Bring it down: Wim Hof or breathwork. Meal 1 and set the day: Meal 1 (non-negotiable), training yes or no, energy. Shows last night's plan, the banked insight and the ready to-do list. The Day stays locked until all 3 steps are done.
-- **Day (keep energy stable):** last night's to-do list is loaded ready to tick off, and the client can add more. Meals have their own section: Meal 1 from the morning, then Meals 2 to 6, each with a description and tags (carbs or fats depending on training).
-- **Logging:** every step, task and meal logs its time automatically. Tasks and meals ask one process-order follow-up question. Day tasks and meals also have a quick "what did you notice?" note, and everything is filed into a timeline.
+- **Day (keep energy stable):** kept simple. The Day is a list of non-negotiables: each meal (Meal 1 from the morning, then the meals planned last night, plus any added), each followed by a walk block. Ticking a meal asks "Did you have water with it?". A walk block unlocks once its meal is ticked. Last night's plan and to-do list show as a read-only plan for the day.
+- **Logging:** every step, meal and walk block logs its time automatically, and everything is filed into a timeline.
 - **One page:** Morning, Day and Evening sit on one page as blocks, in order. The block they're on is open in pale green, finished blocks fold into a large grey box with a big tick (tap Edit to reopen), and blocks still to come are faded white and locked. The Morning folds once its 3 steps are done, the Day folds when the client taps Finish my day, and the Evening folds into the day's score.
-- **Points:** 1 point per completed step, task, meal and non-negotiable kept.
+- **Points:** 1 point per completed step, meal, walk block and non-negotiable kept.
 
 ### Coach view
 
