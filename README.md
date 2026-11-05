@@ -14,7 +14,7 @@ The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the 
 - **Morning (stimulation and arousal):** 3 steps in order. Wake and action: AM state, the non-negotiables applied (these tick the four brain targets) and morning steps. Bring it down: Wim Hof or breathwork. Meal 1 and set the day: Meal 1 (non-negotiable), training yes or no, energy. Shows last night's plan, the banked insight and the ready to-do list. The Day stays locked until all 3 steps are done.
 - **Day (keep energy stable):** last night's to-do list is loaded ready to tick off, and the client can add more. Meals have their own section: Meal 1 from the morning, then Meals 2 to 6, each with a description and tags (carbs or fats depending on training).
 - **Logging:** every step, task and meal logs its time automatically. Tasks and meals ask one process-order follow-up question. Day tasks and meals also have a quick "what did you notice?" note, and everything is filed into a timeline.
-- **Moving on:** each section ends with a button to the next one, and the Evening ends with the day's score.
+- **One page:** Morning, Day and Evening sit on one page as blocks, in order. When a block is done it folds into a grey one-line summary (tap Edit to reopen it) and the next block opens. The Morning folds once its 3 steps are done, the Day folds when the client taps Finish my day, and the Evening folds into the day's score.
 - **Points:** 1 point per completed step, task, meal and non-negotiable kept.
 
 ### Coach view

@@ -400,6 +400,28 @@ details.raw summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--mu
 details.moreopts{margin-top:12px}
 details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--green-ink)}
 @media (max-width:560px){.brain{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pblock{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 140px)}
+.pblock.open{display:flex;flex-direction:column;gap:14px}
+.pb-head{display:flex;align-items:flex-start;gap:14px;padding-top:6px}
+.pb-head>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pb-head .eyebrow{color:var(--green-ink)}
+.pb-num{width:40px;height:40px;flex:none;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-style:italic;font-weight:800;font-size:22px;background:var(--night);color:var(--lime)}
+.pblock.done .pb-num{background:var(--lime);color:var(--ink)}
+.pb-sum{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:14px 16px;color:var(--muted)}
+.pb-sum:disabled{cursor:default}
+.pb-sum .pb-num{background:var(--surface-2);color:var(--muted);font-size:16px}
+.pblock.done .pb-sum .pb-num{background:var(--lime);color:var(--ink)}
+.pb-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pb-text b{font-family:var(--display);font-size:22px;text-transform:uppercase;font-weight:700;line-height:1;color:var(--muted)}
+.pblock.done .pb-text b{color:var(--fg)}
+.pb-text small{font-size:12px;overflow-wrap:anywhere}
+.pb-edit{font-size:12px;font-weight:700;color:var(--green-ink);text-decoration:underline;text-underline-offset:3px}
+.pb-sum:not(:disabled):hover{border-color:var(--green-ink)}
+.pblock.upcoming .pb-sum,.pblock.skipped .pb-sum{opacity:.7;border-style:dashed}
+.phase-tab.done small{color:var(--green-ink)}
+.phase-tab.active{background:var(--night);color:var(--lime)}
+.phase-tab.active small{color:var(--on-night);opacity:.75}
+#blk-score{scroll-margin-top:calc(env(safe-area-inset-top,0px) + 140px)}
 @media (max-width:900px){
   .coach-grid{grid-template-columns:1fr}
   .two{grid-template-columns:1fr}
@@ -808,7 +830,7 @@ const PILLARS=[
 /* ---------- app state ---------- */
 const S={
   session:store.get(K.session,null),
-  tab:"today",viewDay:null,phase:null,cat:"walk",
+  tab:"today",viewDay:null,phase:null,cat:"walk",open:{},scrollTo:null,
   coachTab:"overview",detail:null,detailDay:null,sort:{k:"status",dir:1},filter:"all",hview:"phases"
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -821,6 +843,7 @@ function toast(msg){const t=document.createElement("div");t.className="toast";t.
 function render(){
   if(!S.session){root.innerHTML=loginView();return}
   root.innerHTML=topBar()+`<main class="wrap"><div class="${S.session.role==="coach"?"wide":"col"}">${S.session.role==="coach"?coachView():clientView()}</div></main>`;
+  if(S.scrollTo){const el=document.getElementById("blk-"+S.scrollTo);S.scrollTo=null;if(el){const rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;setTimeout(()=>el.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"}),60)}}
 }
 
 /* ---------- login ---------- */
@@ -881,14 +904,41 @@ function autoPhase(log,isToday,c,dn){
   if(isToday&&NOW.getHours()>=19)return"evening";
   return"day";
 }
+// Each block is "active" (open), "done" (folded grey summary), "upcoming" (locked) or "skipped" (a new client's first day starts at the Evening)
+function blockStates(log,c,dn){
+  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening");
+  const firstNight=c.fresh&&dn===1&&m===0;
+  const st={};
+  st.morning=firstNight?"skipped":m===3?"done":"active";
+  st.day=firstNight?"skipped":m<3?"upcoming":log.day_done?"done":"active";
+  st.evening=e===3?"done":(firstNight||log.day_done||e>0)?"active":"upcoming";
+  return st;
+}
+function blockSummary(id,log){
+  const sc=scoreOf(log);
+  if(id==="morning")return [log.m3&&`Done ${log.m3}`,log.am_state&&`Woke ${log.am_state}/10`,log.m_lower,log.meal1&&`Meal 1: ${log.meal1}`,log.train==="yes"?"Training day":log.train==="no"?"Rest day":""].filter(Boolean).join(" · ");
+  if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,`${sc.d} of ${sc.n} tasks`,`${sc.ml+(log.meal1?1:0)} meals logged`].filter(Boolean).join(" · ");
+  return [log.e3&&`Done ${log.e3}`,log.day_rating&&`Day rated ${log.day_rating}/10`,`${todoOf(log).length} tasks set for tomorrow`].filter(Boolean).join(" · ");
+}
+function pblock(id,num,state,body,log){
+  const P=PHASES.find(p=>p.id===id);
+  if(state==="active"||(state==="done"&&S.open[id]))return `<section class="pblock open ${state}" id="blk-${id}">
+    <header class="pb-head"><span class="pb-num">${state==="done"?TICK:num}</span><div><span class="eyebrow">${P.name} · ${P.goal}</span><p class="muted" style="font-size:13px">${P.intro}</p></div>${state==="done"?`<button class="link" data-collapse="${id}">Close</button>`:""}</header>
+    ${body}</section>`;
+  const sub=state==="done"?blockSummary(id,log):state==="skipped"?"You're starting tonight, so today begins at the Evening.":id==="day"?"Opens when your Morning is done.":"Opens when you finish your Day.";
+  return `<section class="pblock ${state}" id="blk-${id}"><button class="pb-sum" ${state==="done"?`data-open="${id}"`:"disabled"} aria-label="${P.name}: ${esc(sub)}">
+    <span class="pb-num">${state==="done"?TICK:state==="upcoming"?LOCK:"–"}</span>
+    <span class="pb-text"><b>${P.name}</b><small>${esc(sub)}</small></span>
+    ${state==="done"?`<span class="pb-edit">Edit</span>`:""}</button></section>`;
+}
 function todayView(){
   let x=curCtx();
   if(!Array.isArray(x.log.items)&&todoOf(x.prev).length){saveEdit(x.c.id,x.dk,"items",todoOf(x.prev).map(([k,l])=>({id:uid(),kind:k,label:l,planned:true})));x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
-  const ph=S.phase||autoPhase(log,dn===today,c,dn);
   const note=(store.get(K.notes,{})[c.id]);
-  const dayOpen=sc.m===3;
-  const tab=(id,label,count,locked)=>`<button class="phase-tab${count.done===count.of&&count.of?" complete":""}" data-phase="${id}" ${ph===id?'aria-current="page"':""}><span>${locked?LOCK+" ":""}${label}</span><small class="num">${count.done} / ${count.of}${count.done===count.of&&count.of?" ✓":""}</small></button>`;
+  const st=blockStates(log,c,dn);
+  const prog=(id,label,count)=>`<button class="phase-tab ${st[id]}" data-jump="${id}"><span>${st[id]==="upcoming"?LOCK+" ":""}${label}</span><small class="num">${st[id]==="skipped"?"Starts tonight":st[id]==="done"?"Done ✓":count}</small></button>`;
+  const allDone=st.evening==="done";
   return `<div class="stack">
     <div class="dayhead">
       <div><div class="eyebrow">Week ${Math.floor((dn-1)/7)+1} · ${fmtLong(date)}${dn===today?" · Today":""}</div>
@@ -900,16 +950,14 @@ function todayView(){
       ${dn!==today?`<button class="chip" data-act="day" data-d="${today}">Back to today</button>`:""}
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
-    ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
-    ${c.fresh&&dn===1&&!stepsDone(log,"evening")&&ph==="evening"?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Start tonight</h2><p>Your first job is tonight's Evening. It sets your wake time, plan of action and to-do list for your first proper Morning tomorrow. Nothing's on today's list yet, so just log your numbers and how today went.</p></div>`:""}
     ${c.fresh&&dn===today?`<div class="demo-bar"><span><b>Prototype</b> · Day ${dn} for ${esc(c.name)}</span><button class="chip" data-act="nextday" ${dn>=PROGRAMME_DAYS?"disabled":""}>Jump to tomorrow &rsaquo;</button></div>`:""}
-    <nav class="phases" aria-label="Parts of the day">
-      ${tab("morning","Morning",{done:sc.m,of:3})}${tab("day","Day",{done:sc.d+sc.ml,of:sc.n+sc.mn},!dayOpen)}${tab("evening","Evening",{done:sc.e,of:3})}
-    </nav>
-    ${ph==="score"?scoreView(x):`${phaseHead(ph)}
-    ${ph==="morning"?stepsView("morning",x):ph==="evening"?stepsView("evening",x):dayView(x)}
-    ${ph==="morning"?brainPanel(log):""}
-    ${sensesPanel(sc)}`}
+    ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
+    <nav class="phases" aria-label="Your day">${prog("morning","Morning",`${sc.m} / 3`)}${prog("day","Day",`${sc.d+sc.ml} / ${sc.n+sc.mn}`)}${prog("evening","Evening",`${sc.e} / 3`)}</nav>
+    ${st.morning==="skipped"&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Start tonight</h2><p>Your first job is tonight's Evening. It sets your wake time, plan of action and to-do list for your first proper Morning tomorrow. Nothing's on today's list yet, so just log your numbers and how today went.</p></div>`:""}
+    ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
+    ${pblock("day",2,st.day,dayView(x),log)}
+    ${pblock("evening",3,st.evening,stepsView("evening",x),log)}
+    ${allDone?`<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
   </div>`;
 }
 function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goal"><div><span class="eyebrow">${P.name} · CNS goal</span><h2 class="display" style="font-size:clamp(32px,8vw,44px)">${P.goal}</h2></div><p class="muted" style="font-size:13px">${P.intro}</p></div>`}
@@ -981,7 +1029,6 @@ function stepsView(ph,x){
       </div></div>`;
   });
   html+=`</div>`;
-  html+=nextBar(ph,log);
   return html;
 }
 function dayView(x){
@@ -1003,7 +1050,9 @@ function dayView(x){
   </section>
   ${mealsCard(log)}
   <div class="sticky"><span class="eyebrow">Sticky note · ${esc(wk.theme)}</span><p>${esc(wk.note)}</p></div>
-  ${nextBar("day",log)}`;
+  ${sensesPanel(scoreOf(log))}
+  ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
+    :`<div class="nextbar"><div><b>Done for the day?</b><p>${items.filter(i=>i.done).length} of ${items.length} tasks done.${items.some(i=>!i.done)?" You can carry the rest into tomorrow in your Evening.":""}</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
 }
 function mealsCard(log){
   const meals=mealsOf(log),opts=mealTagOpts(log),done=meals.filter(m=>m.done).length+(log.meal1?1:0);
@@ -1051,7 +1100,7 @@ function scoreView(x){
     return `<div class="sc-num"><span class="muted">${label}</span><b class="num">${has?Number(v).toLocaleString("en-GB")+unit:"–"}</b><small class="num">target ${Number(t).toLocaleString("en-GB")}${unit}</small>${has?`<span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</div>`};
   const part=(l,d,o)=>`<div class="sc-part"><span>${l}</span><b class="num">${d}<small> / ${o}</small></b></div>`;
   return `<section class="scorecard">
-      <span class="eyebrow">Day ${dn} score</span>
+      <span class="eyebrow">Your score for Day ${dn}</span>
       <div class="sc-big"><b class="num">${sc.pts}</b><span>${sc.pts===1?"point":"points"}<br><small class="num">${sc.pct}% of today done</small></span></div>
       <p>${msg}</p>
       ${dn>1?`<span class="sc-diff ${diff>=0?"up":"down"}">${diff>0?"+":""}${diff} vs yesterday (${ps.pts})</span>`:""}
@@ -1066,7 +1115,7 @@ function scoreView(x){
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your numbers</h2></div><div class="sc-nums">${num("steps","Steps","")}${num("water","Water","L")}${num("protein","Protein","g")}</div></section>
     ${log.bank?`<div class="direction"><span class="eyebrow">Banked for tomorrow</span><p>“${esc(log.bank)}”</p></div>`:""}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's log</h2><span class="muted" style="font-size:12px">Filed for you</span></div>${timeline(log)}</section>
-    <div class="nextbar"><div><b>See you in the morning.</b><p>Your plan of action is ready for tomorrow.</p></div><button class="btn" data-phase="evening">&lsaquo; Back to Evening</button></div>`;
+    <div class="nextbar"><div><b>See you in the morning.</b><p>Your plan of action and to-do list are ready for tomorrow.</p></div></div>`;
 }
 function itemHtml(it,i){
   const K2=KINDS[it.kind]||KINDS.own,needQ=it.done&&(it.fu===undefined||it.fu===null);
@@ -1336,13 +1385,17 @@ root.addEventListener("click",e=>{
   if(act==="demo-client")return login("client");
   if(act==="demo-new"){const f=store.get(K.fresh,null);const nm=(root.querySelector("#email")||{}).value;store.set(K.fresh,{start:ymd(TODAY),offset:0,name:(nm&&nm.split("@")[0]?nm.split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,x=>x.toUpperCase()):"New Client")});if(f){const all=store.get(K.edits,{});delete all["new"];store.set(K.edits,all)}return login("client","new")}
   if(act==="demo-reset"){try{Object.values(K).forEach(k=>localStorage.removeItem(k))}catch(e){}for(const k in GEN)delete GEN[k];WEEKS=DEFAULT_WEEKS.map(w=>({...w}));S.session=null;toast("Demo data cleared");return render()}
-  if(act==="nextday"){const f=store.get(K.fresh,null);if(!f)return;f.offset=(f.offset||0)+1;store.set(K.fresh,f);S.viewDay=null;S.phase=null;render();window.scrollTo(0,0);toast("Moved to tomorrow");return}
+  if(act==="nextday"){const f=store.get(K.fresh,null);if(!f)return;f.offset=(f.offset||0)+1;store.set(K.fresh,f);S.viewDay=null;S.phase=null;S.open={};render();window.scrollTo(0,0);toast("Moved to tomorrow");return}
   if(act==="demo-coach")return login("coach");
   if(act==="logout"){S.session=null;store.set(K.session,null);return render()}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
   if(b.dataset.tab){if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
-  if(b.dataset.phase){S.phase=b.dataset.phase;render();const n=root.querySelector(".phases");if(n)n.scrollIntoView({block:"start"});return}
-  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,1,t);S.phase=null;return render()}
+  if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
+  if(b.dataset.open){S.open[b.dataset.open]=true;S.scrollTo=b.dataset.open;return render()}
+  if(b.dataset.collapse){S.open[b.dataset.collapse]=false;S.scrollTo=b.dataset.collapse;return render()}
+  if(b.dataset.finishday){edit("day_done",nowHHMM());S.open.day=false;S.scrollTo="evening";toast("Day finished "+nowHHMM());return render()}
+  if(b.dataset.unfinishday){edit("day_done","");S.open.day=true;return render()}
+  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,1,t);S.phase=null;S.open={};return render()}
   if(b.dataset.client){S.detail=b.dataset.client;S.detailDay=null;render();window.scrollTo(0,0);return}
   if(act==="back"){S.detail=null;return render()}
   if(b.dataset.hday){S.detailDay=Number(b.dataset.hday);return render()}
@@ -1356,7 +1409,7 @@ root.addEventListener("click",e=>{
   }
   if(act==="reset-weeks"){WEEKS=DEFAULT_WEEKS.map(w=>({...w}));store.set(K.weeks,null);for(const k in GEN)delete GEN[k];toast("Defaults restored");return render()}
   // client: phase steps
-  if(b.dataset.step){edit(b.dataset.step,nowHHMM());toast("Logged "+nowHHMM());return render()}
+  if(b.dataset.step){const id=b.dataset.step;edit(id,nowHHMM());toast("Logged "+nowHHMM());if(id==="m3"){S.open.morning=false;S.scrollTo="day"}if(id==="e3"){S.open.evening=false;S.scrollTo="score"}return render()}
   if(b.dataset.undo){edit(b.dataset.undo,"");return render()}
   if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=/^\d+$/.test(raw)&&k.endsWith("state")?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
   // client: day list
