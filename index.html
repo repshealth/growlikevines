@@ -514,6 +514,33 @@ select.input{appearance:auto}
 .region{display:block;width:100%;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--green-ink)}
 .meal1-cue{border:2px solid var(--lime);background:var(--bg);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
 .meal1-cue .eyebrow{color:var(--green-ink)}
+.ask-h{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.info-btn{flex:none;width:24px;height:24px;border-radius:50%;border:1.5px solid currentColor;background:transparent;color:var(--green-ink);font:italic 800 13px/1 Georgia,serif;display:grid;place-items:center;padding:0;cursor:pointer}
+.info-btn.on{background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.train-row .info-btn{color:var(--lime)}
+.info-box{background:var(--lime-dim);border-radius:10px;padding:10px 12px;font-size:13px;font-weight:500;display:flex;flex-direction:column;gap:4px;color:var(--fg)}
+.info-soon{font-size:11px;font-weight:700;color:var(--green-ink)}
+.train-row .info-box{background:color-mix(in srgb,var(--lime) 18%,transparent);color:var(--on-night)}
+.train-row .info-soon{color:var(--lime)}
+.dd{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.dd.open{border-color:var(--lime);box-shadow:0 0 0 3px var(--lime-dim)}
+.dd-btn{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:none;border:0;font:inherit;font-weight:600;text-align:left;cursor:pointer}
+.dd-car{color:var(--muted)}
+.dd-list{display:flex;flex-direction:column;gap:6px;padding:4px 10px 12px;border-top:1px solid var(--line)}
+.dd-row{display:flex;align-items:center;gap:8px}
+.dd-opt{flex:1;display:flex;align-items:center;gap:10px;background:none;border:0;padding:8px 4px;font:inherit;font-size:14px;font-weight:600;text-align:left;cursor:pointer}
+.dd-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex:none}
+.dd-box svg{opacity:0;width:12px;height:12px}
+.dd-opt[aria-pressed=true] .dd-box{background:var(--lime);border-color:var(--lime)}
+.dd-opt[aria-pressed=true] .dd-box svg{opacity:1}
+.tstep-row{display:flex;align-items:center;gap:8px}
+.tstep-row .tstep{flex:1}
+.tedit{display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,var(--on-night) 8%,transparent);border-radius:10px;padding:10px;font-size:12px}
+.tedit .chip{background:transparent;color:var(--on-night);border-color:var(--on-night);padding:4px 10px;font-size:12px}
+.tedit .chip[aria-pressed=true]{background:var(--lime);color:var(--ink);border-color:var(--lime)}
+.train-place.ok{border-color:var(--lime)}
+.role.eve{background:var(--night);color:var(--lime)}
+.card.later{border:2px solid var(--lime)}
 .meal-card{display:flex;flex-direction:column;gap:8px;border:1px solid color-mix(in srgb,var(--lime) 60%,var(--line));border-radius:12px;padding:12px 14px;background:var(--bg);font-weight:500}
 .meal-card-h{display:flex;align-items:center;gap:8px}
 .meal-card .fsum{font-size:14px;gap:4px}
@@ -616,6 +643,27 @@ const PHASES=[
 const BRAIN=[["motor","Motor cortex"],["brainstem","Brainstem arousal"],["basal","Basal ganglia"],["circadian","Circadian rhythm"]];
 const ACTIONS=[["Walk or cardio (over 100 BPM)",["motor","brainstem","basal","circadian"]],["Cold therapy",["brainstem"]],["Sauna",["brainstem"]],["Workout",["motor","brainstem","basal"]]];
 const MOVE=ACTIONS.map(a=>a[0]);
+const SOON="Ellis's guide (PDF or video) for this is coming soon.";
+const INFO={
+  "Walk or cardio (over 100 BPM)":"Get your heart rate over 100 BPM, outside if you can. A brisk walk, a jog, a bike or a row all count.",
+  "Cold therapy":"A cold shower or a plunge. Start with 30 seconds and build up. Breathe slow through the nose.",
+  "Sauna":"10 to 20 minutes. Drink water before and after.",
+  "Workout":"Pick the workout from the library, or log your own.",
+  "Breath work":"A guided breathing session to bring your arousal down.",
+  "The Reset":"Ellis's full routine. It covers breath work, journalling, connection and body awareness in one guided session.",
+  "Meditation":"Sit still, eyes closed, and follow your breath for 10 minutes.",
+  "Yoga / Pilates":"A slow session, focused on breath and control, not effort.",
+  "Steps":"An easy walk, nose breathing, no podcast or music.",
+  "Massage":"A massage, a foam roll or a massage gun session.",
+  "Time out (15 mins of something you enjoy)":"Nothing specific. 15 minutes doing something you enjoy, phone away.",
+  "Journalling":"Write down what's on your mind. No rules, just get it out of your head.",
+  meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs come in from Meal 2 and around your training. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
+  pre:"Your pre-workout meal fuels the session: protein and carbs, at least an hour before you train.",
+  workout:"Warm up for 5 to 10 minutes first, then follow your session.",
+  base:"Bring your heart rate back down after training: an easy walk with nose breathing, then a short Reset, before your post-workout meal."
+};
+const infoBtn=(id,label)=>INFO[id]?`<button class="info-btn${S.info===id?" on":""}" data-info="${esc(id)}" aria-expanded="${S.info===id}" aria-label="About ${esc(label||id)}">i</button>`:"";
+const infoBox=id=>S.info===id&&INFO[id]?`<div class="info-box"><p>${esc(INFO[id])}</p><span class="info-soon">${SOON}</span></div>`:"";
 const TMR_TASKS=[...MOVE,"Breath work"];
 const LOWER=["The Reset","Breath work","Meditation","Yoga / Pilates","Steps","Massage","Time out (15 mins of something you enjoy)","Journalling"];
 const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
@@ -646,7 +694,7 @@ const WORKOUTS=[["Gym (female)",["Female PDF 1","Female PDF 2","Female PDF 3","F
 // The Process (from Ellis). Morning shift: wake & move, low arousal task, review & open the day.
 const MORNING=[
   {id:"m1",title:"Wake up & move",text:"Log the time you woke up. Your movement tasks were set last night, so amend them if you need to and tick off your check boxes.",
-   asks:[{k:"woke_at",type:"time",label:"What time did you wake up?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"m_action",type:"pick",multi:true,label:"Movement: pick at least one",options:MOVE,req:l=>(l.m_action||[]).length>0,reqMsg:"Pick your movement"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action||[]).includes("Workout"),groups:WORKOUTS},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},]},
+   asks:[{k:"woke_at",type:"time",label:"What time did you wake up and get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"m_action",type:"pick",multi:true,label:"Movement: pick at least one",options:MOVE,req:l=>(l.m_action||[]).length>0,reqMsg:"Pick your movement"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action||[]).includes("Workout"),groups:WORKOUTS},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},]},
   {id:"m2",title:"Low arousal task",text:"Complete your low arousal task (the guided PDF is on its way). It was set last night, so amend it if you need to.",
    asks:[{k:"m_lower",type:"pick",multi:true,label:"Your low arousal task",options:LOWER,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick your low arousal task"}]},
   {id:"m3",title:"Review & open the day",region:"Prefrontal cortex",text:"Log your numbers so far and see what's left against your targets. Then your check boxes.",
@@ -657,7 +705,7 @@ const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?lo
 // Evening shift: review & close the day, then check points.
 const EVENING=[
   {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",text:"Log anything left from today and your final numbers. Then set tomorrow: meals, morning tasks, training, a summary of today, your intentions and your wake up time. It'll all be at the top of tomorrow's Morning.",
-   asks:[{k:"_catchup",type:"catchup"},{k:"steps",type:"number",label:"Steps",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+   asks:[{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"steps",type:"number",label:"Steps",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e2",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",text:"Complete your low arousal task (the guided PDF is on its way), then tick off your check points.",
    asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal task",options:LOWER,req:l=>(l.pm_tool||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"pm_moon",type:"choice",yn:true,label:"Outside moonlight exposure",options:[["yes","Yes"],["no","No"]]},{k:"pm_dim",type:"choice",yn:true,label:"Lights dimmed & phone away",options:[["yes","Yes"],["no","No"]]},{k:"pm_meal",type:"choice",yn:true,label:"Final meal prepped or eaten",options:[["yes","Yes"],["no","No"]]},{k:"pm_shower",type:"choice",yn:true,label:"Showered & clothes changed",options:[["yes","Yes"],["no","No"]]},{k:"pm_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
 ];
@@ -666,7 +714,7 @@ const ZERO=[
   {id:"e1",title:"Your targets",text:"These are your daily targets, set by Ellis from your onboarding form. Everything you do in Project Reset builds towards hitting them.",
    asks:[{k:"_targets",type:"targets"}]},
   {id:"e2",title:"Set up Day 1",region:"Prefrontal cortex",text:"Set your meals, your morning tasks, training, your intentions for Day 1 and your wake up time. It'll all be waiting for you in the morning.",
-   asks:[{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"intentions",type:"textarea",label:"Set your intentions for Day 1"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+   asks:[{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"intentions",type:"textarea",label:"Set your intentions for Day 1"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e3",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",text:"Complete your low arousal task (the guided PDF is on its way), then tick off your check points.",
    asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal task",options:LOWER,req:l=>(l.pm_tool||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"pm_moon",type:"choice",yn:true,label:"Outside moonlight exposure",options:[["yes","Yes"],["no","No"]]},{k:"pm_dim",type:"choice",yn:true,label:"Lights dimmed & phone away",options:[["yes","Yes"],["no","No"]]},{k:"pm_meal",type:"choice",yn:true,label:"Final meal prepped or eaten",options:[["yes","Yes"],["no","No"]]},{k:"pm_shower",type:"choice",yn:true,label:"Showered & clothes changed",options:[["yes","Yes"],["no","No"]]},{k:"pm_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
 ];
@@ -681,8 +729,10 @@ const estMealTime=(wake,slot)=>hhmm(mins(wake||"07:00")+60+(slot-1)*210);
 const planMealTime=(log,slot)=>(log.plan_times||[])[slot-1]||estMealTime(log.tmr_wake,slot);
 function trainAfterFromTimes(log){const t=mins(log.tmr_train_time);let a=0;for(let i=1;i<MAX_MEALS;i++)if(mins(planMealTime(log,i))<=t-60)a=i;return clamp(a||1,1,MAX_MEALS-1)}
 const planTrainAfter=log=>log.tmr_train==="yes"&&log.tmr_train_time?(log.tmr_train_after||trainAfterFromTimes(log)):0;
-const dayTrainAfter=log=>log.train==="yes"?(log.train_after||autoTrainAfter("07:00",log.train_time)):0;
+const dayTrainAfter=log=>log.train==="yes"?(log.train_after||dayTrainAfterFromTimes(log)):0;
+function dayTrainAfterFromTimes(log){const t=mins(log.train_time||"12:00");let a=0;mealsOf(log).forEach(m=>{if(m.slot<MAX_MEALS&&m.time&&mins(m.time)<=t-60)a=Math.max(a,m.slot)});return clamp(a||autoTrainAfter("07:00",log.train_time),1,MAX_MEALS-1)}
 const mealRole=(slot,after)=>!after?"":slot===after?"Pre-workout":slot===after+1?"Post-workout":"";
+const hasEveningMeal=log=>planFoodsOf(log).some((f,i)=>foodsCount(f)&&mins(planMealTime(log,i+1))>=18*60);
 const planFoodsOf=log=>{const a=Array.isArray(log.plan_foods)?log.plan_foods.slice(0,MAX_MEALS):[];while(a.length<MAX_MEALS)a.push({});return a};
 const MEAL_EXAMPLES=["Eggs, spinach, berries","Greek yoghurt, berries, honey","Chicken, rice, greens","Salmon, potatoes, broccoli","Steak, sweet potato, peppers","Protein shake, banana"];
 
@@ -804,7 +854,7 @@ function generated(c){
     const meals=[];const nM=3+Math.floor(rng()*3);for(let i=0;i<nM;i++){const f=genFoods(i+1,rng);meals.push({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),planned:!!prevL})};
     let it=Math.max(t,wake+60);
     meals.forEach(x=>{if(x.slot===1){if(L.mm){x.done=L.mm;x.fu=L.meal1_water==="yes";if(rng()<p)x.walk=hhmm(mins(L.mm)+25)}return}it+=150+Math.round(rng()*60);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
-    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_warm=L.train_time;L.train_wo=hhmm(mins(L.train_time)+50);L.train_done=L.train_base=hhmm(mins(L.train_time)+60)}
+    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_wo=hhmm(mins(L.train_time)+50);L.train_done=L.train_base=hhmm(mins(L.train_time)+60)}
     if(L.m1)L.meals=meals;
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
@@ -1084,6 +1134,14 @@ function blockStates(log,c,dn){
   st.evening=e===evLen(log)?"done":(zero||log.day_done||e>0)?"active":"upcoming";
   return st;
 }
+function laterCard(x){
+  const {log,wk}=x,pairs=dayPairs(log),m=pairs.filter(q=>!q.done),w=pairs.filter(q=>q.done&&!q.walk);
+  const nums=[["steps","steps",""],["protein","protein","g"],["water","water","L"]].filter(([k,t])=>(Number(log[k])||0)<wk[t]);
+  if(!m.length&&!w.length&&!nums.length)return "";
+  return `<section class="card later"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Still to do tonight</h2><span class="muted" style="font-size:12px">Your score updates as you go</span></div>
+    <div class="review">${m.map(q=>`<div class="rv"><span>Meal ${q.slot}${q.text?" · "+esc(q.text):""}</span><button class="chip" data-mealtick="${q.key}">Ate it</button></div>`).join("")}${w.map(q=>`<div class="rv"><span>Walk after Meal ${q.slot}</span><button class="chip" data-walktick="${q.key}">Done</button></div>`).join("")}
+    ${nums.map(([k,t,u])=>`<div class="rv"><span>${k[0].toUpperCase()+k.slice(1)}: ${(Math.round((wk[t]-(Number(log[k])||0))*10)/10).toLocaleString("en-GB")}${u} to go</span><button class="chip" data-gauges="1">Update</button></div>`).join("")}</div></section>`;
+}
 function readyCard(x){
   const {log,c,dn,today}=x;
   return `<section class="scorecard" id="blk-score"><span class="eyebrow">You're set for Day 1</span>
@@ -1110,7 +1168,7 @@ function pblock(id,num,state,body,log,ov){
   if(state==="active"||(state==="done"&&S.open[id]))return `<section class="pblock open ${state}" id="blk-${id}">
     <header class="pb-head"><span class="pb-num">${state==="done"?TICK:num}</span><div><span class="eyebrow">${state==="done"?"Editing · ":"You're here · "}${P.goal}</span><h2 class="display pb-title">${P.name}</h2><p class="muted" style="font-size:13px">${P.intro}</p></div>${state==="done"?`<button class="btn" data-collapse="${id}">Close</button>`:""}</header>
     ${body}</section>`;
-  const sub=state==="done"?blockSummary(id,log):state==="skipped"?"You're starting tonight, so today begins at the Evening.":id==="day"?"Opens when your Morning is done.":"Opens when you finish your Day.";
+  const sub=state==="done"?(id==="morning"&&log[MORNING[MORNING.length-1].id]?`👍 Morning completed by ${log[MORNING[MORNING.length-1].id]} · `:"")+blockSummary(id,log):state==="skipped"?"You're starting tonight, so today begins at the Evening.":id==="day"?"Opens when your Morning is done.":"Opens when you finish your Day.";
   return `<section class="pblock ${state}" id="blk-${id}"><button class="pb-sum" ${state==="done"?`data-open="${id}"`:"disabled"} aria-label="${P.name}: ${esc(sub)}">
     <span class="pb-num">${state==="done"?TICK:state==="upcoming"?LOCK:"–"}</span>
     <span class="pb-text"><b>${P.name}</b>${state==="done"?`<span class="pb-done">Done</span>`:""}<small>${esc(sub)}</small></span>
@@ -1151,7 +1209,7 @@ function todayView(){
     ${pblock("day",2,st.day,dayView(x),log)}
     ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup night",goal:"Get ready for Day 1",intro:"Three steps tonight and your first day is planned."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
-      :allDone?`<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
+      :allDone?`${laterCard(x)}<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
     ${dn>0?gaugeBar(log,wk)+`<div class="gauge-space" aria-hidden="true"></div>`:""}
   </div>`;
 }
@@ -1186,19 +1244,24 @@ function askHtml(a,log,wk,locked){
     case"catchup":{const pairs=dayPairs(log),todoM=pairs.filter(q=>!q.done),todoW=pairs.filter(q=>q.done&&!q.walk),tr=log.train==="yes"&&!log.train_done;
       if(!todoM.length&&!todoW.length&&!tr)return `<div class="ask"><span>Anything left to log?</span><small class="muted" style="font-weight:500">Everything from today is logged.</small></div>`;
       return `<div class="ask"><span>Anything left to log? Tick what you did</span><div class="review">${todoM.map(q=>`<div class="rv"><span>Meal ${q.slot}${q.text?" · "+esc(q.text):""}</span><button class="chip" data-mealtick="${q.key}" ${dis}>Ate it</button></div>`).join("")}${todoW.map(q=>`<div class="rv"><span>Walk after Meal ${q.slot}</span><button class="chip" data-walktick="${q.key}" ${dis}>Done</button></div>`).join("")}${tr?`<div class="rv"><span>Training session${log.workout?" · "+esc(log.workout==="My own workout"&&log.workout_name?log.workout_name:log.workout):""}</span><button class="chip" data-traintick="1" ${dis}>Trained</button></div>`:""}</div></div>`}
+    case"latenote":return `<div class="train-place"><span><b>Still got steps or a meal to go tonight?</b> Leave them unticked and carry on. Once your Evening is done they'll be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
-    case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned;
+    case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned,ddOpen=S.dd===a.k;
+      const list=`<div class="dd${ddOpen?" open":""}"><button class="dd-btn" data-dd="${a.k}" ${dis} aria-expanded="${ddOpen}"><span>${arr.length?esc(arr.join(", ")):"Choose"+(a.multi?" one or more":"")}</span><span class="dd-car">${ddOpen?"▴":"▾"}</span></button>
+        ${ddOpen?`<div class="dd-list">${a.options.map(o=>`<div class="dd-row"><button class="dd-opt" data-pick="${a.k}" data-val="${esc(o)}" data-multi="${a.multi?1:""}" aria-pressed="${arr.includes(o)}" ${dis}><span class="dd-box">${TICK}</span><span>${esc(o)}</span></button>${infoBtn(o,o)}</div>${infoBox(o)}`).join("")}<button class="btn primary" data-dd="${a.k}" style="align-self:flex-start;margin-top:4px">Done</button></div>`:""}</div>`;
       return `<div class="ask"><span>${a.label}</span>
-        ${planned?`<div class="meal-card"><div class="meal-card-h"><b>${esc(arr.join(", "))}</b><span class="kind">Planned last night</span></div><button class="btn" data-pickopen="${a.k}" ${dis} style="align-self:flex-start">${open?"Done":"Change"}</button></div>`:""}
-        ${open?`<div class="opts">${a.options.map(o=>`<button class="chip" data-pick="${a.k}" data-val="${esc(o)}" data-multi="${a.multi?1:""}" aria-pressed="${arr.includes(o)}" ${dis}>${esc(o)}</button>`).join("")}</div>`:""}</div>`}
+        ${planned?`<div class="meal-card"><div class="meal-card-h"><b>${esc(arr.join(", "))}</b><span class="kind">Planned last night</span></div><button class="btn" data-pickopen="${a.k}" ${dis} style="align-self:flex-start">${S.openPick===a.k?"Done":"Change"}</button></div>`:""}
+        ${open?list:""}</div>`}
     case"select":return `<label class="ask" for="${id}"><span>${a.label}</span><select class="input" id="${id}" data-input="${a.k}" ${dis}><option value="">Choose a workout</option>${a.groups.map(([g,items])=>`<optgroup label="${esc(g)}">${items.map(o=>`<option ${v===o?"selected":""}>${esc(o)}</option>`).join("")}</optgroup>`).join("")}</select></label>`;
     case"mealplan":{const plan=planFoodsOf(log),n=plan.filter(f=>foodsCount(f)).length,ta=planTrainAfter(log);
-      return `<div class="ask"><span>${a.label} <span class="muted num">${n} of ${MAX_MEALS} planned</span></span>
-        <small class="muted" style="font-weight:500">Pick the foods for each meal. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
+      const eve=hasEveningMeal(log);
+      return `<div class="ask"><span class="ask-h">${a.label} <span class="muted num">${n} planned</span>${infoBtn("meal_plan","planning your meals")}</span>${infoBox("meal_plan")}
+        <small class="muted" style="font-weight:500">Plan as many meals as you need, up to ${MAX_MEALS}. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
+        ${n?`<div class="train-place${eve?" ok":""}"><span>${eve?`${TICK} Evening meal planned`:`One of your meals needs to be in the evening, 6pm or later. Set a meal's time below.`}</span></div>`:""}
         ${log.tmr_train==="yes"&&!log.tmr_train_time?`<div class="train-place"><span>Add your training time above and we'll place it between your meals.</span></div>`:""}${ta&&log.tmr_train_time?`<div class="train-place"><span>Training${log.tmr_train_time?" at <b class=\"num\">"+esc(log.tmr_train_time)+"</b>":""} goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-trainafter="${n}" aria-pressed="${ta===n}" ${dis}>Meal ${n}</button>`).join("")}</div><small class="muted">Meal ${ta} (${planMealTime(log,ta)}) is your pre-workout meal, Meal ${ta+1} (${planMealTime(log,ta+1)}) your post-workout meal. Change it if your day runs differently.</small>${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).length?`<small style="color:var(--warn);font-weight:700">Plan ${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).map(n=>"Meal "+n+(n===ta?" (pre-workout)":" (post-workout)")).join(" and ")} below.</small>`:""}</div>`:""}
         <div class="plan-slots">${plan.map((f,i)=>{const key="plan"+i,open=S.openMeal===key,c=foodsCount(f),role=mealRole(i+1,ta);
           return `<div class="plan-slot${c?" filled":""}${open?" open":""}">
-            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${role&&!(f.carbs||[]).length?`<small class="carb-cue">Add a carb source to fuel your training</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
+            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:c&&mins(planMealTime(log,i+1))>=18*60?` <span class="role eve">Evening meal</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${role&&!(f.carbs||[]).length?`<small class="carb-cue">Add a carb source to fuel your training</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
             ${c?`<label class="plan-time">Time <input type="time" class="input" data-ptime="${i}" id="pt-${i}" value="${esc(planMealTime(log,i+1))}" ${dis}></label>`:""}
             ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis)}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
           </div>${ta===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b>${log.tmr_train_time?" · "+esc(log.tmr_train_time):""}</span></div>`:""}`}).join("")}</div></div>`}
@@ -1288,21 +1351,23 @@ function dayView(x){
     :`<div class="nextbar"><div><b>Done for the day?</b><p>${sc.pd} ${sc.pd===1?"meal":"meals"} and ${sc.wk} walk ${sc.wk===1?"block":"blocks"} ticked.</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
 }
 function trainHtml(log,lockedBy){
-  const w=log.workout||"",lk=lockedBy&&!log.train_done,n=["train_warm","train_wo","train_base"].filter(k=>log[k]).length;
-  const st=(k,label,prevOk)=>{const on=!!log[k],ok=!lk&&(on||prevOk);return `<button class="tstep${on?" done":""}${ok?"":" off"}" ${ok?`data-tstep="${k}"`:"disabled"}><span class="tick">${TICK}</span><span>${label}${on?` <small>${esc(log[k])}</small>`:""}</span></button>`};
-  return `<div class="pair train-row"><div class="pi${log.train_done?" done":""}">
-    <span class="item-tick" aria-label="Training session ${log.train_done?"done":"not done"}"><span class="tick" aria-pressed="${!!log.train_done}">${TICK}</span></span>
+  const w=log.workout||"",lk=lockedBy&&!log.train_done,ta=dayTrainAfter(log),pre=dayPairs(log).find(q=>q.slot===ta),preDone=!pre||!!pre.done;
+  const n=(preDone?1:0)+["train_wo","train_base"].filter(k=>log[k]).length;
+  const row=(k,label,info,ok)=>{const on=!!log[k];ok=!lk&&(on||ok);return `<div class="tstep-row"><button class="tstep${on?" done":""}${ok?"":" off"}" ${ok?`data-tstep="${k}"`:"disabled"}><span class="tick">${TICK}</span><span>${label}${on?` <small>${esc(log[k])}</small>`:""}</span></button>${infoBtn(info,label)}</div>${infoBox(info)}`};
+  return `<div class="pair train-row" id="train-row"><div class="pi${log.train_done?" done":""}">
+    <span class="item-tick" aria-label="Training session ${log.train_done?"done":"not done"}"><span class="tick">${TICK}</span></span>
     <div class="item-main">
       ${lk?`<div class="locknote" style="color:var(--lime)">${LOCK} <span>Update your numbers above first</span></div>`:""}
-      <div class="item-title"><span>Training session</span>${log.train_time?`<span class="kind">Planned ${esc(log.train_time)}</span>`:""}${log.train_done?`<span class="stamp">${esc(log.train_done)}</span>`:`<span class="kind">${n} / 3</span>`}</div>
-      <span class="muted" style="font-size:13px">${w?esc(w==="My own workout"&&log.workout_name?log.workout_name:w):"No workout picked"}</span>
+      <div class="item-title"><span>Training session</span>${log.train_time?`<span class="kind">${esc(log.train_time)}</span>`:""}${log.train_done?`<span class="stamp">${esc(log.train_done)}</span>`:`<span class="kind">${n} / 3</span>`}</div>
+      <span class="muted" style="font-size:13px">${w?esc(w==="My own workout"&&log.workout_name?log.workout_name:w):"No workout picked"}${log.train_done?"":` · <button class="link" data-tedit="1" style="color:var(--lime)">${S.tedit?"Done":"Time changed?"}</button>`}</span>
+      ${S.tedit&&!log.train_done?`<div class="tedit"><label class="ask" for="a-train_time"><span>New training time</span><input class="input" type="time" id="a-train_time" data-input="train_time" value="${esc(log.train_time||"")}"></label><small>Your pre and post-workout meals move with it: Meal ${ta} is now your pre-workout meal and Meal ${ta+1} your post-workout meal.</small><div class="opts">${mealsOf(log).filter(m=>m.slot<MAX_MEALS).map(m=>`<button class="chip" data-dtrainafter="${m.slot}" aria-pressed="${ta===m.slot}">After Meal ${m.slot}</button>`).join("")}</div></div>`:""}
       <div class="tsteps">
-        ${st("train_warm","1 · Warm up 5 to 10 mins",true)}
-        ${st("train_wo","2 · Workout",!!log.train_warm)}
-        ${st("train_base","3 · Back to baseline: Reset to bring your heart rate down",!!log.train_wo)}
+        <div class="tstep-row"><div class="tstep${preDone?" done":" off"}"><span class="tick">${TICK}</span><span>1 · Pre-workout meal${pre?` (Meal ${pre.slot})`:""}${pre&&pre.done?` <small>${esc(pre.done)}</small>`:pre?" · tick it above":""}</span></div>${infoBtn("pre","Pre-workout meal")}</div>${infoBox("pre")}
+        ${row("train_wo","2 · Workout: warm up 5 to 10 mins, then your session","workout",preDone)}
+        ${row("train_base","3 · Post-workout: back to baseline","base",!!log.train_wo)}
       </div>
-      ${log.train_done?`<span class="cue">Session done. Your post-workout meal is next ↓</span>`:lk?"":`<div><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Show workout"}</button></div>`}
-      ${S.wopen&&!log.train_done&&!lk?`<div class="workout-box"><b>${esc(w||"Your workout")}</b><p>${w==="My own workout"?"Your own session. Tick step 2 when you're done.":"The PDF for this session from the workout library opens here."}</p><p class="muted" style="font-size:12px">Tick each step as you go. The session ticks itself once all three are done.</p></div>`:""}
+      ${log.train_done?`<span class="cue">Session done. Your post-workout meal is next ↓</span>`:lk?"":`<div><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Open workout"}</button></div>`}
+      ${S.wopen&&!log.train_done&&!lk?`<div class="workout-box"><b>${esc(w||"Your workout")}</b><p>${w==="My own workout"?"Your own session. Tick step 2 when you're done.":"The PDF for this session from the workout library opens here."}</p></div>`:""}
     </div>
   </div></div>`;
 }
@@ -1708,7 +1773,7 @@ root.addEventListener("click",e=>{
   // client: phase steps
   if(b.dataset.step){const id=b.dataset.step,t=nowHHMM();edit(id,t);toast("Logged "+t);
     if(id==="mm"){const yes=curCtx().log.meal1_water==="yes";setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:yes}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}}
-    if(id===MORNING[MORNING.length-1].id){S.open.morning=false;S.scrollTo="day"}{const ev=eveningSteps(curCtx().log);if(id===ev[ev.length-1].id){S.open.evening=false;S.scrollTo="score"}}return render()}
+    if(id===MORNING[MORNING.length-1].id){S.open.morning=false;S.scrollTo="day";toast("👍 Morning completed by "+t)}{const ev=eveningSteps(curCtx().log);if(id===ev[ev.length-1].id){S.open.evening=false;S.scrollTo="score"}}return render()}
   if(b.dataset.undo){edit(b.dataset.undo,"");if(b.dataset.undo==="mm")setMeals(a=>a.map(m=>m.slot===1?{...m,done:"",fu:null}:m));return render()}
   if(b.dataset.ask==="am_water500"&&b.dataset.val==="yes"&&!curCtx().log.am_water_added){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10);edit("am_water_added",true);toast("+500ml water")}
   if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=b.dataset.num?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
@@ -1725,15 +1790,19 @@ root.addEventListener("click",e=>{
   if(b.dataset.chk){const sl=b.dataset.chk;root.querySelectorAll(`[id^="a-c${sl}-"]`).forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Numbers updated");return render()}
   if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
-  if(b.dataset.pickopen){S.openPick=S.openPick===b.dataset.pickopen?null:b.dataset.pickopen;return render()}
+  if(b.dataset.pickopen){const k=b.dataset.pickopen;S.openPick=S.openPick===k?null:k;S.dd=S.openPick?k:null;return render()}
+  if(b.dataset.dd){const k=b.dataset.dd;S.dd=S.dd===k?null:k;S.info=null;return render()}
+  if(b.dataset.info){S.info=S.info===b.dataset.info?null:b.dataset.info;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
-  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_warm","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
-    if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",l.train_warm||t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
+  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
+    if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
     return render()}
+  if(b.dataset.tedit){S.tedit=!S.tedit;return render()}
+  if(b.dataset.dtrainafter){edit("train_after",Number(b.dataset.dtrainafter));return render()}
   if(b.dataset.trainstart){edit("train_start",nowHHMM());S.wopen=true;return render()}
   if(b.dataset.wopen){S.wopen=!S.wopen;return render()}
   if(b.dataset.trainafter){edit("tmr_train_after",Number(b.dataset.trainafter));return render()}
-  if(b.dataset.traintick){const l=curCtx().log;edit("train_done",l.train_done?"":nowHHMM());if(!l.train_start&&!l.train_done)edit("train_start",nowHHMM());S.wopen=false;return render()}
+  if(b.dataset.traintick){const l=curCtx().log,t=l.train_done?"":nowHHMM();edit("train_wo",t);edit("train_base",t);edit("train_done",t);if(!l.train_start&&!l.train_done)edit("train_start",nowHHMM());S.wopen=false;return render()}
   if(b.dataset.planclear){const i=Number(b.dataset.planclear),plan=planFoodsOf(curCtx().log);plan[i]={};edit("plan_foods",plan);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));return render()}
   if(b.dataset.mpdel){const l=mealPlanOf(curCtx().log).slice();l.splice(Number(b.dataset.mpdel),1);edit("meals_tmr",l);return render()}
   if(b.dataset.mpadd){const inp=root.querySelector("#mpInput"),v=inp&&inp.value.trim();if(!v)return;edit("meals_tmr",[...mealPlanOf(curCtx().log),v]);render();const n=root.querySelector("#mpInput");if(n)n.focus();return}
@@ -1774,6 +1843,7 @@ root.addEventListener("change",e=>{
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
   if(k==="tmr_train_time")edit("tmr_train_after","");
+  if(k==="train_time")edit("train_after","");
   clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number"||e.target.type==="time"||e.target.tagName==="SELECT")render();
 });
 
