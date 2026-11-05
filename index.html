@@ -477,6 +477,10 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .gauge-panel .muted{color:var(--on-night);opacity:.7}
 .gauge-space{height:96px}
 .checkin{border:2px solid var(--lime);background:var(--bg);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
+.locknote{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:700;color:var(--warn);margin-bottom:4px}
+.locknote .btn{padding:6px 12px;font-size:12px}
+@keyframes chkflash{0%,100%{box-shadow:0 0 0 4px var(--lime-dim)}50%{box-shadow:0 0 0 10px var(--lime)}}
+.checkin.flash{animation:chkflash .6s ease 2}
 .checkin.done{flex-direction:row;align-items:center;gap:12px;border:1px solid var(--line);box-shadow:none;background:var(--surface);padding:10px 14px}
 .checkin.done>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .checkin.done .pb-num{width:32px;height:32px;background:var(--lime);color:var(--ink)}
@@ -1276,7 +1280,7 @@ function dayView(x){
   <section class="card">
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after.</p>
-    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk);if(!log["chk"+q.slot])pending=q.slot}if(ta&&q.slot===ta){h+=trainHtml(log);placed=true}});if(ta&&!placed)h+=trainHtml(log);return h})()}</div>
+    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);const tr=ta&&q.slot===ta;if(tr){h+=trainHtml(log);placed=true}if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk,tr&&log.train==="yes");if(!log["chk"+q.slot])pending=q.slot}});if(ta&&!placed)h+=trainHtml(log);return h})()}</div>
     ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add Meal ${next}</button>`:""}
   </section>
   ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
@@ -1313,10 +1317,10 @@ function gaugeBar(log,wk){
     <button class="gauge-bar" data-gauges="1" aria-label="Your targets today. Tap to update your numbers">${gauge(log.steps,wk.steps,"Steps","steps")}${gauge(log.protein,wk.protein,"Protein","g")}${gauge(log.water,wk.water,"Water","L")}<span class="g-edit">${S.gopen?"Close":"Update"}</span></button>
   </div>`;
 }
-function checkinHtml(slot,log,wk){
+function checkinHtml(slot,log,wk,afterTrain){
   const t=log["chk"+slot];
   if(t)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Numbers updated ${esc(t)}</b><small>${[log.steps&&Number(log.steps).toLocaleString("en-GB")+" steps",log.protein&&log.protein+"g protein",log.water&&log.water+"L water"].filter(Boolean).join(" · ")}</small></div><button class="link" data-chkundo="${slot}">Redo</button></div>`;
-  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Number check-in</span><h3 class="sec-title" style="font-size:22px">Now you've done ${slot} meals. Time to update your numbers.</h3><p class="muted" style="font-size:13px">Your most recent steps, protein and water. Your next meal unlocks once they're in.</p></div>
+  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Number check-in</span><h3 class="sec-title" style="font-size:22px">${afterTrain?(log.train_done?`Training done. Now update your numbers.`:`Meal ${slot} done. Update your numbers.`):`Now you've done ${slot} meals. Time to update your numbers.`}</h3><p class="muted" style="font-size:13px">Pop in your latest steps, protein and water, then tap <b>Numbers updated</b>. Meal ${slot+1} unlocks straight after.${afterTrain&&!log.train_done?" You can do this before or after your training session.":""}</p></div>
     <div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"c"+slot+"-"},log,wk,false)).join("")}</div>
     <div><button class="btn primary" data-chk="${slot}">Numbers updated</button></div></div>`;
 }
@@ -1326,7 +1330,7 @@ function pairHtml(p,ta,lockedBy){
     <div class="pi${p.done?" done":""}">
       <button class="item-tick" ${p.fixed||(lockedBy&&!p.done)?"disabled":`data-mealtick="${p.key}"`} aria-pressed="${!!p.done}" aria-label="${p.done?"Untick":"Tick"} Meal ${p.slot}"><span class="tick">${TICK}</span></button>
       <div class="item-main">
-        ${lockedBy&&!p.done?`<span class="kind" style="color:var(--warn)">${LOCK} Update your numbers after Meal ${lockedBy} first</span>`:""}
+        ${lockedBy&&!p.done?`<div class="locknote">${LOCK} <span>Locked until you update your numbers</span><button class="btn" data-gochk="${lockedBy}">Update numbers ↑</button></div>`:""}
         <div class="item-title"><span>Meal ${p.slot}${mealRole(p.slot,ta)?` <span class="role">${mealRole(p.slot,ta)}</span>`:""}</span>${p.done?`<span class="stamp">${esc(p.done)}</span>`:""}${p.fixed?`<span class="kind">From your Morning</span>`:p.planned&&!p.done?`<span class="kind">Planned${p.time?" "+esc(p.time):" last night"}</span>`:""}${p.done&&p.water===true?`<span class="badge ok">Water ✓</span>`:""}${p.done&&p.water===false?`<span class="badge miss">No water</span>`:""}</div>
         ${foodsCount(p.foods)?`<div class="fsum">${FOOD_CATS.filter(c=>(p.foods[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(p.foods[c.k].join(", "))}</span>`).join("")}</div>`:p.text?`<span class="muted" style="font-size:13px">${p.planned&&!p.done?"Planned: ":""}${esc(p.text)}</span>`:""}
         <button class="link mealopen" data-mealopen="${p.key}">${S.openMeal===p.key?"Close foods":foodsCount(p.foods)?"Change":"Choose what's in it"}</button>
@@ -1714,6 +1718,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.tdel){const list=todoOf(curCtx().log).slice();list.splice(Number(b.dataset.tdel),1);edit("todo_tmr",list);return render()}
   if(b.dataset.tadd){const inp=root.querySelector("#tmrInput"),v=inp&&inp.value.trim();if(!v)return;edit("todo_tmr",[...todoOf(curCtx().log),["own",v]]);render();const n=root.querySelector("#tmrInput");if(n)n.focus();return}
   if(b.dataset.meal1log){const l=curCtx().log,t=nowHHMM(),yes=l.meal1_water==="yes";edit("mm",t);setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:yes}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}toast("Meal 1 logged "+t);return render()}
+  if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
   if(b.dataset.chk){const sl=b.dataset.chk;root.querySelectorAll(`[id^="a-c${sl}-"]`).forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Numbers updated");return render()}
   if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
