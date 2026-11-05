@@ -542,6 +542,8 @@ select.input{appearance:auto}
 .tedit .chip[aria-pressed=true]{background:var(--lime);color:var(--ink);border-color:var(--lime)}
 .train-place.ok{border-color:var(--lime)}
 .role.eve{background:var(--night);color:var(--lime)}
+.eve-meal .pi{background:var(--surface);border-style:dashed}
+.eve-meal .tick svg{opacity:1}
 .card.later{border:2px solid var(--lime)}
 .meal-card{display:flex;flex-direction:column;gap:8px;border:1px solid color-mix(in srgb,var(--lime) 60%,var(--line));border-radius:12px;padding:12px 14px;background:var(--bg);font-weight:500}
 .meal-card-h{display:flex;align-items:center;gap:8px}
@@ -707,7 +709,7 @@ const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?lo
 // Evening shift: review & close the day, then check points.
 const EVENING=[
   {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",text:"Log anything left from today and your final numbers. Then set tomorrow: meals, morning tasks, training, a summary of today, your intentions and your wake up time. It'll all be at the top of tomorrow's Morning.",
-   asks:[{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"steps",type:"number",label:"Steps",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+   asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"steps",type:"number",label:"Steps",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e2",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",text:"Complete your low arousal task (the guided PDF is on its way), then tick off your check points.",
    asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal task",options:LOWER,req:l=>(l.pm_tool||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_dim","Lights dimmed & phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"pm_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
 ];
@@ -777,16 +779,18 @@ const itemsOf=log=>Array.isArray(log.items)?log.items:[];
 const mealsOf=log=>Array.isArray(log.meals)?log.meals:[];
 const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
 // The Day is a simple list of non-negotiables: each meal, then a walk block after it. Meal 1 comes from the Morning.
+// The last meal of the day (if there is more than one) is logged in the Evening, like Meal 1 is in the Morning.
+const finalSlot=log=>{const mx=Math.max(0,...mealsOf(log).map(m=>m.slot));return mx>1?mx:0};
 function dayPairs(log){
-  const pairs=[];
-  mealsOf(log).forEach(m=>pairs.push({key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
+  const pairs=[],fs=finalSlot(log);
+  mealsOf(log).forEach(m=>pairs.push({eve:m.slot===fs,key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
   return pairs;
 }
 function scoreOf(log){
   const meals=mealsOf(log),pairs=dayPairs(log),yna=ynAsks(log),nn=yna.filter(a=>log[a.k]==="yes").length;
-  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),ml=meals.filter(x=>x.done).length,wk=pairs.filter(x=>x.walk).length;
+  const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),ml=meals.filter(x=>x.done).length,wk=pairs.filter(x=>x.walk&&!x.eve).length;
   const tr=log.train==="yes"?1:0,td=log.train_done?1:0;
-  const pts=m+e+ml+wk+nn+td,max=ML+evLen(log)+meals.length+pairs.length+yna.length+tr;
+  const pts=m+e+ml+wk+nn+td,max=ML+evLen(log)+meals.length+pairs.filter(x=>!x.eve).length+yna.length+tr;
   const ans=pairs.filter(x=>x.done&&x.water!==undefined&&x.water!==null),fuYes=ans.filter(x=>x.water===true).length;
   const pd=pairs.filter(x=>x.done).length;
   const sn=new Set();
@@ -1059,6 +1063,7 @@ const root=document.getElementById("root");
 const me=()=>allClients().find(c=>c.id===S.session?.clientId)||CLIENTS[0];
 const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2);
 const TICK='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const MOON=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
 const DUMBBELL='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 6v4M4 4.5v7M12 4.5v7M14.5 6v4M4 8h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const LOCK='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M3.8 5.5V4a2.2 2.2 0 014.4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
@@ -1137,7 +1142,7 @@ function blockStates(log,c,dn){
   return st;
 }
 function laterCard(x){
-  const {log,wk}=x,pairs=dayPairs(log),m=pairs.filter(q=>!q.done),w=pairs.filter(q=>q.done&&!q.walk);
+  const {log,wk}=x,pairs=dayPairs(log),m=pairs.filter(q=>!q.done),w=pairs.filter(q=>q.done&&!q.walk&&!q.eve);
   const nums=[["steps","steps",""],["protein","protein","g"],["water","water","L"]].filter(([k,t])=>(Number(log[k])||0)<wk[t]);
   if(!m.length&&!w.length&&!nums.length)return "";
   return `<section class="card later"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Still to do tonight</h2><span class="muted" style="font-size:12px">Your score updates as you go</span></div>
@@ -1243,12 +1248,21 @@ function askHtml(a,log,wk,locked){
           <div class="fsum">${FOOD_CATS.filter(c=>(f[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f[c.k].join(", "))}</span>`).join("")}</div>
           <button class="btn" data-mealopen="${m.id}" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal===m.id?"Done":"Change"}</button></div>`:""}
         ${open?`<div class="picker-box">${foodPicker(m.id,1,f,locked)}</div>`:""}</div>`}
-    case"catchup":{const pairs=dayPairs(log),todoM=pairs.filter(q=>!q.done),todoW=pairs.filter(q=>q.done&&!q.walk),tr=log.train==="yes"&&!log.train_done;
+    case"catchup":{const pairs=dayPairs(log).filter(q=>!q.eve),todoM=pairs.filter(q=>!q.done),todoW=pairs.filter(q=>q.done&&!q.walk),tr=log.train==="yes"&&!log.train_done;
       if(!todoM.length&&!todoW.length&&!tr)return `<div class="ask"><span>Anything left to log?</span><small class="muted" style="font-weight:500">Everything from today is logged.</small></div>`;
       return `<div class="ask"><span>Anything left to log? Tick what you did</span><div class="review">${todoM.map(q=>`<div class="rv"><span>Meal ${q.slot}${q.text?" · "+esc(q.text):""}</span><button class="chip" data-mealtick="${q.key}" ${dis}>Ate it</button></div>`).join("")}${todoW.map(q=>`<div class="rv"><span>Walk after Meal ${q.slot}</span><button class="chip" data-walktick="${q.key}" ${dis}>Done</button></div>`).join("")}${tr?`<div class="rv"><span>Training session${log.workout?" · "+esc(log.workout==="My own workout"&&log.workout_name?log.workout_name:log.workout):""}</span><button class="chip" data-traintick="1" ${dis}>Trained</button></div>`:""}</div></div>`}
     case"checks":{const n=a.items.filter(([k])=>log[k]==="yes").length,open=S.dd===a.k;
       return `<div class="ask"><span>${a.label} <span class="muted num">${n} of ${a.items.length}</span></span><div class="dd${open?" open":""}"><button class="dd-btn" data-dd="${a.k}" ${dis} aria-expanded="${open}"><span>${n?esc(a.items.filter(([k])=>log[k]==="yes").map(x=>x[1]).join(", ")):"Tap to tick what you've done"}</span><span class="dd-car">${open?"▴":"▾"}</span></button>
         ${open?`<div class="dd-list">${a.items.map(([k,l])=>`<div class="dd-row"><button class="dd-opt" data-chkitem="${k}" aria-pressed="${log[k]==="yes"}" ${dis}><span class="dd-box">${TICK}</span><span>${esc(l)}</span></button></div>`).join("")}<button class="btn primary" data-dd="${a.k}" style="align-self:flex-start;margin-top:4px">Done</button></div>`:""}</div></div>`}
+    case"finalmeal":{const f=dayPairs(log).find(q=>q.eve);if(!f)return "";
+      if(f.done)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Meal ${f.slot}, your evening meal, logged ${esc(f.done)}</b><small>${esc(f.text||"")}${f.water===true?" · water ✓":""}</small></div><button class="link" data-mealtick="${f.key}" ${dis}>Undo</button></div>`;
+      const open=S.openMeal===f.key||!foodsCount(f.foods);
+      return `<div class="meal1-cue"><span class="eyebrow">Your evening meal</span><h3 class="sec-title" style="font-size:22px">Meal ${f.slot}${f.time?`, planned for ${esc(f.time)}`:""}</h3>
+        <p class="muted" style="font-size:13px;margin-top:-6px">Fed, watered, ready for sleep. Log it once you've eaten.</p>
+        ${foodsCount(f.foods)?`<div class="meal-card"><div class="meal-card-h"><b>Meal ${f.slot}</b>${f.planned?`<span class="kind">Planned last night</span>`:""}</div><div class="fsum">${FOOD_CATS.filter(c=>(f.foods[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f.foods[c.k].join(", "))}</span>`).join("")}</div><button class="btn" data-mealopen="${f.key}" ${dis} style="align-self:flex-start">${S.openMeal===f.key?"Done":"Change"}</button></div>`:""}
+        ${open?`<div class="picker-box">${foodPicker(f.key,f.slot,f.foods,locked)}</div>`:""}
+        ${askHtml({k:"final_water",type:"choice",label:"Did you have water with it?",options:[["yes","Yes"],["no","No"]]},log,{},locked)}
+        <div><button class="btn primary" data-finallog="${f.key}" ${log.final_water&&!locked?"":"disabled"}>Log Meal ${f.slot}</button>${log.final_water?"":`<span class="muted" style="font-size:12px;margin-left:8px">Answer the water question first. Not eaten yet? Carry on, you can log it later tonight.</span>`}</div></div>`}
     case"latenote":return `<div class="train-place"><span><b>Still got steps or a meal to go tonight?</b> Leave them unticked and carry on. Once your Evening is done they'll be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
     case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned,ddOpen=S.dd===a.k;
@@ -1340,19 +1354,20 @@ function stepsView(ph,x){
   return html;
 }
 function dayView(x){
-  const {log,prev}=x,pairs=dayPairs(log),sc=scoreOf(log),todo=todoOf(prev);
-  const total=pairs.length*2+(log.train==="yes"?1:0),doneN=pairs.filter(p=>p.done).length+sc.wk+(log.train_done?1:0),next=Math.max(0,...mealsOf(log).map(m=>m.slot))+1;
+  const {log,prev}=x,allP=dayPairs(log),pairs=allP.filter(q=>!q.eve),fin=allP.find(q=>q.eve),sc=scoreOf(log),todo=todoOf(prev);
+  const total=pairs.length*2+(log.train==="yes"?1:0),doneN=pairs.filter(p=>p.done).length+pairs.filter(p=>p.walk).length+(log.train_done?1:0),next=Math.max(0,...mealsOf(log).map(m=>m.slot))+1;
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
   ${prev.intentions?`<section class="card plan-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your intentions for today</h2><span class="muted" style="font-size:12px">From last night</span></div><p>${esc(prev.intentions)}</p></section>`:""}${false?`<section>
     ${prev.plan?`<p>${esc(prev.plan)}</p>`:""}${todo.length?`<ul class="plan-list">${todo.map(t=>`<li>${esc(t[1])}</li>`).join("")}</ul>`:""}</section>`:""}
   <section class="card">
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
-    <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after.</p>
+    <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after. Your evening meal is logged in your Evening.</p>
     <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);const tr=ta&&q.slot===ta;if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk,tr&&log.train==="yes");if(!log["chk"+q.slot])pending=q.slot}if(tr){h+=trainHtml(log,pending);placed=true}});if(ta&&!placed)h+=trainHtml(log,pending);return h})()}</div>
-    ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add Meal ${next}</button>`:""}
+    ${fin?`<div class="pair eve-meal"><div class="pi"><span class="item-tick"><span class="tick">${fin.done?TICK:MOON}</span></span><div class="item-main"><div class="item-title"><span>Meal ${fin.slot} <span class="role eve">Evening meal</span></span>${fin.done?`<span class="stamp">${esc(fin.done)}</span>`:fin.time?`<span class="kind">Planned ${esc(fin.time)}</span>`:""}</div><span class="muted" style="font-size:13px">${fin.text?esc(fin.text)+" · ":""}You log this one in your Evening.</span></div></div></div>`:""}
+    ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add a meal</button>`:""}
   </section>
   ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
-    :pairs.length&&pairs.every(q=>q.done)?`<div class="nextbar ready"><div><b>Last meal done.</b><p>Head to your Evening and give your final numbers for today.</p></div><button class="btn primary" data-finishday="1">Go to my Evening</button></div>`
+    :pairs.length&&pairs.every(q=>q.done)?`<div class="nextbar ready"><div><b>Day done.</b><p>${fin&&!fin.done?`Head to your Evening: Meal ${fin.slot}, your evening meal, is logged there.`:"Head to your Evening and give your final numbers for today."}</p></div><button class="btn primary" data-finishday="1">Go to my Evening</button></div>`
     :`<div class="nextbar"><div><b>Done for the day?</b><p>${sc.pd} ${sc.pd===1?"meal":"meals"} and ${sc.wk} walk ${sc.wk===1?"block":"blocks"} ticked.</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
 }
 function trainHtml(log,lockedBy){
@@ -1792,6 +1807,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.carry){const x=curCtx(),it=itemsOf(x.log).find(i=>i.id===b.dataset.carry);if(!it)return;const list=todoOf(x.log);edit("todo_tmr",list.some(t=>t[1]===it.label)?list.filter(t=>t[1]!==it.label):[...list,[it.kind,it.label]]);return render()}
   if(b.dataset.tdel){const list=todoOf(curCtx().log).slice();list.splice(Number(b.dataset.tdel),1);edit("todo_tmr",list);return render()}
   if(b.dataset.tadd){const inp=root.querySelector("#tmrInput"),v=inp&&inp.value.trim();if(!v)return;edit("todo_tmr",[...todoOf(curCtx().log),["own",v]]);render();const n=root.querySelector("#tmrInput");if(n)n.focus();return}
+  if(b.dataset.finallog){const id=b.dataset.finallog,l=curCtx().log,t=nowHHMM(),yes=l.final_water==="yes";S.openMeal=null;setMeals(a=>a.map(m=>m.id===id?{...m,done:t,fu:yes}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}edit("pm_meal","yes");toast("Evening meal logged "+t);return render()}
   if(b.dataset.meal1log){const l=curCtx().log,t=nowHHMM(),yes=l.meal1_water==="yes";edit("mm",t);setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:yes}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}toast("Meal 1 logged "+t);return render()}
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
   if(b.dataset.chk){const sl=b.dataset.chk;root.querySelectorAll(`[id^="a-c${sl}-"]`).forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Numbers updated");return render()}
@@ -1827,7 +1843,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mealtick){const id=b.dataset.mealtick,inp=root.querySelector("#mt-"+id);S.openMeal=null;setMeals(a=>a.map(m=>m.id!==id?m:(m.done?{...m,done:"",fu:null,walk:""}:{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null})));return render()}
   if(b.dataset.water){const id=b.dataset.water,v=b.dataset.val==="1";if(v){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10);toast("+500ml water")}if(id==="m1")edit("meal1_water",v);else setMeals(a=>a.map(m=>m.id===id?{...m,fu:v}:m));return render()}
   if(b.dataset.walktick){const id=b.dataset.walktick;if(id==="m1"){edit("meal1_walk",curCtx().log.meal1_walk?"":nowHHMM())}else setMeals(a=>a.map(m=>m.id===id?{...m,walk:m.walk?"":nowHHMM()}:m));return render()}
-  if(b.dataset.madd){let nid;setMeals(a=>{nid=uid();return[...a,{id:nid,slot:Math.max(0,...a.map(m=>m.slot))+1,text:""}]});S.openMeal=nid;S.fcat[nid]="protein";return render()}
+  if(b.dataset.madd){let nid;const fs=finalSlot(curCtx().log);setMeals(a=>{nid=uid();const mx=Math.max(0,...a.map(m=>m.slot));if(!fs)return[...a,{id:nid,slot:mx+1,text:""}];return[...a.map(m=>m.slot===fs?{...m,slot:fs+1}:m),{id:nid,slot:fs,text:""}].sort((p,q)=>p.slot-q.slot)});S.openMeal=nid;S.fcat[nid]="protein";return render()}
   if(b.dataset.mdel){setMeals(a=>a.filter(m=>m.id!==b.dataset.mdel).map((m,i)=>({...m,slot:i+2})));return render()}
   if(b.dataset.mlog){const id=b.dataset.mlog,inp=root.querySelector("#mt-"+id);setMeals(a=>a.map(m=>m.id===id?{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null}:m));toast("Logged "+nowHHMM());return render()}
   if(b.dataset.munlog){setMeals(a=>a.map(m=>m.id===b.dataset.munlog?{...m,done:"",fu:null}:m));return render()}
