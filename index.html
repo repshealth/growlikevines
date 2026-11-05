@@ -564,7 +564,7 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 /* ---------- the 3 phases ---------- */
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
-  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Wake up, raise it, bring it down, check in. Four steps, in order, before the day opens."},
+  {id:"morning",name:"Morning",goal:"Stimulation & arousal",intro:"Wake up, raise it, bring it down, Meal 1, check in. Five steps, in order, before the day opens."},
   {id:"day",name:"Day",goal:"Keep energy stable",intro:"Keep it simple: each meal, then a walk block straight after it."},
   {id:"evening",name:"Evening",goal:"Reduce arousal",intro:"Review today, then build tomorrow. Three steps, in order."}
 ];
@@ -603,10 +603,12 @@ const MORNING=[
    asks:[{k:"m_action",type:"pick",label:"Your activity",options:ACTIONS.map(a=>a[0]),req:l=>(l.m_action||[]).length>0,reqMsg:"Pick your activity"}]},
   {id:"m3",title:"Bring it down",text:"Straight after, lower your arousal again. Stay wired and you disconnect. Settle until you can feel something.",
    asks:[{k:"m_lower",type:"pick",multi:true,label:"How you're bringing it down",options:LOWER,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick how you brought it down"}]},
+  {id:"mm",title:"Meal 1",text:"Meal 1 is non-negotiable and part of your morning: within 90 minutes of waking, protein first, no carbs. Eat what you planned last night, tap Change only if you swapped anything.",
+   asks:[{k:"_meal1",type:"meal1"},{k:"meal1_water",type:"choice",label:"Did you have water with it?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.meal1_water,reqMsg:"Answer the water question"}]},
   {id:"m4",title:"Morning check-in",text:"Where are you at so far? Log your steps, protein and water and see what's left against today's targets.",
    asks:[{k:"steps",type:"number",label:"Steps so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water so far (L)",target:"water",step:0.5,remaining:true}]}
 ];
-const ML=4;
+const ML=5;
 const brainHit=log=>{const b=new Set();if(log.m2)(Array.isArray(log.m_action)?log.m_action:[]).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 const EVENING=[
   {id:"e1",title:"Review your day",text:"Check your final numbers against your targets, then rate your day honestly.",
@@ -678,7 +680,7 @@ const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
 // The Day is a simple list of non-negotiables: each meal, then a walk block after it. Meal 1 comes from the Morning.
 function dayPairs(log){
   const pairs=[];
-  mealsOf(log).forEach(m=>pairs.push({key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,done:m.done||"",water:m.fu,walk:m.walk||"",planned:m.planned}));
+  mealsOf(log).forEach(m=>pairs.push({key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,done:m.done||"",water:m.fu,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
   return pairs;
 }
 function scoreOf(log){
@@ -750,10 +752,11 @@ function generated(c){
     if(L.m2)L.m_action=prevL&&(prevL.tmr_action||[]).length?prevL.tmr_action:[pick(["Fast walk outside","Fast walk outside","Run or jog"])];
     if(L.m3)L.m_lower=prevL&&(prevL.tmr_lower||[]).length?prevL.tmr_lower:[pick(LOWER)];
     if(L.m4){L.steps=1500+Math.round(rng()*2500);L.protein=Math.round(25+rng()*20);L.water=1}
+    if(L.mm)L.meal1_water=rng()<p+.05?"yes":"no";
     L.train=prevL&&prevL.tmr_train?prevL.tmr_train:(rng()<.5?"yes":"no");if(L.train==="yes"){L.train_time=prevL&&prevL.tmr_train_time||"12:00";L.train_after=prevL&&prevL.tmr_train_after||autoTrainAfter("07:00",L.train_time);L.workout=prevL&&prevL.tmr_workout||"Home PDF 1"}
     const meals=[];const nM=3+Math.floor(rng()*3);for(let i=0;i<nM;i++){const f=genFoods(i+1,rng);meals.push({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),planned:!!prevL})};
     let it=Math.max(t,wake+60);
-    meals.forEach(x=>{it+=150+Math.round(rng()*60);if(L.m4&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
+    meals.forEach(x=>{if(x.slot===1){if(L.mm){x.done=L.mm;x.fu=L.meal1_water==="yes";if(rng()<p)x.walk=hhmm(mins(L.mm)+25)}return}it+=150+Math.round(rng()*60);if(L.m4&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
     if(L.m4&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_done=hhmm(mins(L.train_time)+60)}
     if(L.m1)L.meals=meals;
     let et=1230+Math.round(rng()*60);
@@ -1052,7 +1055,7 @@ function readyCard(x){
 }
 function blockSummary(id,log){
   const sc=scoreOf(log);
-  if(id==="morning")return [log.m1&&`Up ${log.m1}`,(log.m_action||[]).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.steps&&`${Number(log.steps).toLocaleString("en-GB")} steps so far`,log.train==="yes"?"Training day":""].filter(Boolean).join(" · ");
+  if(id==="morning")return [log.m1&&`Up ${log.m1}`,log.mm&&`Meal 1 ${log.mm}`,(log.m_action||[]).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.steps&&`${Number(log.steps).toLocaleString("en-GB")} steps so far`,log.train==="yes"?"Training day":""].filter(Boolean).join(" · ");
   if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,log.train==="yes"?(log.train_done?`Trained ${log.train_done}`:"Training not ticked"):"",`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   return [log.e3&&`Done ${log.e3}`,log.day_rating&&`Day rated ${log.day_rating}/10`,`${todoOf(log).length} ${todoOf(log).length===1?"task":"tasks"} & ${mealPlanOf(log).length} ${mealPlanOf(log).length===1?"meal":"meals"} planned for tomorrow`].filter(Boolean).join(" · ");
 }
@@ -1078,6 +1081,7 @@ function todayView(){
     const pl=planFoodsOf(x.prev);
     saveEdit(x.c.id,x.dk,"meals",pl.map((f,i)=>({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),planned:true})).filter(m=>foodsCount(m.foods)));
     x=curCtx()}
+  if(x.dn>0&&!mealsOf(x.log).some(m=>m.slot===1)){saveEdit(x.c.id,x.dk,"meals",[{id:uid(),slot:1,text:""},...mealsOf(x.log)]);x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
   const note=(store.get(K.notes,{})[c.id]);
   const st=blockStates(log,c,dn);
@@ -1125,6 +1129,13 @@ function askHtml(a,log,wk,locked){
           <button class="btn" data-mealopen="m1" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal==="m1"?"Done":"Change"}</button></div>`
         :log.meal1?`<small class="muted" style="font-weight:500">Planned last night: ${esc(log.meal1)}</small>`:""}
         ${open?`<div class="picker-box">${foodPicker("m1",1,f,locked)}</div>`:""}</div>`}
+    case"meal1":{const m=mealsOf(log).find(q=>q.slot===1),f=m&&m.foods,has=foodsCount(f),open=m&&(S.openMeal===m.id||!has);
+      if(!m)return "";
+      return `<div class="ask"><span>What's in it</span>
+        ${has?`<div class="meal-card"><div class="meal-card-h"><b>Meal 1</b>${m.planned?`<span class="kind">Planned last night</span>`:""}</div>
+          <div class="fsum">${FOOD_CATS.filter(c=>(f[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f[c.k].join(", "))}</span>`).join("")}</div>
+          <button class="btn" data-mealopen="${m.id}" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal===m.id?"Done":"Change"}</button></div>`:""}
+        ${open?`<div class="picker-box">${foodPicker(m.id,1,f,locked)}</div>`:""}</div>`}
     case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned;
       return `<div class="ask"><span>${a.label}</span>
         ${planned?`<div class="meal-card"><div class="meal-card-h"><b>${esc(arr.join(", "))}</b><span class="kind">Planned last night</span></div><button class="btn" data-pickopen="${a.k}" ${dis} style="align-self:flex-start">${open?"Done":"Change"}</button></div>`:""}
@@ -1353,7 +1364,7 @@ function programmeView(){
     "#Evening: reduce arousal",
     "Review your day: how you got on with your to-do list, carry anything unfinished, log your numbers and rate your day. Tick the non-negotiables you kept, then wind down. Finally set tomorrow's wake time, plan of action and to-do list. If you've just joined, tonight is Day 0: your setup night, where you plan your first day.",
     "#Morning: stimulation & arousal",
-    "Wake up: tap I'm up and it logs next to the alarm you set. Arousal activity: the one you picked last night, fast and outside. Bring it down: the lower arousal activity you picked. Morning check-in: steps, protein and water so far and what's left. Then your Day opens.",
+    "Wake up: tap I'm up and it logs next to the alarm you set. Arousal activity: the one you picked last night, fast and outside. Bring it down: the lower arousal activity you picked. Meal 1: non-negotiable, the one you planned, plus did you have water with it. Morning check-in: steps, protein and water so far and what's left. Then your Day opens.",
     "Your action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm.",
     "#Day: keep energy stable",
     "Keep it simple. Your Day is your non-negotiables: tick each meal as you eat it, answer whether you had water with it, then tick the walk block straight after. Your plan and to-do list from last night are there to guide you.",
@@ -1580,6 +1591,7 @@ root.addEventListener("submit",e=>{
 });
 root.addEventListener("click",e=>{
   const b=e.target.closest("button,[data-client]");if(!b)return;
+  for(const t in timers)clearTimeout(timers[t]); // a tap means typing is finished; its value was saved on change
   const act=b.dataset.act;
   if(act==="demo-client")return login("client");
   if(act==="demo-new"){const f=store.get(K.fresh,null);const nm=(root.querySelector("#email")||{}).value;store.set(K.fresh,{start:ymd(TODAY),offset:0,name:(nm&&nm.split("@")[0]?nm.split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,x=>x.toUpperCase()):"New Client")});if(f){const all=store.get(K.edits,{});delete all["new"];store.set(K.edits,all)}return login("client","new")}
@@ -1608,8 +1620,10 @@ root.addEventListener("click",e=>{
   }
   if(act==="reset-weeks"){WEEKS=DEFAULT_WEEKS.map(w=>({...w}));store.set(K.weeks,null);for(const k in GEN)delete GEN[k];toast("Defaults restored");return render()}
   // client: phase steps
-  if(b.dataset.step){const id=b.dataset.step;edit(id,nowHHMM());toast("Logged "+nowHHMM());if(id==="m3"){S.open.morning=false;S.scrollTo="day"}if(id==="e3"){S.open.evening=false;S.scrollTo="score"}return render()}
-  if(b.dataset.undo){edit(b.dataset.undo,"");return render()}
+  if(b.dataset.step){const id=b.dataset.step,t=nowHHMM();edit(id,t);toast("Logged "+t);
+    if(id==="mm"){const yes=curCtx().log.meal1_water==="yes";setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:yes}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}}
+    if(id===MORNING[MORNING.length-1].id){S.open.morning=false;S.scrollTo="day"}if(id==="e3"){S.open.evening=false;S.scrollTo="score"}return render()}
+  if(b.dataset.undo){edit(b.dataset.undo,"");if(b.dataset.undo==="mm")setMeals(a=>a.map(m=>m.slot===1?{...m,done:"",fu:null}:m));return render()}
   if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=b.dataset.num?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
   // client: day list
   if(b.dataset.cat){S.cat=b.dataset.cat;return render()}
