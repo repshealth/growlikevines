@@ -626,7 +626,7 @@ const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 // Workout library (from the Evolve page). The PDFs get attached to these.
 const WORKOUTS=[["Gym (female)",["Female PDF 1","Female PDF 2","Female PDF 3","Female PDF 4","Female PDF 5"]],["Gym (male)",["Male PDF 1","Male PDF 2","Male PDF 3","Male PDF 4","Male PDF 5"]],["Home",["Home PDF 1","Home PDF 2","Home PDF 3","Home PDF 4","Home PDF 5"]]];
 const MORNING=[
-  {id:"m1",title:"Wake up",text:"Up at your alarm. Tap the button the moment you're out of bed and we'll log it next to the alarm you set.",asks:[]},
+  {id:"m1",title:"Wake up",text:"Up at your alarm. Put in the time you woke up and we'll show it next to the alarm you set.",asks:[{k:"woke_at",type:"time",label:"What time did you wake up?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"}]},
   {id:"m2",title:"Arousal activity",text:"Fast & outside, straight from waking. Lights on, music on, out the door and move with pace.",
    asks:[{k:"m_action",type:"pick",label:"Your activity",options:ACTIONS.map(a=>a[0]),req:l=>(l.m_action||[]).length>0,reqMsg:"Pick your activity"}]},
   {id:"m3",title:"Bring it down",text:"Straight after, lower your arousal again. Stay wired and you disconnect. Settle until you can feel something.",
@@ -777,6 +777,7 @@ function generated(c){
     const wake=420+Math.round((rng()-.3)*50*(1.2-p)),until=isToday?nowM:1440;
     let t=wake;
     for(const s of MORNING){if(t>until||rng()>p+.08)break;L[s.id]=hhmm(t);t+=10+Math.round(rng()*25)}
+    if(L.m1)L.woke_at=hhmm(wake);
     if(L.m2)L.m_action=prevL&&(prevL.tmr_action||[]).length?prevL.tmr_action:[pick(["Fast walk outside","Fast walk outside","Run or jog"])];
     if(L.m3)L.m_lower=prevL&&(prevL.tmr_lower||[]).length?prevL.tmr_lower:[pick(LOWER)];
     if(L.m4){L.steps=1500+Math.round(rng()*2500);L.protein=Math.round(25+rng()*20);L.water=1}
@@ -1083,7 +1084,7 @@ function readyCard(x){
 }
 function blockSummary(id,log){
   const sc=scoreOf(log);
-  if(id==="morning")return [log.m1&&`Up ${log.m1}`,log.mm&&`Meal 1 ${log.mm}`,(log.m_action||[]).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.steps&&`${Number(log.steps).toLocaleString("en-GB")} steps so far`,log.train==="yes"?"Training day":""].filter(Boolean).join(" · ");
+  if(id==="morning")return [(log.woke_at||log.m1)&&`Woke ${log.woke_at||log.m1}`,log.mm&&`Meal 1 ${log.mm}`,(log.m_action||[]).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.steps&&`${Number(log.steps).toLocaleString("en-GB")} steps so far`,log.train==="yes"?"Training day":""].filter(Boolean).join(" · ");
   if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,log.train==="yes"?(log.train_done?`Trained ${log.train_done}`:"Training not ticked"):"",`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   return [log.e3&&`Done ${log.e3}`,log.day_rating&&`Day rated ${log.day_rating}/10`,`${todoOf(log).length} ${todoOf(log).length===1?"task":"tasks"} & ${mealPlanOf(log).length} ${mealPlanOf(log).length===1?"meal":"meals"} planned for tomorrow`].filter(Boolean).join(" · ");
 }
@@ -1225,7 +1226,7 @@ function stepsView(ph,x){
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
     let extra="";
     if(s.id==="m1"&&!done&&prev.tmr_wake){extra=`<span class="badge">Alarm set ${esc(prev.tmr_wake)}</span>`}
-    if(s.id==="m1"&&done&&prev.tmr_wake){const late=mins(done)>mins(prev.tmr_wake)+15;extra=`<span class="badge ${late?"miss":"ok"}">Alarm ${esc(prev.tmr_wake)} · ${late?"late":"on time"}</span>`}
+    if(s.id==="m1"&&done&&prev.tmr_wake){const late=mins(log.woke_at||done)>mins(prev.tmr_wake)+15;extra=`<span class="badge ${late?"miss":"ok"}">${log.woke_at?"Woke "+esc(log.woke_at)+" · ":""}Alarm ${esc(prev.tmr_wake)} · ${late?"late":"on time"}</span>`}
     html+=`<div class="step ${done?"done":locked?"locked":current?"current":""}">
       <div class="step-num">${done?TICK:i+1}</div>
       <div class="step-body">
@@ -1234,7 +1235,7 @@ function stepsView(ph,x){
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
-          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log));return miss.length?`<button class="btn primary" disabled>Mark step ${i+1} done</button><span class="muted" style="font-size:12px">${esc(miss[0].reqMsg)} first</span>`:""})()||`<button class="btn primary" data-step="${s.id}">${s.id==="m1"?"I'm up":log.zero&&s.id==="e1"?"Got it":"Mark step "+(i+1)+" done"}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
+          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log));return miss.length?`<button class="btn primary" disabled>Mark step ${i+1} done</button><span class="muted" style="font-size:12px">${esc(miss[0].reqMsg)} first</span>`:""})()||`<button class="btn primary" data-step="${s.id}">${log.zero&&s.id==="e1"?"Got it":"Mark step "+(i+1)+" done"}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
       </div></div>`;
   });
   html+=`</div>`;
@@ -1414,7 +1415,7 @@ function programmeView(){
     "#Evening: reduce arousal",
     "Review your day: how you got on with your to-do list, carry anything unfinished, log your numbers and rate your day. Tick the non-negotiables you kept, then wind down. Finally set tomorrow's wake time, plan of action and to-do list. If you've just joined, tonight is Day 0: your setup night, where you plan your first day.",
     "#Morning: stimulation & arousal",
-    "Wake up: tap I'm up and it logs next to the alarm you set. Arousal activity: the one you picked last night, fast and outside. Bring it down: the lower arousal activity you picked. Meal 1: non-negotiable, the one you planned, plus did you have water with it. Morning check-in: steps, protein and water so far and what's left. Then your Day opens.",
+    "Wake up: put in the time you woke up and it shows next to the alarm you set. Arousal activity: the one you picked last night, fast and outside. Bring it down: the lower arousal activity you picked. Meal 1: non-negotiable, the one you planned, plus did you have water with it. Morning check-in: steps, protein and water so far and what's left. Then your Day opens.",
     "Your action ticks off four brain targets: motor cortex, brainstem arousal, basal ganglia and circadian rhythm.",
     "#Day: keep energy stable",
     "Keep it simple. Your Day is your non-negotiables: tick each meal as you eat it, answer whether you had water with it, then tick the walk block straight after. Your plan and to-do list from last night are there to guide you.",
@@ -1731,7 +1732,7 @@ root.addEventListener("change",e=>{
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
   if(k==="tmr_train_time")edit("tmr_train_after","");
-  clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number"||e.target.tagName==="SELECT"||k==="tmr_train_time"||k==="tmr_wake")render();
+  clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number"||e.target.type==="time"||e.target.tagName==="SELECT")render();
 });
 
 render();
