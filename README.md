@@ -8,9 +8,11 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 
 ### How a client's day works
 
+- **Day 0 (setup night):** a new client signs up and fills in the form, and that evening is Day 0. Three steps: where you're starting (baseline), plan tomorrow's meals, and set up Day 1 (wake time, plan of action, first to-do list). It ends on a "You're set for Day 1" card. Day 1 starts the next morning, with Meal 1 and the other planned meals and the to-do list already filled in.
+
 The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the client runs the Day, and every day ends with a score.
 
-- **Evening (reduce arousal):** 3 steps in order. Review your day: tick off the to-do list (carrying unfinished tasks into tomorrow), log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. New clients start here.
+- **Evening (reduce arousal):** 3 steps in order. Review your day: tick off the to-do list (carrying unfinished tasks into tomorrow), log steps, water and protein against targets, add the steps screenshot and do a 1 to 10 self-assessment. Non-negotiables and wind down: tick each non-negotiable kept today, pick a wind down tool, log PM state. Set up tomorrow: wake time, plan of action, tomorrow's to-do list, one thing to bank, brain dump. Each Evening also plans tomorrow's meals.
 - **Morning (stimulation and arousal):** 3 steps in order. Wake and action: AM state, the non-negotiables applied (these tick the four brain targets) and morning steps. Bring it down: Wim Hof or breathwork. Meal 1 and set the day: Meal 1 (non-negotiable), training yes or no, energy. Shows last night's plan, the banked insight and the ready to-do list. The Day stays locked until all 3 steps are done.
 - **Day (keep energy stable):** last night's to-do list is loaded ready to tick off, and the client can add more. Meals have their own section: Meal 1 from the morning, then Meals 2 to 6, each with a description and tags (carbs or fats depending on training).
 - **Logging:** every step, task and meal logs its time automatically. Tasks and meals ask one process-order follow-up question. Day tasks and meals also have a quick "what did you notice?" note, and everything is filed into a timeline.
@@ -26,7 +28,7 @@ The day runs as a loop. The Evening sets up tomorrow, the Morning opens it, the 
 
 ### Demo logins
 
-"Start as a new client" begins on Day 1 with nothing logged, starting from tonight's Evening, with a "Jump to tomorrow" button to step through the loop. "Sample client (Day 9)" opens a client with history, "Enter as coach" opens the dashboard, and "Reset all demo data" clears everything.
+"Start as a new client" begins on Day 0, the setup night, with a "Jump to tomorrow" button to step through the loop. "Sample client (Day 9)" opens a client with history, "Enter as coach" opens the dashboard, and "Reset all demo data" clears everything.
 
 ### Data
 
