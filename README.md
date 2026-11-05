@@ -10,7 +10,7 @@ Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, 
 
 The day runs as a loop. The Evening plans tomorrow, the Morning opens it, the client ticks off the Day, and every day ends with a score.
 
-- **Day 0 (setup night):** the evening a new client signs up. Your baseline: average steps, protein and water a day, which the coach sets targets from (in the live app this comes from the sign-up form). Plan tomorrow's morning and training: alarm, arousal activity, how to bring it down, training yes or no with time and workout. Plan Day 1's meals with the approved foods picker, plus an optional own to-do list. Day 1 starts the next morning.
+- **Day 0 (setup night):** the evening a new client signs up. Your targets: shows the client's daily steps, protein and water targets (display only for now; in the live app Ellis sets these per client from the onboarding form). Plan tomorrow's morning and training: alarm, arousal activity, how to bring it down, training yes or no with time and workout. Plan Day 1's meals with the approved foods picker, plus an optional own to-do list. Day 1 starts the next morning.
 - **Evening (reduce arousal):** 3 steps in order. Review your day: final steps, protein and water against targets, plus a 1 to 10 self-assessment. Non-negotiables and wind down. Set up tomorrow: alarm, arousal activity, bring-it-down activity, training (time and workout), meals, optional to-do list, plan of action, banked insight, brain dump.
 - **Morning (stimulation and arousal):** 5 steps in order. Wake up: "I'm up" logs the time next to the alarm. Arousal activity: last night's pick, tick it done or change it (ticks the brain targets). Bring it down: last night's pick, done or change. Meal 1: non-negotiable, the planned meal shown as a card with Change, plus did you have water with it. It shows as already ticked in the Day. Morning check-in: steps, protein and water so far, with what's left to go. Then the Day opens.
 - **Day (keep energy stable):** the planned meals, each followed by a walk block. After Meal 2 and again after Meal 3 a number check-in asks for the latest steps, protein and water, and the next meal stays locked until it's done. After the last meal the client is sent to the Evening for their final numbers. Ticking a meal asks about water (yes adds 500ml), then nudges them to walk. On training days the session sits between the pre-workout and post-workout meals: Start workout opens the workout (PDF from the library), Finish workout ticks it off. Pre and post-workout meals nudge for a carb source when planned.
@@ -42,6 +42,8 @@ Sample clients only. Edits save to the browser's localStorage, so nothing is sha
 - Protein targets
 
 ## Next steps
+
+- Onboarding form (height, weight and so on) after purchase, and per-client targets that Ellis sets from it
 
 - Real authentication and a shared database (for example React with Supabase)
 - Replace the text wordmark with the GrowLikeVines logo

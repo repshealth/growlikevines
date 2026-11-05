@@ -492,6 +492,11 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .train-row .btn:not(.primary){background:transparent;color:var(--on-night);border-color:var(--on-night)}
 select.input{appearance:auto}
 @media (max-width:560px){.nums{grid-template-columns:1fr}}
+.target-tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ttile{background:var(--night);color:var(--on-night);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;gap:2px}
+.ttile span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;opacity:.7}
+.ttile b{font-family:var(--display);font-style:italic;font-weight:800;font-size:clamp(26px,7vw,36px);line-height:1;color:var(--lime)}
+.ttile small{font-size:11px;opacity:.7}
 .meal-card{display:flex;flex-direction:column;gap:8px;border:1px solid color-mix(in srgb,var(--lime) 60%,var(--line));border-radius:12px;padding:12px 14px;background:var(--bg);font-weight:500}
 .meal-card-h{display:flex;align-items:center;gap:8px}
 .meal-card .fsum{font-size:14px;gap:4px}
@@ -643,8 +648,8 @@ const EVENING=[
 ];
 // Day 0: the setup night after a new client signs up. Same step ids, so scoring and logs work the same way.
 const ZERO=[
-  {id:"e1",title:"Your baseline",text:"Your average day right now, before anything changes. Your coach sets your steps, protein and water targets from this. (In the live app this comes in from your sign-up form.)",
-   asks:[{k:"base_steps",type:"number",label:"Average steps a day",req:l=>l.base_steps>0,reqMsg:"Add your average steps"},{k:"base_protein",type:"number",label:"Average protein a day (g)",req:l=>l.base_protein>0,reqMsg:"Add your average protein"},{k:"base_water",type:"number",label:"Average water a day (L)",step:0.5,req:l=>l.base_water>0,reqMsg:"Add your average water"},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
+  {id:"e1",title:"Your targets",text:"These are your daily targets, set by Ellis from your onboarding form. Everything you do in Project Reset builds towards hitting them.",
+   asks:[{k:"_targets",type:"targets"},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
   {id:"e2",title:"Plan tomorrow's morning & training",text:"Set your alarm, pick your arousal activity for straight after waking and how you'll bring it down. Then say if you're training and when.",
    asks:[{k:"tmr_wake",type:"time",label:"Alarm for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"},{k:"tmr_action",type:"pick",label:"Tomorrow's arousal activity: one, straight from waking",options:ACTIONS.map(a=>a[0]),req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's arousal activity"},{k:"tmr_lower",type:"pick",multi:true,label:"Then bring it down with: pick as many as you like",options:LOWER,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down"},{k:"tmr_train",type:"choice",label:"Is tomorrow a training day?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if tomorrow is a training day"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},]},
   {id:"e3",title:"Plan Day 1's meals",text:"Pick the foods for each meal. They'll be waiting in your Day, so all you do is tick them off. Add your own to-do list if you want one.",
@@ -1123,7 +1128,7 @@ function todayView(){
     </div>
     ${c.fresh&&dn===today?`<div class="demo-bar"><span><b>Prototype</b> · Day ${dn} for ${esc(c.name)}</span><button class="chip" data-act="nextday" ${dn>=PROGRAMME_DAYS?"disabled":""}>Jump to tomorrow &rsaquo;</button></div>`:""}
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
-    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Tonight is Day 0</h2><p>Tonight you set everything up: where you're starting from, tomorrow's meals, your wake time and your first to-do list. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
+    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Tonight is Day 0</h2><p>Tonight you set everything up: see your targets, plan tomorrow's morning, training and meals, and your first to-do list. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
     ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
     ${pblock("day",2,st.day,dayView(x),log)}
     ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup night",goal:"Get ready for Day 1",intro:"Three steps tonight and your first day is planned."}:null)}
@@ -1160,6 +1165,7 @@ function askHtml(a,log,wk,locked){
           <div class="fsum">${FOOD_CATS.filter(c=>(f[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f[c.k].join(", "))}</span>`).join("")}</div>
           <button class="btn" data-mealopen="${m.id}" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal===m.id?"Done":"Change"}</button></div>`:""}
         ${open?`<div class="picker-box">${foodPicker(m.id,1,f,locked)}</div>`:""}</div>`}
+    case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
     case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned;
       return `<div class="ask"><span>${a.label}</span>
         ${planned?`<div class="meal-card"><div class="meal-card-h"><b>${esc(arr.join(", "))}</b><span class="kind">Planned last night</span></div><button class="btn" data-pickopen="${a.k}" ${dis} style="align-self:flex-start">${open?"Done":"Change"}</button></div>`:""}
@@ -1228,7 +1234,7 @@ function stepsView(ph,x){
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
-          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log));return miss.length?`<button class="btn primary" disabled>Mark step ${i+1} done</button><span class="muted" style="font-size:12px">${esc(miss[0].reqMsg)} first</span>`:""})()||`<button class="btn primary" data-step="${s.id}">${s.id==="m1"?"I'm up":"Mark step "+(i+1)+" done"}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
+          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log));return miss.length?`<button class="btn primary" disabled>Mark step ${i+1} done</button><span class="muted" style="font-size:12px">${esc(miss[0].reqMsg)} first</span>`:""})()||`<button class="btn primary" data-step="${s.id}">${s.id==="m1"?"I'm up":log.zero&&s.id==="e1"?"Got it":"Mark step "+(i+1)+" done"}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
       </div></div>`;
   });
   html+=`</div>`;
@@ -1574,7 +1580,7 @@ function detailView(c){
   return `<div class="stack">
     <div><button class="chip" data-act="back">&lsaquo; All clients</button></div>
     <div class="detail-head">
-      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1>${(()=>{const b=logsFor(c)[ymd(addDays(clientStart(c),-1))]||{};return b.base_steps?`<p class="muted" style="font-size:13px">Baseline: ${Number(b.base_steps).toLocaleString("en-GB")} steps · ${b.base_protein}g protein · ${b.base_water}L water a day</p>`:""})()}</div>
+      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1>${(()=>{const b=logsFor(c)[ymd(addDays(clientStart(c),-1))]||{};const w=weekOf(Math.max(1,st.today));return `<p class="muted" style="font-size:13px">Targets: ${w.steps.toLocaleString("en-GB")} steps · ${w.protein}g protein · ${w.water}L water a day <span class="kind">From onboarding form, coming soon</span></p>`})()}</div>
       <span class="pill ${cls}" style="font-size:14px">${lab}</span>
     </div>
     <div class="tiles">
