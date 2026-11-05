@@ -597,24 +597,26 @@ const EVENING=[
   {id:"e2",title:"Non-negotiables & wind down",text:"Tick every non-negotiable you kept today. Then phone off and use one Reset tool to bring your arousal down.",
    asks:[{k:"nn_kept",type:"multi",label:"Non-negotiables you kept today",options:NN_LIST.map(x=>[x,x])},{k:"pm_tool",type:"choice",label:"Wind down tool",options:RESET_TOOLS.map(r=>[r[0],r[0]])},{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"}]},
   {id:"e3",title:"Set up tomorrow",text:"Set your wake time, write your plan of action and build tomorrow's to-do list. It'll be waiting in your Day. Bank the one thing worth remembering, then brain dump the rest.",
-   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"todo_tmr",type:"todo",label:"Tomorrow's to-do list"},{k:"tmr_train",type:"choice",label:"Is tomorrow a training day?",options:[["yes","Yes"],["no","No"]]},{k:"tmr_train_time",type:"time",label:"Training time",when:l=>l.tmr_train==="yes"},{k:"meals_tmr",type:"mealplan",label:"Tomorrow's meals"},{k:"bank",type:"textarea",label:"One thing to bank for tomorrow, from what you noticed today"},{k:"dump",type:"textarea",label:"Brain dump"}]}
+   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for tomorrow"},{k:"todo_tmr",type:"todo",label:"Tomorrow's to-do list"},{k:"tmr_train",type:"choice",label:"Is tomorrow a training day?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if tomorrow is a training day"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"meals_tmr",type:"mealplan",label:"Tomorrow's meals"},{k:"bank",type:"textarea",label:"One thing to bank for tomorrow, from what you noticed today"},{k:"dump",type:"textarea",label:"Brain dump"}]}
 ];
 // Day 0: the setup night after a new client signs up. Same step ids, so scoring and logs work the same way.
 const ZERO=[
   {id:"e1",title:"Where you're starting",text:"Before anything changes, mark where you are today. Be honest, this is your baseline.",
    asks:[{k:"pm_state",type:"rating",label:"How do you feel tonight? 1 to 10"},{k:"day_rating",type:"rating",label:"How was today, honestly? 1 to 10"},{k:"steps",type:"number",label:"Steps today, if you know them"}]},
-  {id:"e2",title:"Plan tomorrow's training & meals",text:"Say if tomorrow's a training day and when. Then plan your meals: Meal 1 within 90 minutes of waking: protein first, no carbs unless you lift early. Then a meal every 3 to 4 hours, with protein in every one.",
-   asks:[{k:"tmr_train",type:"choice",label:"Is tomorrow a training day?",options:[["yes","Yes"],["no","No"]]},{k:"tmr_train_time",type:"time",label:"Training time",when:l=>l.tmr_train==="yes"},{k:"meals_tmr",type:"mealplan",label:"Tomorrow's meals"}]},
-  {id:"e3",title:"Set up Day 1",text:"Set your wake time, write your plan of action and build your first to-do list. It'll all be waiting for you in the morning. Then phone off at least 1 hour before bed.",
-   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"plan",type:"textarea",label:"Plan of action for Day 1"},{k:"todo_tmr",type:"todo",label:"Your Day 1 to-do list"}]}
+  {id:"e2",title:"Plan tomorrow's training & meals",text:"Set your wake time and say if tomorrow's a training day and when. Then plan your meals: Meal 1 within 90 minutes of waking: protein first, no carbs unless you lift early. Then a meal every 3 to 4 hours, with protein in every one.",
+   asks:[{k:"tmr_wake",type:"time",label:"Wake time tomorrow"},{k:"tmr_train",type:"choice",label:"Is tomorrow a training day?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if tomorrow is a training day"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"meals_tmr",type:"mealplan",label:"Tomorrow's meals"}]},
+  {id:"e3",title:"Set up Day 1",text:"Write your plan of action and build your first to-do list. It'll all be waiting for you in the morning. Then phone off at least 1 hour before bed.",
+   asks:[{k:"plan",type:"textarea",label:"Plan of action for Day 1"},{k:"todo_tmr",type:"todo",label:"Your Day 1 to-do list"}]}
 ];
 const STEPS_OF={morning:MORNING,evening:EVENING};
 const eveningSteps=log=>log.zero?ZERO:EVENING;
 const mealPlanOf=log=>Array.isArray(log.meals_tmr)?log.meals_tmr:[];
 // Tomorrow's meals planned with the food picker: 5 slots, one foods object each
 // Training goes after meal N (pre-workout = meal N, post-workout = meal N+1). Auto-placed from wake & training time, adjustable.
-function autoTrainAfter(wake,time){const w=mins(wake||"07:00"),t=mins(time||"12:00");return clamp(Math.floor((t-(w+60))/210)+1,1,MAX_MEALS-1)}
-const planTrainAfter=log=>log.tmr_train==="yes"?(log.tmr_train_after||autoTrainAfter(log.tmr_wake,log.tmr_train_time)):0;
+// pre-workout = the last meal at least an hour before training (meals assumed every 3.5h from an hour after waking)
+function autoTrainAfter(wake,time){const w=mins(wake||"07:00"),t=mins(time||"12:00");return clamp(Math.floor((t-60-(w+60))/210)+1,1,MAX_MEALS-1)}
+const estMealTime=(wake,slot)=>hhmm(mins(wake||"07:00")+60+(slot-1)*210);
+const planTrainAfter=log=>log.tmr_train==="yes"&&log.tmr_train_time?(log.tmr_train_after||autoTrainAfter(log.tmr_wake,log.tmr_train_time)):0;
 const dayTrainAfter=log=>log.train==="yes"?(log.train_after||autoTrainAfter("07:00",log.train_time)):0;
 const mealRole=(slot,after)=>!after?"":slot===after?"Pre-workout":slot===after+1?"Post-workout":"";
 const planFoodsOf=log=>{const a=Array.isArray(log.plan_foods)?log.plan_foods.slice(0,MAX_MEALS):[];while(a.length<MAX_MEALS)a.push({});return a};
@@ -1103,10 +1105,10 @@ function askHtml(a,log,wk,locked){
     case"mealplan":{const plan=planFoodsOf(log),n=plan.filter(f=>foodsCount(f)).length,ta=planTrainAfter(log);
       return `<div class="ask"><span>${a.label} <span class="muted num">${n} of ${MAX_MEALS} planned</span></span>
         <small class="muted" style="font-weight:500">Pick the foods for each meal. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
-        ${ta?`<div class="train-place"><span>Training${log.tmr_train_time?" at <b class=\"num\">"+esc(log.tmr_train_time)+"</b>":""} goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-trainafter="${n}" aria-pressed="${ta===n}" ${dis}>Meal ${n}</button>`).join("")}</div><small class="muted">Meal ${ta} is your pre-workout meal, Meal ${ta+1} your post-workout meal.</small></div>`:""}
+        ${log.tmr_train==="yes"&&!log.tmr_train_time?`<div class="train-place"><span>Add your training time above and we'll place it between your meals.</span></div>`:""}${ta&&log.tmr_train_time?`<div class="train-place"><span>Training${log.tmr_train_time?" at <b class=\"num\">"+esc(log.tmr_train_time)+"</b>":""} goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-trainafter="${n}" aria-pressed="${ta===n}" ${dis}>Meal ${n}</button>`).join("")}</div><small class="muted">Meal ${ta} (around ${estMealTime(log.tmr_wake,ta)}) is your pre-workout meal, Meal ${ta+1} (around ${estMealTime(log.tmr_wake,ta+1)}) your post-workout meal. Change it if your day runs differently.</small>${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).length?`<small style="color:var(--warn);font-weight:700">Plan ${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).map(n=>"Meal "+n+(n===ta?" (pre-workout)":" (post-workout)")).join(" and ")} below.</small>`:""}</div>`:""}
         <div class="plan-slots">${plan.map((f,i)=>{const key="plan"+i,open=S.openMeal===key,c=foodsCount(f),role=mealRole(i+1,ta);
           return `<div class="plan-slot${c?" filled":""}${open?" open":""}">
-            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"}</small></span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
+            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"} · around ${estMealTime(log.tmr_wake,i+1)}</small></span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
             ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis)}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
           </div>${ta===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b>${log.tmr_train_time?" · "+esc(log.tmr_train_time):""}</span></div>`:""}`}).join("")}</div></div>`}
     case"todo":{const list=todoOf(log),quick=[["own","Hardest task first"],["walk","Steps block after a meal"],["reset","Breathwork"],["train","Gym workout"],["walk","Nasal walk outside"]].filter(q=>!list.some(t=>t[1]===q[1]));
@@ -1162,7 +1164,7 @@ function stepsView(ph,x){
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} Finish step ${i} first</span>`
-          :`<button class="btn primary" data-step="${s.id}">Mark step ${i+1} done</button><span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
+          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log));return miss.length?`<button class="btn primary" disabled>Mark step ${i+1} done</button><span class="muted" style="font-size:12px">${esc(miss[0].reqMsg)} first</span>`:""})()||`<button class="btn primary" data-step="${s.id}">Mark step ${i+1} done</button><span class="muted" style="font-size:12px">Logs the time automatically</span>`}</div>
       </div></div>`;
   });
   html+=`</div>`;
