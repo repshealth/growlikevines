@@ -804,7 +804,7 @@ function generated(c){
     const meals=[];const nM=3+Math.floor(rng()*3);for(let i=0;i<nM;i++){const f=genFoods(i+1,rng);meals.push({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),planned:!!prevL})};
     let it=Math.max(t,wake+60);
     meals.forEach(x=>{if(x.slot===1){if(L.mm){x.done=L.mm;x.fu=L.meal1_water==="yes";if(rng()<p)x.walk=hhmm(mins(L.mm)+25)}return}it+=150+Math.round(rng()*60);if(L.m3&&it<until&&rng()<p){x.done=hhmm(it);x.fu=rng()<p+.05;if(it+25<until&&rng()<p)x.walk=hhmm(it+25)}});
-    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_done=hhmm(mins(L.train_time)+60)}
+    if(L.m3&&L.train==="yes"&&mins(L.train_time)<until&&rng()<p){L.train_start=L.train_time;L.train_warm=L.train_time;L.train_wo=hhmm(mins(L.train_time)+50);L.train_done=L.train_base=hhmm(mins(L.train_time)+60)}
     if(L.m1)L.meals=meals;
     let et=1230+Math.round(rng()*60);
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
@@ -1280,26 +1280,29 @@ function dayView(x){
   <section class="card">
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after.</p>
-    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);const tr=ta&&q.slot===ta;if(tr){h+=trainHtml(log);placed=true}if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk,tr&&log.train==="yes");if(!log["chk"+q.slot])pending=q.slot}});if(ta&&!placed)h+=trainHtml(log);return h})()}</div>
+    <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach(q=>{h+=pairHtml(q,ta,pending);const tr=ta&&q.slot===ta;if(CHECKINS.includes(q.slot)&&q.done){h+=checkinHtml(q.slot,log,x.wk,tr&&log.train==="yes");if(!log["chk"+q.slot])pending=q.slot}if(tr){h+=trainHtml(log,pending);placed=true}});if(ta&&!placed)h+=trainHtml(log,pending);return h})()}</div>
     ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add Meal ${next}</button>`:""}
   </section>
   ${log.day_done?`<div class="nextbar"><div><b>Day finished at ${esc(log.day_done)}.</b><p>Your Evening is open below.</p></div><button class="btn" data-unfinishday="1">Reopen my day</button></div>`
     :pairs.length&&pairs.every(q=>q.done)?`<div class="nextbar ready"><div><b>Last meal done.</b><p>Head to your Evening and give your final numbers for today.</p></div><button class="btn primary" data-finishday="1">Go to my Evening</button></div>`
     :`<div class="nextbar"><div><b>Done for the day?</b><p>${sc.pd} ${sc.pd===1?"meal":"meals"} and ${sc.wk} walk ${sc.wk===1?"block":"blocks"} ticked.</p></div><button class="btn primary" data-finishday="1">Finish my day</button></div>`}`;
 }
-function trainHtml(log){
-  const w=log.workout||"";
+function trainHtml(log,lockedBy){
+  const w=log.workout||"",lk=lockedBy&&!log.train_done,n=["train_warm","train_wo","train_base"].filter(k=>log[k]).length;
+  const st=(k,label,prevOk)=>{const on=!!log[k],ok=!lk&&(on||prevOk);return `<button class="tstep${on?" done":""}${ok?"":" off"}" ${ok?`data-tstep="${k}"`:"disabled"}><span class="tick">${TICK}</span><span>${label}${on?` <small>${esc(log[k])}</small>`:""}</span></button>`};
   return `<div class="pair train-row"><div class="pi${log.train_done?" done":""}">
-    <button class="item-tick" data-traintick="1" aria-pressed="${!!log.train_done}" aria-label="${log.train_done?"Untick":"Tick"} training session"><span class="tick">${TICK}</span></button>
-    <div class="item-main"><div class="item-title"><span>Training session</span>${log.train_time?`<span class="kind">Planned ${esc(log.train_time)}</span>`:""}${log.train_done?`<span class="stamp">${esc(log.train_done)}</span>`:""}</div>
-      <span class="muted" style="font-size:13px">${w?esc(w==="My own workout"&&log.workout_name?log.workout_name:w):"No workout picked"}${log.train_start&&!log.train_done?` · started ${esc(log.train_start)}`:""}</span>
+    <span class="item-tick" aria-label="Training session ${log.train_done?"done":"not done"}"><span class="tick" aria-pressed="${!!log.train_done}">${TICK}</span></span>
+    <div class="item-main">
+      ${lk?`<div class="locknote" style="color:var(--lime)">${LOCK} <span>Update your numbers above first</span></div>`:""}
+      <div class="item-title"><span>Training session</span>${log.train_time?`<span class="kind">Planned ${esc(log.train_time)}</span>`:""}${log.train_done?`<span class="stamp">${esc(log.train_done)}</span>`:`<span class="kind">${n} / 3</span>`}</div>
+      <span class="muted" style="font-size:13px">${w?esc(w==="My own workout"&&log.workout_name?log.workout_name:w):"No workout picked"}</span>
       <div class="tsteps">
-        <button class="tstep${log.train_warm?" done":""}" data-tstep="warm"><span class="tick">${TICK}</span><span>1 · Warm up 5 to 10 mins${log.train_warm?` <small>${esc(log.train_warm)}</small>`:""}</span></button>
-        <div class="tstep${log.train_done?" done":""}${log.train_warm?"":" off"}"><span class="tick">${TICK}</span><span>2 · Workout${log.train_done?` <small>${esc(log.train_done)}</small>`:""}</span></div>
-        <button class="tstep${log.train_base?" done":""}${log.train_done?"":" off"}" data-tstep="base" ${log.train_done?"":"disabled"}><span class="tick">${TICK}</span><span>3 · Back to baseline: Reset to bring your heart rate down${log.train_base?` <small>${esc(log.train_base)}</small>`:""}</span></button>
+        ${st("train_warm","1 · Warm up 5 to 10 mins",true)}
+        ${st("train_wo","2 · Workout",!!log.train_warm)}
+        ${st("train_base","3 · Back to baseline: Reset to bring your heart rate down",!!log.train_wo)}
       </div>
-      ${log.train_done?"":log.train_start?`<div class="opts"><button class="btn primary" data-traintick="1">Finish workout</button><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Show workout"}</button></div>`:`<div><button class="btn primary" data-trainstart="1">Start workout</button></div>`}
-      ${S.wopen&&!log.train_done?`<div class="workout-box"><b>${esc(w||"Your workout")}</b><p>${w==="My own workout"?"Your own session. Log it here when you're done.":"The PDF for this session from the workout library opens here."}</p><p class="muted" style="font-size:12px">Warm up 5 to 10 mins first. After, bring your heart rate down with a Reset before your post-workout meal.</p></div>`:""}
+      ${log.train_done?`<span class="cue">Session done. Your post-workout meal is next ↓</span>`:lk?"":`<div><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Show workout"}</button></div>`}
+      ${S.wopen&&!log.train_done&&!lk?`<div class="workout-box"><b>${esc(w||"Your workout")}</b><p>${w==="My own workout"?"Your own session. Tick step 2 when you're done.":"The PDF for this session from the workout library opens here."}</p><p class="muted" style="font-size:12px">Tick each step as you go. The session ticks itself once all three are done.</p></div>`:""}
     </div>
   </div></div>`;
 }
@@ -1320,7 +1323,7 @@ function gaugeBar(log,wk){
 function checkinHtml(slot,log,wk,afterTrain){
   const t=log["chk"+slot];
   if(t)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Numbers updated ${esc(t)}</b><small>${[log.steps&&Number(log.steps).toLocaleString("en-GB")+" steps",log.protein&&log.protein+"g protein",log.water&&log.water+"L water"].filter(Boolean).join(" · ")}</small></div><button class="link" data-chkundo="${slot}">Redo</button></div>`;
-  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Number check-in</span><h3 class="sec-title" style="font-size:22px">${afterTrain?(log.train_done?`Training done. Now update your numbers.`:`Meal ${slot} done. Update your numbers.`):`Now you've done ${slot} meals. Time to update your numbers.`}</h3><p class="muted" style="font-size:13px">Pop in your latest steps, protein and water, then tap <b>Numbers updated</b>. Meal ${slot+1} unlocks straight after.${afterTrain&&!log.train_done?" You can do this before or after your training session.":""}</p></div>
+  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Number check-in</span><h3 class="sec-title" style="font-size:22px">Now you've done ${slot} meals. Time to update your numbers.</h3><p class="muted" style="font-size:13px">Pop in your latest steps, protein and water, then tap <b>Numbers updated</b>. ${afterTrain?"Your training session":"Meal "+(slot+1)} unlocks straight after.</p></div>
     <div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"c"+slot+"-"},log,wk,false)).join("")}</div>
     <div><button class="btn primary" data-chk="${slot}">Numbers updated</button></div></div>`;
 }
@@ -1724,7 +1727,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
   if(b.dataset.pickopen){S.openPick=S.openPick===b.dataset.pickopen?null:b.dataset.pickopen;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
-  if(b.dataset.tstep){const k="train_"+b.dataset.tstep;edit(k,curCtx().log[k]?"":nowHHMM());return render()}
+  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_warm","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
+    if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",l.train_warm||t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
+    return render()}
   if(b.dataset.trainstart){edit("train_start",nowHHMM());S.wopen=true;return render()}
   if(b.dataset.wopen){S.wopen=!S.wopen;return render()}
   if(b.dataset.trainafter){edit("tmr_train_after",Number(b.dataset.trainafter));return render()}
