@@ -424,6 +424,17 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .pblock.upcoming .pb-num,.pblock.skipped .pb-num{width:68px;height:68px;background:var(--surface);color:var(--muted)}
 .pblock.upcoming .pb-num svg{width:24px;height:24px}
 .pairs{display:flex;flex-direction:column;gap:10px}
+.plan-slots{display:flex;flex-direction:column;gap:8px}
+.plan-slot{border:1px solid var(--line);border-radius:12px;background:var(--bg);overflow:hidden}
+.plan-slot.filled{border-color:color-mix(in srgb,var(--lime) 60%,var(--line))}
+.plan-slot.open{border-color:var(--green-ink)}
+.plan-head{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;padding:10px 12px;text-align:left;color:var(--fg)}
+.plan-n{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;background:var(--surface-2);font-family:var(--display);font-weight:800;font-style:italic;font-size:16px}
+.plan-slot.filled .plan-n{background:var(--lime)}
+.plan-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.plan-t b{font-size:14px}
+.plan-t small{font-size:12px;color:var(--muted);font-weight:500;overflow-wrap:anywhere}
+.plan-x{font-size:12px;font-weight:700;color:var(--green-ink);flex:none}
 .mealopen{align-self:flex-start;padding:2px 0;font-weight:700;color:var(--green-ink);font-size:13px}
 .picker{display:flex;flex-direction:column;gap:10px}
 .pick-wrap{border-top:1px dashed var(--line);background:var(--surface);padding:12px 14px;display:flex;flex-direction:column;gap:10px}
@@ -589,6 +600,8 @@ const ZERO=[
 const STEPS_OF={morning:MORNING,evening:EVENING};
 const eveningSteps=log=>log.zero?ZERO:EVENING;
 const mealPlanOf=log=>Array.isArray(log.meals_tmr)?log.meals_tmr:[];
+// Tomorrow's meals planned with the food picker: 5 slots, one foods object each
+const planFoodsOf=log=>{const a=Array.isArray(log.plan_foods)?log.plan_foods.slice(0,MAX_MEALS):[];while(a.length<MAX_MEALS)a.push({});return a};
 const MEAL_EXAMPLES=["Eggs, spinach, berries","Greek yoghurt, berries, honey","Chicken, rice, greens","Salmon, potatoes, broccoli","Steak, sweet potato, peppers","Protein shake, banana"];
 
 /* ---------- day list options + follow-up (process order) questions ---------- */
@@ -710,7 +723,7 @@ function generated(c){
     for(const s of EVENING){if(et>until||rng()>p+.02)break;L[s.id]=hhmm(et);et+=15+Math.round(rng()*20)}
     if(L.e1){const hit=rng()<p;L.steps=hit?Math.round(wk.steps*(1+rng()*.3)):Math.round(wk.steps*(.4+rng()*.5));L.water=hit?wk.water:Math.round(wk.water*(.5+rng()*.4)*2)/2;L.protein=rng()<p?wk.protein+Math.round(rng()*20):Math.round(wk.protein*(.6+rng()*.3));if(rng()<p)L.shot="steps-"+date+".png";L.day_rating=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
     if(L.e2){L.nn_kept=NN_LIST.filter(()=>rng()<p);L.pm_tool=pick(["Breathwork","Meditation","Journalling","Heat","Time out"]);L.pm_state=Math.round(clamp(3+p*6+(rng()-.5)*3,1,10))}
-    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);L.meals_tmr=[pick(MEALS_M1),pick(MEALS_GEN),pick(MEALS_GEN),pick(MEALS_GEN)];
+    if(L.e3){L.tmr_wake="07:00";L.plan=pick(PLANS);L.plan_foods=[1,2,3,4,5].map(n=>n<=4?genFoods(n,rng):{});L.meals_tmr=L.plan_foods.filter(f=>foodsCount(f)).map(foodsSummary);
       const nx=[];while(nx.length<4){const q=pick(TODO_GEN);if(!nx.some(z=>z[1]===q[1]))nx.push(q)}L.todo_tmr=nx;
       if(rng()<.7)L.bank=pick(BANKS);if(rng()<.6)L.dump=pick(DUMPS)}
     out[date]=L;prevL=L;
@@ -1020,6 +1033,11 @@ function pblock(id,num,state,body,log,ov){
 function todayView(){
   let x=curCtx();
   if(x.dn===0&&!x.log.zero){saveEdit(x.c.id,x.dk,"zero",true);x=curCtx()}
+  if(x.dn>0&&!Array.isArray(x.log.meals)&&Array.isArray(x.prev.plan_foods)&&x.prev.plan_foods.some(f=>foodsCount(f))){
+    const pl=planFoodsOf(x.prev);
+    saveEdit(x.c.id,x.dk,"meals",pl.slice(1).filter(f=>foodsCount(f)).map((f,i)=>({id:uid(),slot:i+2,foods:f,text:foodsSummary(f),planned:true})));
+    if(!foodsCount(x.log.meal1_foods)&&foodsCount(pl[0])){saveEdit(x.c.id,x.dk,"meal1_foods",pl[0]);saveEdit(x.c.id,x.dk,"meal1",foodsSummary(pl[0]));saveEdit(x.c.id,x.dk,"meal1_planned",true)}
+    x=curCtx()}
   if(x.dn>0&&!Array.isArray(x.log.meals)&&mealPlanOf(x.prev).length){const pl=mealPlanOf(x.prev);saveEdit(x.c.id,x.dk,"meals",pl.slice(1).map((t,i)=>({id:uid(),slot:i+2,text:t,tags:[],planned:true})));if(!x.log.meal1&&pl[0])saveEdit(x.c.id,x.dk,"meal1",pl[0]);x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
   const note=(store.get(K.notes,{})[c.id]);
@@ -1061,12 +1079,15 @@ function askHtml(a,log,wk,locked){
     case"text":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="text" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis} autocomplete="off"></label>`;
     case"review":{const it=itemsOf(log),d=it.filter(i=>i.done).length,carry=new Set(todoOf(log).map(t=>t[1]));
       return `<div class="ask"><span>${a.label} <span class="muted num">${d} of ${it.length} done</span></span>${it.length?`<div class="review">${it.map(i=>`<div class="rv ${i.done?"done":""}"><span>${i.done?"✓":"○"} ${esc(i.label)}</span>${i.done?`<span class="num muted">${esc(i.done)}</span>`:`<button class="chip" data-carry="${i.id}" aria-pressed="${carry.has(i.label)}" ${dis}>${carry.has(i.label)?"✓ Carried to tomorrow":"Carry to tomorrow"}</button>`}</div>`).join("")}</div>`:`<p class="muted" style="font-weight:500">Nothing was on today's list.</p>`}</div>`}
-    case"foods":{const f=log.meal1_foods;return `<div class="ask"><span>${a.label} ${foodsCount(f)?`<span class="muted num">${foodsCount(f)} picked</span>`:""}</span>${!foodsCount(f)&&log.meal1?`<small class="muted" style="font-weight:500">Planned last night: ${esc(log.meal1)}</small>`:""}${foodPicker("m1",1,f,locked)}${foodsCount(f)?`<small style="font-weight:500">${esc(foodsSummary(f))}</small>`:""}</div>`}
-    case"mealplan":{const list=mealPlanOf(log),q=MEAL_EXAMPLES.filter(m=>!list.includes(m)).slice(0,4);
-      return `<div class="ask"><span>${a.label} <span class="muted num">${list.length} planned</span></span>
-        <div class="todo-list">${list.map((t,i)=>`<div class="rv"><span><b class="num">Meal ${i+1}</b> · ${esc(t)}${i===0?' <span class="kind">within 90 mins of waking</span>':""}</span><button class="x" data-mpdel="${i}" aria-label="Remove meal ${i+1}" ${dis}>×</button></div>`).join("")}</div>
-        <div class="composer" style="margin-top:4px"><input class="input" id="mpInput" placeholder="Meal ${list.length+1}: what will you eat?" autocomplete="off" ${dis}><button class="btn primary" data-mpadd="1" ${dis}>Add</button></div>
-        ${q.length?`<div class="opts"><span class="muted" style="font-size:12px;font-weight:600;align-self:center">Examples:</span>${q.map(m=>`<button class="chip add" data-mpquick="${esc(m)}" ${dis}>+ ${esc(m)}</button>`).join("")}</div>`:""}</div>`}
+    case"foods":{const f=log.meal1_foods;return `<div class="ask"><span>${a.label} ${foodsCount(f)?`<span class="muted num">${foodsCount(f)} picked</span>`:""}</span>${log.meal1_planned&&foodsCount(f)?`<small class="muted" style="font-weight:500">Planned last night. Change anything you swapped.</small>`:!foodsCount(f)&&log.meal1?`<small class="muted" style="font-weight:500">Planned last night: ${esc(log.meal1)}</small>`:""}${foodPicker("m1",1,f,locked)}${foodsCount(f)?`<small style="font-weight:500">${esc(foodsSummary(f))}</small>`:""}</div>`}
+    case"mealplan":{const plan=planFoodsOf(log),n=plan.filter(f=>foodsCount(f)).length;
+      return `<div class="ask"><span>${a.label} <span class="muted num">${n} of ${MAX_MEALS} planned</span></span>
+        <small class="muted" style="font-weight:500">Pick the foods for each meal. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
+        <div class="plan-slots">${plan.map((f,i)=>{const key="plan"+i,open=S.openMeal===key,c=foodsCount(f);
+          return `<div class="plan-slot${c?" filled":""}${open?" open":""}">
+            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"}</small></span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
+            ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis)}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
+          </div>`}).join("")}</div></div>`}
     case"todo":{const list=todoOf(log),quick=[["own","Hardest task first"],["walk","Steps block after a meal"],["reset","Breathwork"],["train","Gym workout"],["walk","Nasal walk outside"]].filter(q=>!list.some(t=>t[1]===q[1]));
       return `<div class="ask"><span>${a.label} <span class="muted num">${list.length} ${list.length===1?"task":"tasks"}</span></span>
         <div class="todo-list">${list.map((t,i)=>`<div class="rv"><span>${esc(t[1])} <span class="kind">${(KINDS[t[0]]||KINDS.own).name}</span></span><button class="x" data-tdel="${i}" aria-label="Remove ${esc(t[1])}" ${dis}>×</button></div>`).join("")}</div>
@@ -1530,6 +1551,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.carry){const x=curCtx(),it=itemsOf(x.log).find(i=>i.id===b.dataset.carry);if(!it)return;const list=todoOf(x.log);edit("todo_tmr",list.some(t=>t[1]===it.label)?list.filter(t=>t[1]!==it.label):[...list,[it.kind,it.label]]);return render()}
   if(b.dataset.tdel){const list=todoOf(curCtx().log).slice();list.splice(Number(b.dataset.tdel),1);edit("todo_tmr",list);return render()}
   if(b.dataset.tadd){const inp=root.querySelector("#tmrInput"),v=inp&&inp.value.trim();if(!v)return;edit("todo_tmr",[...todoOf(curCtx().log),["own",v]]);render();const n=root.querySelector("#tmrInput");if(n)n.focus();return}
+  if(b.dataset.planclear){const i=Number(b.dataset.planclear),plan=planFoodsOf(curCtx().log);plan[i]={};edit("plan_foods",plan);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));return render()}
   if(b.dataset.mpdel){const l=mealPlanOf(curCtx().log).slice();l.splice(Number(b.dataset.mpdel),1);edit("meals_tmr",l);return render()}
   if(b.dataset.mpadd){const inp=root.querySelector("#mpInput"),v=inp&&inp.value.trim();if(!v)return;edit("meals_tmr",[...mealPlanOf(curCtx().log),v]);render();const n=root.querySelector("#mpInput");if(n)n.focus();return}
   if(b.dataset.mpquick){edit("meals_tmr",[...mealPlanOf(curCtx().log),b.dataset.mpquick]);return render()}
@@ -1537,6 +1559,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mealopen){const k=b.dataset.mealopen;S.openMeal=S.openMeal===k?null:k;if(!S.fcat[k])S.fcat[k]="protein";return render()}
   if(b.dataset.fcat){S.fcat[b.dataset.fcat]=b.dataset.val;return render()}
   if(b.dataset.food){const k=b.dataset.food,c=b.dataset.fc,o=b.dataset.val;const tog=f=>{f={...(f||{})};const a=f[c]||[];f[c]=a.includes(o)?a.filter(z=>z!==o):[...a,o];return f};
+    if(k.startsWith("plan")){const i=Number(k.slice(4)),plan=planFoodsOf(curCtx().log);plan[i]=tog(plan[i]);edit("plan_foods",plan);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));return render()}
     if(k==="m1"){const f=tog(curCtx().log.meal1_foods);edit("meal1_foods",f);edit("meal1",foodsSummary(f))}else setMeals(a=>a.map(m=>{if(m.id!==k)return m;const f=tog(m.foods);return{...m,foods:f,text:foodsSummary(f)||m.text}}));return render()}
   if(b.dataset.mealtick){const id=b.dataset.mealtick,inp=root.querySelector("#mt-"+id);S.openMeal=null;setMeals(a=>a.map(m=>m.id!==id?m:(m.done?{...m,done:"",fu:null,walk:""}:{...m,text:inp?inp.value:m.text,done:nowHHMM(),fu:null})));return render()}
   if(b.dataset.water){const id=b.dataset.water,v=b.dataset.val==="1";if(id==="m1")edit("meal1_water",v);else setMeals(a=>a.map(m=>m.id===id?{...m,fu:v}:m));return render()}
