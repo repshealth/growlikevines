@@ -47,3 +47,11 @@ Sample clients only. Edits save to the browser's localStorage, so nothing is sha
 
 - Real authentication and a shared database (for example React with Supabase)
 - Replace the text wordmark with the GrowLikeVines logo
+
+## The Process (latest)
+
+Evening shift: Step 1 Review & close the day (numbers with what's left, tomorrow's meal plan, tomorrow's morning tasks, training and time, summary, intentions, wake up time). Step 2 Check points (low arousal task, moonlight, lights dimmed & phone away, final meal, showered, rate your state).
+
+Morning shift: Step 1 wake up time and movement (set last night) plus 500ml water, outside within 30 mins, lights bright. Step 2 low arousal task, then a cue to log Meal 1. Step 3 Review & open the day (numbers, sun light, lights bright & phone away, Meal 1 within 90 mins, showered, rate your state).
+
+Every Yes check box scores 1 point.
