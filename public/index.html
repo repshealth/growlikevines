@@ -729,7 +729,7 @@ const INFO={
   meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs only go in two meals: pre-workout carbs in the meal before you train, and evening carbs in your evening meal. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
   pre:"Your pre-workout meal (protein and carbs, at least an hour before) and a 5 to 10 minute warm up. Tick this once both are done.",
   workout:"Follow your session from the workout library, or your own workout.",
-  base:"Bring your heart rate back down after training: an easy walk with nose breathing, then a short Reset, before your post-workout meal."
+  base:"Bring yourself back down after training before your post-workout meal: release tension, walk and breathe, cool down, then reverse your set up. Tick the four steps as you go."
 };
 const infoBtn=(id,label)=>INFO[id]?`<button class="info-btn${S.info===id?" on":""}" data-info="${esc(id)}" aria-expanded="${S.info===id}" aria-label="About ${esc(label||id)}">i</button>`:"";
 const infoBox=id=>S.info===id&&INFO[id]?`<div class="info-box"><p>${esc(INFO[id])}</p>${/^(am|pm)_/.test(id)?"":`<span class="info-soon">${SOON}</span>`}</div>`:"";
@@ -1539,7 +1539,8 @@ function trainHtml(log,lockedBy){
         ${row("train_pre","1 · Completed pre-workout tasks","_none",true)}
         ${!lk&&!log.train_pre?`<div class="presteps">${PRE_STEPS.map(([k,t,d],i)=>`<button class="prestep${log[k]?" done":""}" data-ptick="${k}" aria-pressed="${!!log[k]}"><span class="tick">${TICK}</span><span><b>${i+1}. ${t}</b><small>${d}${k==="train_p1"&&pre?` Your pre-workout meal is Meal ${pre.slot}${pre.done?", ticked "+esc(pre.done):""}.`:""}</small></span></button>`).join("")}</div>`:""}
         ${row("train_wo","2 · Workout","workout",!!log.train_pre)}
-        ${row("train_base","3 · Post-workout: back to baseline","base",!!log.train_wo)}
+        ${row("train_base","3 · Close workout","base",!!log.train_wo)}
+        ${!lk&&log.train_wo&&!log.train_base?`<div class="presteps">${CLOSE_STEPS.map(([k,t,d],i)=>`<button class="prestep${log[k]?" done":""}" data-ctick="${k}" aria-pressed="${!!log[k]}"><span class="tick">${TICK}</span><span><b>${i+1}. ${t}</b><small>${d}</small></span></button>`).join("")}</div>`:""}
       </div>
       ${log.train_done?`<span class="cue">Session done. Your post-workout meal is next ↓</span>`:lk?"":`<div><button class="btn" data-wopen="1">${S.wopen?"Hide workout":"Open workout"}</button></div>`}
       ${S.wopen&&!log.train_done&&!lk?`<div class="workout-box"><b>${esc(w||"Your workout")}</b><p>${w==="My own workout"?"Your own session. Tick step 2 when you're done.":"The PDF for this session from the workout library opens here."}</p></div>`:""}
@@ -1551,6 +1552,13 @@ const PRE_STEPS=[
   ["train_p1","Clear & set mind","Prep and eat your food in a relaxed environment, with no thought of the workout yet."],
   ["train_p2","Set the workout","Whether it's pre-assigned or still to be written, write it out, pen on paper, before you get to where you train. As you write it, visualise yourself doing the movements."],
   ["train_p3","Action the set up","Change of clothes, change of music, anything that moves you further into a performance mindset while changing your environment. Travel to the gym, or find a new space at home away from comfort and work. Even if you're training at home or driving, get a short walk in before you go inside and start."]
+];
+// Ellis's close workout steps, the last thing before the training session is done
+const CLOSE_STEPS=[
+  ["train_c1","Release tension","Release any remaining held muscle tension with calm decompression movement."],
+  ["train_c2","Walk & breathe","Relaxed, steady walking while you control your breath, slow and deep into your stomach."],
+  ["train_c3","Cool down","Lower your body temperature as soon as possible."],
+  ["train_c4","Reverse the set up","Change of clothes, change of music, anything that moves you further out of the performance mindset while changing your environment. Even if you're training at home or driving, get a short walk in before you go back to your day."]
 ];
 const CHECKINS=[2,3]; // after these meals, update your numbers before the next meal
 const NUM_ASKS=[{k:"steps",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true}];
@@ -2029,10 +2037,13 @@ root.addEventListener("click",e=>{
   if(b.dataset.dd){const k=b.dataset.dd;S.dd=S.dd===k?null:k;S.info=null;return render()}
   if(b.dataset.info){S.info=S.info===b.dataset.info?null:b.dataset.info;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
-  if(b.dataset.tstep){if(b.dataset.tstep==="train_pre"){const on=!!curCtx().log.train_pre,t=nowHHMM();PRE_STEPS.forEach(([q])=>edit(q,on?"":(curCtx().log[q]||t)))}const k=b.dataset.tstep,ks=["train_pre","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
-    if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
+  if(b.dataset.tstep){if(b.dataset.tstep==="train_base"){const on=!!curCtx().log.train_base,t=nowHHMM();CLOSE_STEPS.forEach(([q])=>edit(q,on?"":(curCtx().log[q]||t)))}if(b.dataset.tstep==="train_pre"){const on=!!curCtx().log.train_pre,t=nowHHMM();PRE_STEPS.forEach(([q])=>edit(q,on?"":(curCtx().log[q]||t)))}const k=b.dataset.tstep,ks=["train_pre","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
+    if(l[k]){ks.slice(i).forEach(q=>{edit(q,"");if(q==="train_base")CLOSE_STEPS.forEach(([c])=>edit(c,""));if(q==="train_pre")PRE_STEPS.forEach(([c])=>edit(c,""))});edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
     return render()}
   if(b.dataset.guide){S.guide=!S.guide;return render()}
+  if(b.dataset.ctick){const k=b.dataset.ctick,l=curCtx().log;edit(k,l[k]?"":nowHHMM());
+    if(CLOSE_STEPS.every(([q])=>curCtx().log[q])&&!curCtx().log.train_base){const t=nowHHMM();edit("train_base",t);if(curCtx().log.train_pre&&curCtx().log.train_wo){edit("train_done",t);S.wopen=false;toast("Training session done")}}
+    return render()}
   if(b.dataset.ptick){const k=b.dataset.ptick,l=curCtx().log;edit(k,l[k]?"":nowHHMM());
     if(PRE_STEPS.every(([q])=>curCtx().log[q])&&!curCtx().log.train_pre){edit("train_pre",nowHHMM());toast("Pre-workout steps done. Time to train.")}
     return render()}
