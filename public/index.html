@@ -83,6 +83,8 @@ main{padding-block:24px 64px}
 
 /* Login */
 .login{min-height:100%;display:grid;place-items:center;padding-block:48px}
+.test-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;align-items:end}
+.test-form .onb-err{grid-column:1/-1}
 .consent{display:flex;gap:10px;align-items:flex-start;font-size:13px;font-weight:500;cursor:pointer}
 .consent input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--green-ink)}
 .btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
@@ -866,7 +868,7 @@ const uid=()=>Math.random().toString(36).slice(2,9);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const parseYmd=s=>{const[y,m,d]=String(s).split("-").map(Number);return new Date(y,m-1,d)};
 // Day 0 is the day Ellis assigns targets (start_date); Day 1 is the next morning
-const toClient=u=>({id:u.id,name:u.name,email:u.email,fresh:true,status:u.status,startDate:u.start_date?addDays(parseYmd(u.start_date),1):null,targets:u.targets,form:u.form,created_at:u.created_at,assigned_at:u.assigned_at});
+const toClient=u=>({id:u.id,name:u.name,email:u.email,test:!!u.test,fresh:true,status:u.status,startDate:u.start_date?addDays(parseYmd(u.start_date),1):null,targets:u.targets,form:u.form,created_at:u.created_at,assigned_at:u.assigned_at});
 const allUsers=()=>!DATA?[]:(DATA.me.role==="coach"?(DATA.clients||[]):[DATA.me]).map(toClient);
 const allClients=()=>allUsers().filter(c=>c.status==="active");
 const pendingClients=()=>allUsers().filter(c=>c.status==="pending");
@@ -1337,6 +1339,7 @@ function todayView(){
   const prog=(id,label,count)=>`<button class="phase-tab ${st[id]}" data-jump="${id}"><span>${st[id]==="upcoming"?LOCK+" ":""}${label}</span><small class="num">${st[id]==="skipped"?"Starts tonight":st[id]==="done"?"Done ✓":count}</small></button>`;
   const allDone=st.evening==="done";
   return `<div class="stack">
+    ${c.test&&dn===today?`<div class="demo-bar"><span><b>Test account</b> · Day ${dn}</span><span style="display:flex;gap:6px;flex-wrap:wrap"><button class="chip" data-act="test-next" ${dn>=PROGRAMME_DAYS?"disabled":""}>Next day &rsaquo;</button><button class="chip" data-act="test-restart">${S.restartArm?"Tap again to wipe & restart":"Restart at Day 0"}</button></span></div>`:""}
     <div class="dayhead">
       <div><div class="eyebrow">${dn===0?"Setup night":"Week "+(Math.floor((dn-1)/7)+1)} · ${fmtLong(date)}${dn===today?" · Today":""}</div>
       <h1 class="display dayno">Day ${dn}<small class="num">/ ${PROGRAMME_DAYS}</small></h1></div>
@@ -1767,6 +1770,17 @@ function coachView(){
   if(S.detail)return detailView(allClients().find(c=>c.id===S.detail));
   return overviewView();
 }
+function testClientCard(){
+  return `<section class="card test-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Test accounts</h2></div>
+    <p class="muted" style="font-size:13px">Create a client account for testing. It starts on Day 0 straight away with default targets, and has a <b>Next day</b> button so you can step through the programme without waiting.</p>
+    <form id="testForm" class="test-form" novalidate>
+      <label class="field" for="tc-name">Name<input class="input" id="tc-name" name="name" value="Test Client"></label>
+      <label class="field" for="tc-email">Email<input class="input" id="tc-email" name="email" type="email" placeholder="test@growlikevines.com" autocomplete="off"></label>
+      <label class="field" for="tc-pw">Password (8+ characters)<input class="input" id="tc-pw" name="password" type="text" autocomplete="off"></label>
+      <div id="testErr" class="onb-err" role="alert"></div>
+      <button class="btn" type="submit">Create test client</button>
+    </form></section>`;
+}
 function pendingSignupsCard(){const ps=pendingClients();return ps.length?`<section class="card signups"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">New sign-ups</h2><span class="pill warn">${ps.length} waiting for targets</span></div>
       ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc([p.form&&p.form.goal,p.form&&p.form.weight&&p.form.weight+"kg",p.form&&p.form.activity].filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))}</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
 function overviewView(){
@@ -1774,7 +1788,7 @@ function overviewView(){
   if(!all.length)return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
     ${pendingClients().length?"":`<section class="card"><h2 class="sec-title" style="font-size:22px">No clients yet</h2><p class="muted">When someone fills in the onboarding form, they'll appear here for you to set their targets. Share the app's address with them and they'll pick "Start your onboarding form".</p></section>`}
-    ${pendingSignupsCard()}</div>`;
+    ${pendingSignupsCard()}${testClientCard()}</div>`;
   const counts={ok:0,warn:0,bad:0,new:0};all.forEach(s=>counts[s.status]++);
   const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
   const order={bad:0,warn:1,ok:2,new:3};
@@ -1809,7 +1823,7 @@ function overviewView(){
           <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Points today",1)}${th("pts","Avg pts 7d",1)}${th("avg7","Done 7d",1)}<th>Last 7</th>${th("morn","Morning",1)}${th("eve","Evening",1)}${th("proc","Water",1)}${th("senses","Senses",1)}${th("steps","Steps avg",1)}${th("last","Last log")}</tr></thead>
           <tbody>${rows.map(s=>{const[cls,lab]=STATUS[s.status];const l7=s.days.slice(-8,-1);
             return `<tr data-client="${s.c.id}" tabindex="0">
-            <td><strong>${esc(s.c.name)}</strong></td>
+            <td><strong>${esc(s.c.name)}</strong>${s.c.test?' <span class="pill warn">Test</span>':""}</td>
             <td><span class="pill ${cls}">${lab}</span></td>
             <td class="num">${s.today}</td>
             <td class="num">${s.todayRow.sc.pts}</td>
@@ -1835,7 +1849,7 @@ function overviewView(){
           :`<p class="muted" style="font-size:12px;margin-bottom:8px">How often each step gets done across all clients.</p>`+stepRows.map(r=>`<div class="habit"><span><span class="pl">${r.ph}</span> ${esc(r.label)}</span>${bar(r.p)}<span class="num" style="text-align:right">${r.p}%</span></div>`).join("")}
       </section>
     </div>
-  </div>`;
+  ${testClientCard()}</div>`;
 }
 function phaseLog(title,steps,log,wk){
   return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
@@ -1920,6 +1934,8 @@ root.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="loginForm"){const f=e.target,err=root.querySelector("#loginErr"),fd=new FormData(f);busy(f,true);
     api("/login",{method:"POST",body:{email:fd.get("email"),password:fd.get("password")}}).then(afterLogin).catch(x=>{err.textContent=x.message;busy(f,false)});return}
+  if(e.target.id==="testForm"){const f=e.target,err=root.querySelector("#testErr"),fd=new FormData(f);busy(f,true);
+    api("/test-client",{method:"POST",body:Object.fromEntries(fd)}).then(()=>{toast("Test client created. Log out and log in as "+fd.get("email"));return boot()}).catch(x=>{err.textContent=x.message;busy(f,false)});return}
   if(e.target.id==="setupForm"){const f=e.target,err=root.querySelector("#setupErr"),fd=new FormData(f);busy(f,true);
     api("/setup",{method:"POST",body:Object.fromEntries(fd)}).then(()=>{S.needsSetup=false;toast("Coach account created");return afterLogin()}).catch(x=>{err.textContent=x.message;busy(f,false)});return}
   if(e.target.id==="onbForm"){const f=e.target,a=readOnb(f),fd=new FormData(f),miss=ONB_FIELDS.filter(q=>q.req&&(a[q.k]===""||a[q.k]==null));const err=root.querySelector("#onbErr");
@@ -1943,6 +1959,8 @@ root.addEventListener("click",e=>{
     api("/clients/"+id+"/targets",{method:"POST",body:t}).then(()=>{toast(first?"Targets assigned. "+c.name.split(" ")[0]+" starts Day 0 tonight":"Targets saved");if(first){S.review=null;S.detail=null}return boot()}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="client-pw"){const id=b.dataset.c,v=(root.querySelector("#cpw")||{}).value||"";if(v.length<8)return toast("Use 8+ characters");b.disabled=true;api("/clients/"+id+"/password",{method:"POST",body:{password:v}}).then(()=>{toast("Password set. Send it to them.");root.querySelector("#cpw").value="";b.disabled=false}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="client-del"){const id=b.dataset.c;if(S.delArm!==id){S.delArm=id;return render()}b.disabled=true;api("/clients/"+id,{method:"DELETE"}).then(()=>{toast("Client removed");S.delArm=null;S.review=null;S.detail=null;return boot()}).catch(x=>{toast(x.message);b.disabled=false});return}
+  if(act==="test-next"){b.disabled=true;flush().then(()=>api("/test/nextday",{method:"POST"})).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Moved to the next day")}).catch(x=>{toast(x.message);b.disabled=false});return}
+  if(act==="test-restart"){if(!S.restartArm){S.restartArm=true;return render()}S.restartArm=false;b.disabled=true;dirty.clear();api("/test/restart",{method:"POST"}).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Back to Day 0")}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="refresh"){S.booting=false;b.disabled=true;return boot().then(()=>{if(me()&&me().status!=="active")toast("Not yet. Ellis will set your targets soon.")})}
   if(act==="logout"){flush(true);api("/logout",{method:"POST"}).catch(()=>{}).then(()=>{DATA=null;S.session=null;S.review=null;S.detail=null;render()});return}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}

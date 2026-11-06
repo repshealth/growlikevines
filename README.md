@@ -24,6 +24,8 @@ All data lives in a Cloudflare D1 database. The tables are created automatically
 
 Coach tools: client overview and detail pages, notes to a client (shown at the top of their day), the Number setter, and per-client **Onboarding, targets & account**, where Ellis can edit targets, set a new password for a client who's forgotten theirs, or remove a client.
 
+Test accounts: in Client overview, **Test accounts** creates a client that starts on Day 0 with default targets. It shows a **Next day** button (moves everything back a day so you can step through the programme) and **Restart at Day 0**. Test clients are marked Test in the overview; remove them from their account page when done.
+
 ## Deploying on Cloudflare (one-time setup)
 
 The app is a Cloudflare Worker with static assets, deployed from GitHub with Workers Builds (the same way as the REPS dashboard).

@@ -43,6 +43,8 @@ let schemaReady = false;
 async function ensureSchema(db) {
   if (schemaReady) return;
   await db.batch(SCHEMA.map(q => db.prepare(q)));
+  // Added after launch: test accounts
+  try { await db.prepare("ALTER TABLE users ADD COLUMN test INTEGER NOT NULL DEFAULT 0").run(); } catch (e) { /* already there */ }
   schemaReady = true;
 }
 
@@ -110,7 +112,7 @@ const publicUser = u => ({
   id: u.id, email: u.email, name: u.name, role: u.role, status: u.status,
   form: u.form ? JSON.parse(u.form) : null,
   targets: u.targets ? JSON.parse(u.targets) : null,
-  start_date: u.start_date, created_at: u.created_at, assigned_at: u.assigned_at
+  start_date: u.start_date, created_at: u.created_at, assigned_at: u.assigned_at, test: !!u.test
 });
 
 async function getSettings(db) {
@@ -236,6 +238,25 @@ export async function onRequest(context) {
       return json({ ok: true });
     }
 
+    // Test accounts only: move a day forward (shifts their logs back a day, so today becomes the next day) or start again
+    if (path === "/test/nextday" && method === "POST") {
+      if (me.role !== "client" || !me.test) return err(403, "Only test accounts can do this.");
+      await db.batch([
+        db.prepare("UPDATE logs SET date = '~' || date(date, '-1 day') WHERE user_id = ?").bind(me.id),
+        db.prepare("UPDATE logs SET date = substr(date, 2) WHERE user_id = ? AND date LIKE '~%'").bind(me.id),
+        db.prepare("UPDATE users SET start_date = date(start_date, '-1 day') WHERE id = ?").bind(me.id)
+      ]);
+      return json({ ok: true });
+    }
+    if (path === "/test/restart" && method === "POST") {
+      if (me.role !== "client" || !me.test) return err(403, "Only test accounts can do this.");
+      await db.batch([
+        db.prepare("DELETE FROM logs WHERE user_id = ?").bind(me.id),
+        db.prepare("UPDATE users SET start_date = ? WHERE id = ?").bind(londonToday(), me.id)
+      ]);
+      return json({ ok: true });
+    }
+
     if (path === "/note" && method === "GET") {
       const n = await db.prepare("SELECT text, at FROM notes WHERE client_id = ?").bind(me.id).first();
       return json({ note: n || null });
@@ -285,6 +306,22 @@ export async function onRequest(context) {
         ]);
         return json({ ok: true });
       }
+    }
+
+    if (path === "/test-client" && method === "POST") {
+      const b = await readBody(request);
+      const email = cleanEmail(b.email);
+      const name = String(b.name || "Test Client").trim().slice(0, 80) || "Test Client";
+      if (!validEmail(email)) return err(400, "Enter a valid email for the test account.");
+      if (String(b.password || "").length < 8) return err(400, "Use a password of at least 8 characters.");
+      const taken = await db.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+      if (taken) return err(409, "There's already an account with that email.");
+      const { hash, salt } = await hashPassword(String(b.password));
+      const id = randomId();
+      const targets = { steps: 10000, protein: 150, water: 3 };
+      await db.prepare("INSERT INTO users (id, email, name, role, pw_hash, pw_salt, status, form, targets, start_date, created_at, assigned_at, test) VALUES (?, ?, ?, 'client', ?, ?, 'active', ?, ?, ?, ?, ?, 1)")
+        .bind(id, email, name, hash, salt, JSON.stringify({ name, email, test: true }), JSON.stringify(targets), londonToday(), new Date().toISOString(), new Date().toISOString()).run();
+      return json({ ok: true });
     }
 
     if (path === "/settings" && method === "PUT") {
