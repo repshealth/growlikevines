@@ -7,8 +7,10 @@ The web app for GrowLikeVines' Project Reset, Ellis Vine's 28 day coaching progr
 | Path | What it is |
 | --- | --- |
 | `public/index.html` | The live app. Everything the browser loads is in this one file. |
-| `public/_headers` | Security headers for Cloudflare Pages. |
-| `functions/api/[[path]].js` | The server, as Cloudflare Pages Functions: logins, sign-ups, saving logs and the coach tools. |
+| `public/_headers` | Security headers. |
+| `src/worker.js` | The Cloudflare Worker: serves `public/` and sends `/api/*` to the server code. |
+| `src/api.js` | The server: logins, sign-ups, saving logs and the coach tools. |
+| `wrangler.jsonc` | Worker settings, including the D1 database binding. |
 | `prototype/index.html` | The old clickable prototype with sample clients, kept for reference. It isn't deployed. |
 
 All data lives in a Cloudflare D1 database. The tables are created automatically the first time the app runs.
@@ -24,16 +26,14 @@ Coach tools: client overview and detail pages, notes to a client (shown at the t
 
 ## Deploying on Cloudflare (one-time setup)
 
-1. **Create the database.** In the Cloudflare dashboard go to **Storage & databases → D1 → Create database**. Name it `growlikevines`.
-2. **Create the Pages project.** Go to **Workers & Pages → Create → Pages → Connect to Git** and pick `repshealth/growlikevines`. Use these build settings:
-   - Framework preset: **None**
-   - Build command: leave empty
-   - Build output directory: `public`
-3. **Bind the database.** In the new project go to **Settings → Bindings → Add → D1 database**. Variable name `DB`, database `growlikevines`. Add it for Production (and Preview if you use preview links).
-4. **Add the setup key.** In **Settings → Variables and Secrets**, add a **Secret** called `SETUP_KEY` with a long random value. You only need it once, to create Ellis's account.
-5. **Redeploy.** Go to **Deployments** and retry the latest deployment so the binding and secret take effect.
-6. **Create Ellis's coach account.** Open the site. While no coach account exists, it shows a first-time setup screen: enter the setup key, Ellis's name, email and a password. After that the setup screen never shows again.
-7. **Custom domain (optional).** **Custom domains → Set up a domain**, then follow the DNS steps.
+The app is a Cloudflare Worker with static assets, deployed from GitHub with Workers Builds (the same way as the REPS dashboard).
+
+1. **Create the database.** **Storage & databases → D1 SQL Database → Create Database**, name it `growlikevines`, and copy its **Database ID**.
+2. **Put the ID in `wrangler.jsonc`** in place of `00000000-0000-0000-0000-000000000000`, and push.
+3. **Create the Worker.** **Workers & Pages → Create application → Import a repository**, pick `repshealth/growlikevines`. Project name `growlikevines`, build command empty, deploy command `npx wrangler deploy` (the default). Deploy.
+4. **Add the setup key.** In the Worker, **Settings → Variables and Secrets → Add**, type **Secret**, name `SETUP_KEY`, a long random value. Secrets apply straight away.
+5. **Create Ellis's coach account.** Open the Worker's address. A first-time setup screen asks for the setup key and Ellis's details. It never shows again after that.
+6. **Custom domain.** **Settings → Domains & Routes → Add → Custom domain**.
 
 After this, every push to `main` deploys automatically.
 
@@ -42,10 +42,10 @@ After this, every push to `main` deploys automatically.
 ```
 npm i -g wrangler
 echo "SETUP_KEY=anything" > .dev.vars
-wrangler pages dev public --d1 DB
+wrangler dev
 ```
 
-Then open http://localhost:8788. Local data is kept in `.wrangler/` and is never committed.
+Then open http://localhost:8787. Local data is kept in `.wrangler/` and is never committed.
 
 ## Before inviting real clients
 

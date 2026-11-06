@@ -1,5 +1,5 @@
-// Project Reset API: Cloudflare Pages Functions + D1.
-// Bindings (set in the Cloudflare dashboard): DB = the D1 database, SETUP_KEY = secret used once to create Ellis's coach account.
+// Project Reset API, running in the Worker (see worker.js) with a D1 database.
+// Bindings: DB = the D1 database (wrangler.jsonc), SETUP_KEY = secret used once to create Ellis's coach account.
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -126,7 +126,7 @@ async function logsFor(db, userId) {
 
 export async function onRequest(context) {
   const { request, env, params } = context;
-  if (!env.DB) return err(500, "The D1 database isn't bound. Add a D1 binding called DB in the Pages project settings.");
+  if (!env.DB) return err(500, "The D1 database isn't bound. Check the d1_databases entry in wrangler.jsonc.");
   const db = env.DB;
   await ensureSchema(db);
 
@@ -147,7 +147,7 @@ export async function onRequest(context) {
 
     if (path === "/setup" && method === "POST") {
       const b = await readBody(request);
-      if (!env.SETUP_KEY) return err(500, "SETUP_KEY isn't set in the Pages project settings.");
+      if (!env.SETUP_KEY) return err(500, "SETUP_KEY isn't set. Add it as a secret in the Worker's Settings, Variables and Secrets.");
       if (!b.key || !safeEqual(String(b.key), String(env.SETUP_KEY))) return err(403, "That setup key isn't right.");
       const exists = await db.prepare("SELECT id FROM users WHERE role = 'coach' LIMIT 1").first();
       if (exists) return err(409, "The coach account already exists. Log in instead.");
