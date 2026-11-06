@@ -55,3 +55,9 @@ Evening shift: Step 1 Review & close the day (numbers with what's left, tomorrow
 Morning shift: Step 1 wake up time and movement (set last night) plus 500ml water, outside within 30 mins, lights bright. Step 2 low arousal task, then a cue to log Meal 1. Step 3 Review & open the day (numbers, sun light, lights bright & phone away, Meal 1 within 90 mins, showered, rate your state).
 
 Every Yes check box scores 1 point.
+
+## Onboarding and targets
+
+New clients fill in the onboarding form (about you, goal, lifestyle, training, food, health). They then see a waiting screen until Ellis assigns targets. In the coach view, new sign-ups appear at the top of Client overview; Ellis reviews the answers, adjusts the suggested steps, protein and water, and presses Assign targets & start Day 0. The client then starts on Day 0 that night, using their own targets. Targets can be edited later from the client's page (Onboarding & targets).
+
+Prototype note: everything is stored in the browser, so the client and coach sides only share data on the same device. A real backend is needed for live use.

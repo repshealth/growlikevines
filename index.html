@@ -83,6 +83,39 @@ main{padding-block:24px 64px}
 
 /* Login */
 .login{min-height:100%;display:grid;place-items:center;padding-block:48px}
+.onb-card{width:100%;max-width:640px;display:flex;flex-direction:column;gap:20px;padding:24px 0 60px}
+.onb-sec{display:flex;flex-direction:column;gap:14px}
+.onb-set{border:0;padding:0;margin:0}
+.onb-set legend{font-size:13px;font-weight:600;margin-bottom:8px}
+.req{color:var(--bad)}
+.onb-chip{position:relative;cursor:pointer}
+.onb-chip input,.onb-num input{position:absolute;opacity:0;pointer-events:none}
+.onb-chip:has(input:checked){background:var(--lime);border-color:var(--lime);color:var(--ink)}
+.onb-chip:has(input:focus-visible),.onb-num:has(input:focus-visible){outline:2px solid var(--green-ink);outline-offset:2px}
+.scale{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.onb-num{position:relative;cursor:pointer}
+.onb-num span{display:grid;place-items:center;height:40px;border-radius:8px;background:var(--surface-2);font-weight:700;font-size:13px}
+.onb-num:has(input:checked) span{background:var(--lime);color:var(--ink)}
+.onb-err{color:var(--bad);font-weight:600;font-size:14px}
+.onb-err:empty{display:none}
+.wait-card{display:flex;flex-direction:column;gap:12px}
+.wait-steps{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.wait-steps>div{display:flex;align-items:center;gap:12px;font-weight:600;color:var(--muted)}
+.wait-steps>div.done{color:var(--fg)}
+.wait-steps>div.now{color:var(--fg)}
+.wait-steps .pb-num{width:32px;height:32px;font-size:16px;background:var(--surface-2);color:var(--muted)}
+.wait-steps .done .pb-num{background:var(--night);color:var(--lime)}
+.wait-steps .done .pb-num svg path{stroke:var(--lime)}
+.wait-steps .now .pb-num{background:var(--lime);color:var(--ink)}
+.signups{border:2px solid var(--lime)}
+.signup-row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.signup-row>div{display:flex;flex-direction:column;gap:2px}
+.onb-ans{display:flex;flex-direction:column;gap:6px;padding:10px 0}
+.onb-ans dl{margin:0;display:flex;flex-direction:column;gap:6px}
+.onb-ans dl>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:10px;font-size:13px}
+.onb-ans dt{color:var(--muted)}
+.onb-ans dd{margin:0;font-weight:600;white-space:pre-wrap}
+.target-set{display:flex;flex-direction:column;gap:14px;align-self:start}
 .login-card{width:100%;max-width:420px;display:flex;flex-direction:column;gap:22px}
 .login-card form{display:flex;flex-direction:column;gap:12px}
 .field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
@@ -826,11 +859,15 @@ const DUMPS=["Long day at work but got everything done.","Felt flat this afterno
 function rngFor(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19}return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);let t=(h^=h>>>16)>>>0;t+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 // A brand new client started from the login screen (prototype). "offset" is how many days the demo has jumped ahead.
-function freshClient(){const f=store.get(K.fresh,null);if(!f)return null;const [y,m,d]=f.start.split("-").map(Number);return{id:"new",name:f.name||"New Client",fresh:true,startDate:new Date(y,m-1,d+1),offset:f.offset||0}}
+const signup=()=>store.get(K.fresh,null);
+const pendingSignup=()=>{const f=signup();return f&&f.status==="pending"?f:null};
+function freshClient(){const f=signup();if(!f||f.status==="pending")return null;const [y,m,d]=f.start.split("-").map(Number);return{id:"new",name:f.name||"New Client",fresh:true,startDate:new Date(y,m-1,d+1),offset:f.offset||0,targets:f.targets||null,form:f.form||null}}
 const allClients=()=>{const f=freshClient();return f?[...CLIENTS,f]:CLIENTS};
 const clientStart=c=>c.fresh?c.startDate:addDays(COHORT,c.offset);
 const clientDayNum=c=>clamp(diffDays(clientStart(c),TODAY)+1+(c.fresh?c.offset:0),c.fresh?0:1,PROGRAMME_DAYS);
 const weekOf=dayNum=>WEEKS[clamp(Math.floor((dayNum-1)/7),0,3)];
+// A client with targets assigned by Ellis uses them; everyone else uses the Number setter
+const tgtFor=(c,dayNum)=>c&&c.targets?{...weekOf(dayNum),...c.targets}:weekOf(dayNum);
 const dateOf=(c,dayNum)=>addDays(clientStart(c),dayNum-1);
 
 const GEN={};
@@ -844,7 +881,7 @@ function generated(c){
   const rng=rngFor(c.id),out={},today=clientDayNum(c),nowM=NOW.getHours()*60+NOW.getMinutes();
   let prevL=null;
   for(let d=1;d<=today;d++){
-    const date=ymd(dateOf(c,d)),wk=weekOf(d),isToday=d===today;
+    const date=ymd(dateOf(c,d)),wk=tgtFor(c,d),isToday=d===today;
     if(c.gone&&d>today-c.gone){prevL=null;continue}
     if(c.id==="sarah"&&isToday)continue; // the demo login fills today in, starting from last night's list
     const p=clamp(c.base+c.drift*(d/14)+(rng()-.5)*.22,.08,.99);
@@ -884,7 +921,7 @@ function saveEdit(cid,date,k,v){
 /* ---------- stats ---------- */
 function statsFor(c){
   const logs=logsFor(c),today=clientDayNum(c),days=[];
-  for(let d=1;d<=Math.max(1,today);d++){const date=ymd(dateOf(c,d)),wk=weekOf(d),log=logs[date]||{},sc=scoreOf(log);days.push({d,date,wk,log,sc,pct:sc.pct,any:hasAny(log)})}
+  for(let d=1;d<=Math.max(1,today);d++){const date=ymd(dateOf(c,d)),wk=tgtFor(c,d),log=logs[date]||{},sc=scoreOf(log);days.push({d,date,wk,log,sc,pct:sc.pct,any:hasAny(log)})}
   const past=days.filter(x=>x.d<today),last7=past.slice(-7),rows=last7.length?last7:days.slice(-1);
   const avg=f=>rows.length?rows.reduce((a,x)=>a+f(x),0)/rows.length:0;
   const avg7=Math.round(avg(x=>x.pct)),pts7=avg(x=>x.sc.pts);
@@ -1060,7 +1097,7 @@ const S={
 };
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("root");
-const me=()=>allClients().find(c=>c.id===S.session?.clientId)||CLIENTS[0];
+const me=()=>{const p=pendingSignup();if(p&&S.session?.clientId==="new")return{id:"new",name:p.name,pending:true,signup:p};return allClients().find(c=>c.id===S.session?.clientId)||CLIENTS[0]};
 const initials=n=>n.split(" ").map(x=>x[0]).join("").slice(0,2);
 const TICK='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const MOON=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>`;
@@ -1068,9 +1105,105 @@ const DUMBBELL='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="tru
 const LOCK='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M3.8 5.5V4a2.2 2.2 0 014.4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
 function render(){
-  if(!S.session){root.innerHTML=loginView();return}
+  if(!S.session){root.innerHTML=S.onboard?onboardView():loginView();return}
   root.innerHTML=topBar()+`<main class="wrap"><div class="${S.session.role==="coach"?"wide":"col"}">${S.session.role==="coach"?coachView():clientView()}</div></main>`;
   if(S.scrollTo){const el=document.getElementById("blk-"+S.scrollTo);S.scrollTo=null;if(el){const rm=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;setTimeout(()=>el.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"}),60)}}
+}
+
+/* ---------- onboarding ---------- */
+const ONB=[
+  ["About you",[
+    {k:"name",label:"Full name",type:"text",req:1,ac:"name"},
+    {k:"email",label:"Email",type:"email",req:1,ac:"email"},
+    {k:"age",label:"Age",type:"number",req:1,min:16,max:99},
+    {k:"sex",label:"Sex",type:"radio",req:1,opts:["Female","Male"]},
+    {k:"height",label:"Height (cm)",type:"number",req:1,min:120,max:230},
+    {k:"weight",label:"Current weight (kg)",type:"number",req:1,min:35,max:250,step:0.1},
+    {k:"goal_weight",label:"Goal weight (kg, optional)",type:"number",min:35,max:250,step:0.1}]],
+  ["Your goal",[
+    {k:"goal",label:"Main goal",type:"radio",req:1,opts:["Lose body fat","Build muscle","Lose fat and build muscle","More energy, less stress"]},
+    {k:"why",label:"Why now? What's made you sign up?",type:"textarea"}]],
+  ["Your lifestyle",[
+    {k:"activity",label:"How active is your day, outside of training?",type:"radio",req:1,opts:["Mostly sitting","On my feet some of the day","On my feet most of the day","Physical job"]},
+    {k:"wake",label:"Usual wake up time",type:"time"},
+    {k:"bed",label:"Usual bed time",type:"time"},
+    {k:"sleep",label:"Sleep quality, 1 to 10",type:"scale"},
+    {k:"stress",label:"Stress level, 1 to 10",type:"scale"}]],
+  ["Training",[
+    {k:"experience",label:"Training experience",type:"radio",req:1,opts:["Beginner","Some experience","Experienced"]},
+    {k:"sessions",label:"Sessions a week you can commit to",type:"radio",opts:["2","3","4","5+"]},
+    {k:"where",label:"Where will you train?",type:"radio",opts:["Gym","Home","Both"]}]],
+  ["Food",[
+    {k:"diet",label:"Dietary requirements",type:"checks",opts:["None","Vegetarian","Vegan","Pescatarian","Dairy free","Gluten free"]},
+    {k:"avoid",label:"Allergies, or foods you won't eat",type:"text"},
+    {k:"meals",label:"Meals you usually eat a day",type:"radio",opts:["1 to 2","3","4","5+"]}]],
+  ["Health",[
+    {k:"health",label:"Any injuries or medical conditions Ellis should know about?",type:"textarea"},
+    {k:"other",label:"Anything else you'd like Ellis to know?",type:"textarea"}]]
+];
+const ONB_FIELDS=ONB.flatMap(x=>x[1]);
+function onbField(f){
+  const id="onb-"+f.k,lab=`${esc(f.label)}${f.req?' <span class="req">*</span>':""}`;
+  if(f.type==="radio"||f.type==="checks")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="opts">${f.opts.map(o=>`<label class="chip onb-chip"><input type="${f.type==="radio"?"radio":"checkbox"}" name="${f.k}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("")}</div></fieldset>`;
+  if(f.type==="scale")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<label class="onb-num"><input type="radio" name="${f.k}" value="${n}"><span>${n}</span></label>`).join("")}</div></fieldset>`;
+  if(f.type==="textarea")return `<label class="field" for="${id}">${lab}<textarea class="input" id="${id}" name="${f.k}" rows="3"></textarea></label>`;
+  return `<label class="field" for="${id}">${lab}<input class="input" id="${id}" name="${f.k}" type="${f.type}" ${f.min!=null?`min="${f.min}"`:""} ${f.max!=null?`max="${f.max}"`:""} ${f.step?`step="${f.step}"`:""} ${f.ac?`autocomplete="${f.ac}"`:""} ${f.type==="number"?'inputmode="decimal"':""}></label>`;
+}
+function onboardView(){
+  return `<div class="login wrap"><div class="onb-card">
+    <div><button class="chip" data-act="onb-back">&lsaquo; Back</button></div>
+    <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding form</h1>
+    <p class="muted">Ellis uses your answers to set your daily targets for steps, protein and water. Once they're set, you'll start on Day 0, your setup night.</p></div>
+    <form id="onbForm" class="stack" novalidate>
+      ${ONB.map(([h,fs],i)=>`<section class="card onb-sec"><span class="eyebrow">${i+1} of ${ONB.length}</span><h2 class="sec-title" style="font-size:22px">${h}</h2>${fs.map(onbField).join("")}</section>`).join("")}
+      <div id="onbErr" class="onb-err" role="alert"></div>
+      <button class="btn primary" type="submit" style="min-height:52px">Send to Ellis</button>
+    </form>
+  </div></div>`;
+}
+function readOnb(form){
+  const fd=new FormData(form),out={};
+  ONB_FIELDS.forEach(f=>{if(f.type==="checks")out[f.k]=fd.getAll(f.k);else{const v=(fd.get(f.k)||"").toString().trim();out[f.k]=f.type==="number"&&v?Number(v):v}});
+  return out;
+}
+// Starting point for Ellis, not a rule: he can change every number
+function suggestTargets(f){
+  const kg=Number(f.goal_weight)||Number(f.weight)||70;
+  const steps={"Mostly sitting":8000,"On my feet some of the day":10000,"On my feet most of the day":12000,"Physical job":12000}[f.activity]||10000;
+  return{steps,protein:Math.round(kg*2/5)*5,water:Math.max(2.5,Math.round(Number(f.weight||70)*0.035*2)/2)};
+}
+function waitingView(p){
+  return `<div class="stack">
+    <section class="card wait-card"><span class="eyebrow">Form received ${esc(p.submittedAt||"")}</span>
+      <h1 class="display" style="font-size:clamp(40px,9vw,60px)">Thanks, ${esc((p.name||"").split(" ")[0])}.</h1>
+      <p>Ellis is going through your answers and setting your daily targets for steps, protein and water.</p>
+      <p class="muted">As soon as they're in, your programme opens on <b>Day 0</b>: your setup night, where you plan your first day.</p>
+      <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding form sent</div><div class="now"><span class="pb-num">2</span>Ellis sets your targets</div><div><span class="pb-num">3</span>Day 0, your setup night</div></div>
+    </section>
+    <p class="note">Prototype: log out and choose "Enter as coach" to set the targets as Ellis.</p>
+  </div>`;
+}
+function reviewView(){
+  const f=signup();if(!f)return overviewView();
+  const a=f.form||{},sug=suggestTargets(a),t=f.targets||sug,active=f.status!=="pending";
+  const val=v=>Array.isArray(v)?(v.length?v.join(", "):""):v===""||v==null?"":String(v);
+  return `<div class="stack">
+    <div><button class="chip" data-act="review-back">&lsaquo; ${active?"Back to client":"All clients"}</button></div>
+    <div class="detail-head"><div><span class="eyebrow">${active?"Targets":"New sign-up"} · form sent ${esc(f.submittedAt||"")}</span><h1 class="display">${esc(f.name)}</h1><p class="muted" style="font-size:13px">${esc(a.email||"")}</p></div>${active?`<span class="pill ok">Started</span>`:`<span class="pill warn">Waiting for targets</span>`}</div>
+    <div class="two">
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Onboarding answers</h2></div>
+        ${ONB.map(([h,fs])=>`<div class="onb-ans"><span class="eyebrow">${h}</span><dl>${fs.filter(q=>q.k!=="name").map(q=>`<div><dt>${esc(q.label)}</dt><dd>${val(a[q.k])?esc(val(a[q.k])):'<span class="muted">Not answered</span>'}</dd></div>`).join("")}</dl></div>`).join("")}
+      </section>
+      <section class="card target-set"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Daily targets</h2></div>
+        <p class="muted" style="font-size:13px">Suggested from their answers: ${sug.steps.toLocaleString("en-GB")} steps (activity), ${sug.protein}g protein (2g per kg of ${a.goal_weight?"goal":"current"} weight), ${sug.water}L water (about 35ml per kg). Change anything you like.</p>
+        <label class="field" for="tg-steps">Steps a day<input class="input" id="tg-steps" type="number" min="1000" step="500" value="${t.steps}"></label>
+        <label class="field" for="tg-protein">Protein a day (g)<input class="input" id="tg-protein" type="number" min="20" step="5" value="${t.protein}"></label>
+        <label class="field" for="tg-water">Water a day (L)<input class="input" id="tg-water" type="number" min="1" step="0.5" value="${t.water}"></label>
+        <button class="btn primary" data-act="assign" style="min-height:52px">${active?"Save targets":"Assign targets & start Day 0"}</button>
+        ${active?"":`<small class="muted">They start on Day 0 tonight, and Day 1 begins tomorrow morning.</small>`}
+      </section>
+    </div>
+  </div>`;
 }
 
 /* ---------- login ---------- */
@@ -1086,12 +1219,13 @@ function loginView(){
     <div class="stack" style="gap:10px">
       <span class="eyebrow">Prototype demo access</span>
       <div class="demo-row">
-        <button class="btn primary" data-act="demo-new">Start as a new client</button>
+        <button class="btn primary" data-act="demo-new">New client sign-up</button>
+        ${signup()?`<button class="btn primary" data-act="demo-signed">Continue as ${esc(signup().name.split(" ")[0])}${pendingSignup()?" (waiting)":""}</button>`:""}
         <button class="btn" data-act="demo-client">Sample client (Day 9)</button>
         <button class="btn" data-act="demo-coach">Enter as coach</button>
         <button class="btn" data-act="demo-reset">Reset all demo data</button>
       </div>
-      <p class="note">This is a clickable prototype. "Start as a new client" begins on Day 0, the setup night after sign-up. Day 1 starts the next morning. What you log is saved in this browser only and shows up in the coach view.</p>
+      <p class="note">This is a clickable prototype. "New client sign-up" opens the onboarding form. Once Ellis assigns targets in the coach view, the client starts on Day 0, the setup night. Day 1 starts the next morning. What you log is saved in this browser only and shows up in the coach view.</p>
     </div>
   </div></div>`;
 }
@@ -1112,6 +1246,7 @@ function topBar(){
 
 /* ---------- client: today ---------- */
 function clientView(){
+  {const m=me();if(m.pending)return waitingView(m.signup)}
   if(S.tab==="programme")return programmeView();
   if(S.tab==="progress")return progressView(me());
   return todayView();
@@ -1123,7 +1258,7 @@ function ring(p,size=96){
 
 function curCtx(){
   const c=me(),today=clientDayNum(c),dn=S.viewDay!=null?S.viewDay:today,date=dateOf(c,dn),dk=ymd(date),logs=logsFor(c);
-  return{c,today,dn,date,dk,wk:weekOf(dn),log:logs[dk]||{},prev:logs[ymd(addDays(date,-1))]||{}};
+  return{c,today,dn,date,dk,wk:tgtFor(c,dn),log:logs[dk]||{},prev:logs[ymd(addDays(date,-1))]||{}};
 }
 function autoPhase(log,isToday,c,dn){
   if(c&&c.fresh&&dn===1&&!stepsDone(log,"morning"))return"evening";
@@ -1625,6 +1760,7 @@ function progressView(c){
 /* ---------- coach ---------- */
 function coachView(){
   if(S.coachTab==="settings")return settingsView();
+  if(S.review)return reviewView();
   if(S.detail)return detailView(allClients().find(c=>c.id===S.detail));
   return overviewView();
 }
@@ -1646,6 +1782,8 @@ function overviewView(){
   const bar=(p)=>`<div class="bar"><i class="${p<50?"low":p<70?"mid":""}" style="width:${p}%"></i></div>`;
   return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
+    ${(()=>{const p=pendingSignup();return p?`<section class="card signups"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">New sign-ups</h2><span class="pill warn">1 waiting for targets</span></div>
+      <div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc([p.form&&p.form.goal,p.form&&p.form.weight&&p.form.weight+"kg",p.form&&p.form.activity].filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(p.submittedAt||"")}</small></div><button class="btn primary" data-act="review">Review & set targets</button></div></section>`:""})()}
     <div class="tiles">
       <div class="tile"><small>Active clients</small><b class="num">${all.length}</b></div>
       <div class="tile"><small>Avg points, 7 days</small><b class="num">${(all.reduce((a,s)=>a+s.pts7,0)/all.length).toFixed(1)}</b></div>
@@ -1701,9 +1839,9 @@ function detailView(c){
   const sel=S.detailDay||Math.max(1,st.today),row=st.days[sel-1],wk=row.wk,log=row.log,items=itemsOf(log);
   const note=(store.get(K.notes,{})[c.id])||{};
   return `<div class="stack">
-    <div><button class="chip" data-act="back">&lsaquo; All clients</button></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="chip" data-act="back">&lsaquo; All clients</button>${c.fresh&&c.form?`<button class="chip" data-act="review">Onboarding & targets</button>`:""}</div>
     <div class="detail-head">
-      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1>${(()=>{const b=logsFor(c)[ymd(addDays(clientStart(c),-1))]||{};const w=weekOf(Math.max(1,st.today));return `<p class="muted" style="font-size:13px">Targets: ${w.steps.toLocaleString("en-GB")} steps · ${w.protein}g protein · ${w.water}L water a day <span class="kind">From onboarding form, coming soon</span></p>`})()}</div>
+      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1>${(()=>{const b=logsFor(c)[ymd(addDays(clientStart(c),-1))]||{};const w=tgtFor(c,Math.max(1,st.today));return `<p class="muted" style="font-size:13px">Targets: ${w.steps.toLocaleString("en-GB")} steps · ${w.protein}g protein · ${w.water}L water a day <span class="kind">From onboarding form, coming soon</span></p>`})()}</div>
       <span class="pill ${cls}" style="font-size:14px">${lab}</span>
     </div>
     <div class="tiles">
@@ -1760,6 +1898,12 @@ function login(role,cid){S.session=role==="coach"?{role}:{role,clientId:cid||"sa
 root.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="loginForm")return login("client");
+  if(e.target.id==="onbForm"){const a=readOnb(e.target),miss=ONB_FIELDS.filter(f=>f.req&&(a[f.k]===""||a[f.k]==null));const err=root.querySelector("#onbErr");
+    if(a.email&&!/^\S+@\S+\.\S+$/.test(a.email))miss.push({label:"a valid email"});
+    if(miss.length){err.textContent="Please fill in: "+miss.map(f=>f.label.replace(/ \(.*\)/,"")).join(", ")+".";err.scrollIntoView({block:"center"});return}
+    const all=store.get(K.edits,{});delete all["new"];store.set(K.edits,all);for(const k in GEN)if(k==="new")delete GEN[k];
+    const d=new Date();store.set(K.fresh,{status:"pending",name:a.name,form:a,submittedAt:fmtShort(d)+" "+nowHHMM()});
+    S.onboard=false;login("client","new");toast("Form sent to Ellis");return}
   if(e.target.id==="ownForm"){const inp=root.querySelector("#ownTask"),v=inp.value.trim();if(!v)return;setItems(a=>[...a,{id:uid(),kind:"own",label:v}]);render();const n=root.querySelector("#ownTask");if(n)n.focus()}
 });
 root.addEventListener("click",e=>{
@@ -1767,7 +1911,12 @@ root.addEventListener("click",e=>{
   for(const t in timers)clearTimeout(timers[t]); // a tap means typing is finished; its value was saved on change
   const act=b.dataset.act;
   if(act==="demo-client")return login("client");
-  if(act==="demo-new"){const f=store.get(K.fresh,null);const nm=(root.querySelector("#email")||{}).value;store.set(K.fresh,{start:ymd(TODAY),offset:0,name:(nm&&nm.split("@")[0]?nm.split("@")[0].replace(/[._-]+/g," ").replace(/\b\w/g,x=>x.toUpperCase()):"New Client")});if(f){const all=store.get(K.edits,{});delete all["new"];store.set(K.edits,all)}return login("client","new")}
+  if(act==="demo-new"){S.onboard=true;render();window.scrollTo(0,0);return}
+  if(act==="demo-signed")return login("client","new");
+  if(act==="onb-back"){S.onboard=false;return render()}
+  if(act==="review"){S.review=true;render();window.scrollTo(0,0);return}
+  if(act==="review-back"){S.review=false;return render()}
+  if(act==="assign"){const f=signup();if(!f)return;const g=id=>Number((root.querySelector(id)||{}).value)||0;const t={steps:g("#tg-steps"),protein:g("#tg-protein"),water:g("#tg-water")};if(!t.steps||!t.protein||!t.water)return toast("Fill in all three targets");const first=f.status==="pending";f.targets=t;if(first){f.status="active";f.start=ymd(TODAY);f.offset=0;f.assignedAt=nowHHMM()}store.set(K.fresh,f);S.review=false;if(first){S.detail=null}render();window.scrollTo(0,0);toast(first?"Targets assigned. "+f.name.split(" ")[0]+" starts Day 0 tonight":"Targets saved");return}
   if(act==="demo-reset"){try{Object.values(K).forEach(k=>localStorage.removeItem(k))}catch(e){}for(const k in GEN)delete GEN[k];WEEKS=DEFAULT_WEEKS.map(w=>({...w}));S.session=null;toast("Demo data cleared");return render()}
   if(act==="nextday"){const f=store.get(K.fresh,null);if(!f)return;f.offset=(f.offset||0)+1;store.set(K.fresh,f);S.viewDay=null;S.phase=null;S.open={};render();window.scrollTo(0,0);toast("Moved to tomorrow");return}
   if(act==="demo-coach")return login("coach");
