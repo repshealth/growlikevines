@@ -1,63 +1,54 @@
 # Project Reset
 
-Web app for GrowLikeVines' Project Reset, the 28 day programme. Clients log in, read the programme content and work through their day in three parts. The coach gets an overview of every client's progress.
+The web app for GrowLikeVines' Project Reset, Ellis Vine's 28 day coaching programme. Clients sign up with an onboarding form, Ellis assigns their daily steps, protein and water targets, and they work through each day in three parts: the Morning shift, the Day and the Evening shift. Ellis gets an overview of every client.
 
-## Current state
+## What's in the repo
 
-`index.html` is a clickable prototype. It's a single file with no build step. Open it in a browser, or serve the folder with any static host.
+| Path | What it is |
+| --- | --- |
+| `public/index.html` | The live app. Everything the browser loads is in this one file. |
+| `public/_headers` | Security headers for Cloudflare Pages. |
+| `functions/api/[[path]].js` | The server, as Cloudflare Pages Functions: logins, sign-ups, saving logs and the coach tools. |
+| `prototype/index.html` | The old clickable prototype with sample clients, kept for reference. It isn't deployed. |
 
-### How a client's day works
+All data lives in a Cloudflare D1 database. The tables are created automatically the first time the app runs.
 
-The day runs as a loop. The Evening plans tomorrow, the Morning opens it, the client ticks off the Day, and every day ends with a score.
+## How it works
 
-- **Day 0 (setup night):** the evening a new client signs up. Your targets: shows the client's daily steps, protein and water (display only for now; in the live app Ellis sets these per client from the onboarding form). Plan tomorrow's morning and training: arousal activity (walk or cardio, cold therapy, sauna or workout, with a workout pick), bring it down (The Reset, Wim Hof, breathwork, meditation, breath movement), training yes or no with time and workout (library or their own). Plan Day 1's meals with the approved foods picker and a time for each, plus an optional own to-do list, then set the alarm last. Day 1 starts the next morning.
-- **Evening (reduce arousal):** 3 steps in order. Review your day: tick anything not logged in the day (meals, walks, training), final steps, protein and water against targets, plus a 1 to 10 self-assessment. Non-negotiables and wind down, using the same bring-it-down options as the morning. Set up tomorrow: arousal activity, bring it down, training, meals with times, optional to-do list, plan of action, banked insight, brain dump, and the alarm last.
-- **Morning (stimulation and arousal):** 5 steps in order. Wake up: the time they woke, shown against their alarm. Arousal activity: last night's pick (and workout if chosen), done or change. Bring it down: last night's pick, plus an optional comments box. Meal 1: non-negotiable, the planned meal shown as a card with Change, plus did you have water with it; it shows as already ticked in the Day. Morning check-in: steps, protein and water so far, with what's left to go. Then the Day opens.
-- **Day (keep energy stable):** the planned meals with their planned times, each followed by a walk block. After Meal 2 and again after Meal 3 a number check-in asks for the latest steps, protein and water, and the next meal stays locked until it's done. On training days the session sits between the pre-workout and post-workout meals (placed from the meal times) and runs as steps: warm up, workout (Start / Finish), back to baseline. After the last meal the client is sent to the Evening for their final numbers.
-- **Target gauges:** a floating bar at the bottom of the screen shows steps, protein and water as rings filling towards target, turning lime with a tick when hit. Tap it to update the numbers at any time.
-- **One page:** Morning, Day and Evening are blocks on one page. The current one is pale green, finished ones fold into grey ticked boxes, upcoming ones are faded and locked.
-- **Points:** 1 point per step, meal, walk block, training session and non-negotiable kept.
+1. **Sign-up.** A new client opens the app, chooses "Start your onboarding form", answers the questions (about you, goal, lifestyle, training, food, health), creates a password and ticks the consent box. They then see a waiting screen.
+2. **Targets.** Ellis logs in and sees them under **New sign-ups**. He reviews their answers, adjusts the suggested steps, protein and water, and presses **Assign targets & start Day 0**.
+3. **Day 0.** That evening is the client's setup night: they see their targets and plan Day 1 (meals, morning tasks, training, intentions, wake up time).
+4. **Days 1 to 28.** Each day runs Morning shift, Day, Evening shift. Everything they log is saved to the database as they go, so they can switch between phone and laptop.
 
-### Coach view
+Coach tools: client overview and detail pages, notes to a client (shown at the top of their day), the Number setter, and per-client **Onboarding, targets & account**, where Ellis can edit targets, set a new password for a client who's forgotten theirs, or remove a client.
 
-- **Client overview:** points, completion, morning and evening completion, process order rate, senses and steps for each client
-- **Breakdowns:** completion rate for each step, and the make-up of Day lists
-- **Client detail:** a log for each day, trend charts and a note to the client
-- **Number setter:** steps, water and protein targets, plus the theme and sticky note for each week
+## Deploying on Cloudflare (one-time setup)
 
-### Demo logins
+1. **Create the database.** In the Cloudflare dashboard go to **Storage & databases → D1 → Create database**. Name it `growlikevines`.
+2. **Create the Pages project.** Go to **Workers & Pages → Create → Pages → Connect to Git** and pick `repshealth/growlikevines`. Use these build settings:
+   - Framework preset: **None**
+   - Build command: leave empty
+   - Build output directory: `public`
+3. **Bind the database.** In the new project go to **Settings → Bindings → Add → D1 database**. Variable name `DB`, database `growlikevines`. Add it for Production (and Preview if you use preview links).
+4. **Add the setup key.** In **Settings → Variables and Secrets**, add a **Secret** called `SETUP_KEY` with a long random value. You only need it once, to create Ellis's account.
+5. **Redeploy.** Go to **Deployments** and retry the latest deployment so the binding and secret take effect.
+6. **Create Ellis's coach account.** Open the site. While no coach account exists, it shows a first-time setup screen: enter the setup key, Ellis's name, email and a password. After that the setup screen never shows again.
+7. **Custom domain (optional).** **Custom domains → Set up a domain**, then follow the DNS steps.
 
-"Start as a new client" begins on Day 0, the setup night, with a "Jump to tomorrow" button to step through the loop. "Sample client (Day 9)" opens a client with history, "Enter as coach" opens the dashboard, and "Reset all demo data" clears everything.
+After this, every push to `main` deploys automatically.
 
-### Data
+## Running it locally
 
-Sample clients only. Edits save to the browser's localStorage, so nothing is shared between devices or users yet.
+```
+npm i -g wrangler
+echo "SETUP_KEY=anything" > .dev.vars
+wrangler pages dev public --d1 DB
+```
 
-## Placeholders to replace with Ellis's content
+Then open http://localhost:8788. Local data is kept in `.wrangler/` and is never committed.
 
-- The wording of the 3 Morning and 3 Evening steps and the questions inside them
-- The follow-up question for each type of task
-- Which options evoke which senses
-- Workout PDFs for each library entry (the list is in, the PDFs still need attaching)
-- Protein targets
+## Before inviting real clients
 
-## Next steps
-
-- Onboarding form (height, weight and so on) after purchase, and per-client targets that Ellis sets from it
-
-- Real authentication and a shared database (for example React with Supabase)
-- Replace the text wordmark with the GrowLikeVines logo
-
-## The Process (latest)
-
-Evening shift: Step 1 Review & close the day (numbers with what's left, tomorrow's meal plan, tomorrow's morning tasks, training and time, summary, intentions, wake up time). Step 2 Check points (low arousal task, moonlight, lights dimmed & phone away, final meal, showered, rate your state).
-
-Morning shift: Step 1 wake up time and movement (set last night) plus 500ml water, outside within 30 mins, lights bright. Step 2 low arousal task, then a cue to log Meal 1. Step 3 Review & open the day (numbers, sun light, lights bright & phone away, Meal 1 within 90 mins, showered, rate your state).
-
-Every Yes check box scores 1 point.
-
-## Onboarding and targets
-
-New clients fill in the onboarding form (about you, goal, lifestyle, training, food, health). They then see a waiting screen until Ellis assigns targets. In the coach view, new sign-ups appear at the top of Client overview; Ellis reviews the answers, adjusts the suggested steps, protein and water, and presses Assign targets & start Day 0. The client then starts on Day 0 that night, using their own targets. Targets can be edited later from the client's page (Onboarding & targets).
-
-Prototype note: everything is stored in the browser, so the client and coach sides only share data on the same device. A real backend is needed for live use.
+- **Privacy policy.** The form collects health information (injuries and medical conditions), which is special category data under UK GDPR. Ellis needs a privacy policy that says what's collected, why, and how long it's kept, and it should be linked from the consent box.
+- **Password resets.** There's no automatic "forgot password" email yet; Ellis sets a new password from the client's account page. Self-service reset needs an email service (for example Resend) and can be added later.
+- **Payment.** Clients pay outside the app for now.
