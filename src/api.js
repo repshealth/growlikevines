@@ -36,8 +36,28 @@ const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
+  )`,
+  // Onboarding and weekly check-in photos (body photos, steps and screen time screenshots), resized in the browser first
+  `CREATE TABLE IF NOT EXISTS photos (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    slot TEXT NOT NULL,
+    mime TEXT NOT NULL,
+    data TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  // The 1 to 10 assessment: before starting, then Day 7, 14 and 21
+  `CREATE TABLE IF NOT EXISTS assessments (
+    user_id TEXT NOT NULL,
+    slot TEXT NOT NULL,
+    data TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, slot)
   )`
 ];
+const SLOTS = ["start", "d7", "d14", "d21"];
+const PHOTO_KINDS = ["clothed", "front", "side", "back", "steps", "screentime"];
 
 let schemaReady = false;
 async function ensureSchema(db) {
@@ -80,9 +100,9 @@ const londonToday = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/L
 const cleanEmail = e => String(e || "").trim().toLowerCase();
 const validEmail = e => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
-async function readBody(request) {
+async function readBody(request, max = 200000) {
   const text = await request.text();
-  if (text.length > 200000) throw new Error("too large");
+  if (text.length > max) throw new Error("too large");
   return text ? JSON.parse(text) : {};
 }
 
@@ -118,6 +138,22 @@ const publicUser = u => ({
 async function getSettings(db) {
   const row = await db.prepare("SELECT value FROM settings WHERE key = 'weeks'").first();
   return { weeks: row ? JSON.parse(row.value) : null };
+}
+async function extrasFor(db, userId) {
+  const q = userId ? " WHERE user_id = ?" : "";
+  const bind = st => userId ? st.bind(userId) : st;
+  const { results: a } = await bind(db.prepare("SELECT user_id, slot, data, created_at FROM assessments" + q)).all();
+  const { results: p } = await bind(db.prepare("SELECT id, user_id, kind, slot, created_at FROM photos" + q + " ORDER BY created_at")).all();
+  const assess = {}, photos = {};
+  for (const r of a) (assess[r.user_id] = assess[r.user_id] || {})[r.slot] = { ...JSON.parse(r.data), at: r.created_at };
+  for (const r of p) (photos[r.user_id] = photos[r.user_id] || []).push({ id: r.id, kind: r.kind, slot: r.slot, at: r.created_at });
+  return { assess, photos };
+}
+async function saveAssessment(db, userId, slot, data) {
+  const text = JSON.stringify(data || {});
+  if (text.length > 30000) throw new Error("too large");
+  await db.prepare("INSERT INTO assessments (user_id, slot, data, created_at) VALUES (?, ?, ?, ?) ON CONFLICT(user_id, slot) DO UPDATE SET data = excluded.data, created_at = excluded.created_at")
+    .bind(userId, slot, text, new Date().toISOString()).run();
 }
 async function logsFor(db, userId) {
   const { results } = await db.prepare("SELECT date, data FROM logs WHERE user_id = ?").bind(userId).all();
@@ -178,6 +214,7 @@ export async function onRequest(context) {
       const id = randomId();
       await db.prepare("INSERT INTO users (id, email, name, role, pw_hash, pw_salt, status, form, created_at) VALUES (?, ?, ?, 'client', ?, ?, 'pending', ?, ?)")
         .bind(id, email, name, hash, salt, JSON.stringify(form).slice(0, 100000), new Date().toISOString()).run();
+      if (b.assessment && typeof b.assessment === "object") await saveAssessment(db, id, "start", b.assessment);
       return json({ ok: true }, 200, { "set-cookie": await startSession(db, id, request) });
     }
 
@@ -203,7 +240,8 @@ export async function onRequest(context) {
       const settings = await getSettings(db);
       if (me.role === "client") {
         const n = await db.prepare("SELECT text, at FROM notes WHERE client_id = ?").bind(me.id).first();
-        return json({ me: publicUser(me), logs: await logsFor(db, me.id), notes: n ? { [me.id]: n } : {}, settings, today: londonToday() });
+        const x = await extrasFor(db, me.id);
+        return json({ me: publicUser(me), logs: await logsFor(db, me.id), notes: n ? { [me.id]: n } : {}, assess: x.assess, photos: x.photos, settings, today: londonToday() });
       }
       const { results: users } = await db.prepare("SELECT * FROM users WHERE role = 'client' ORDER BY created_at").all();
       const { results: logRows } = await db.prepare("SELECT user_id, date, data FROM logs").all();
@@ -211,7 +249,8 @@ export async function onRequest(context) {
       const logs = {}, notes = {};
       for (const r of logRows) (logs[r.user_id] = logs[r.user_id] || {})[r.date] = JSON.parse(r.data);
       for (const r of noteRows) notes[r.client_id] = { text: r.text, at: r.at };
-      return json({ me: publicUser(me), clients: users.map(publicUser), logs, notes, settings, today: londonToday() });
+      const x = await extrasFor(db);
+      return json({ me: publicUser(me), clients: users.map(publicUser), logs, notes, assess: x.assess, photos: x.photos, settings, today: londonToday() });
     }
 
     if (path === "/password" && method === "POST") {
@@ -238,6 +277,40 @@ export async function onRequest(context) {
       return json({ ok: true });
     }
 
+    // Photos: a client adds their own (one per kind per check-in, a new one replaces the old); the client and coaches can view them
+    if (path === "/photos" && method === "POST") {
+      if (me.role !== "client") return err(403, "Only clients add photos.");
+      const b = await readBody(request, 2200000);
+      if (!PHOTO_KINDS.includes(b.kind) || !SLOTS.includes(b.slot)) return err(400, "Bad photo");
+      const m = String(b.data || "").match(/^data:(image\/(?:jpeg|png|webp));base64,([A-Za-z0-9+/=]+)$/);
+      if (!m) return err(400, "That photo couldn't be read. Try a JPG or PNG.");
+      if (m[2].length > 1900000) return err(413, "That photo is too large. Try a smaller one.");
+      const id = randomId();
+      await db.batch([
+        db.prepare("DELETE FROM photos WHERE user_id = ? AND kind = ? AND slot = ?").bind(me.id, b.kind, b.slot),
+        db.prepare("INSERT INTO photos (id, user_id, kind, slot, mime, data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(id, me.id, b.kind, b.slot, m[1], m[2], new Date().toISOString())
+      ]);
+      return json({ ok: true, id });
+    }
+    const phM = path.match(/^\/photos\/([a-f0-9]{32})$/);
+    if (phM && method === "GET") {
+      const ph = await db.prepare("SELECT user_id, mime, data FROM photos WHERE id = ?").bind(phM[1]).first();
+      if (!ph || (me.role !== "coach" && ph.user_id !== me.id)) return err(404, "Not found");
+      const bytes = Uint8Array.from(atob(ph.data), c => c.charCodeAt(0));
+      return new Response(bytes, { headers: { "content-type": ph.mime, "cache-control": "private, max-age=86400" } });
+    }
+
+    // Assessments: before starting (with the onboarding form, or later while waiting), then the Day 7, 14 and 21 check-ins
+    const asM = path.match(/^\/assessments\/(start|d7|d14|d21)$/);
+    if (asM && method === "PUT") {
+      if (me.role !== "client") return err(403, "Only clients fill in check-ins.");
+      if (asM[1] !== "start" && me.status !== "active") return err(403, "Your programme hasn't started yet.");
+      const b = await readBody(request);
+      if (!b || typeof b.data !== "object" || Array.isArray(b.data)) return err(400, "Bad check-in");
+      await saveAssessment(db, me.id, asM[1], b.data);
+      return json({ ok: true });
+    }
+
     // Test accounts only: move a day forward (shifts their logs back a day, so today becomes the next day) or start again
     if (path === "/test/nextday" && method === "POST") {
       if (me.role !== "client" || !me.test) return err(403, "Only test accounts can do this.");
@@ -252,6 +325,8 @@ export async function onRequest(context) {
       if (me.role !== "client" || !me.test) return err(403, "Only test accounts can do this.");
       await db.batch([
         db.prepare("DELETE FROM logs WHERE user_id = ?").bind(me.id),
+        db.prepare("DELETE FROM assessments WHERE user_id = ? AND slot != 'start'").bind(me.id),
+        db.prepare("DELETE FROM photos WHERE user_id = ? AND slot != 'start'").bind(me.id),
         db.prepare("UPDATE users SET start_date = ? WHERE id = ?").bind(londonToday(), me.id)
       ]);
       return json({ ok: true });
@@ -301,6 +376,8 @@ export async function onRequest(context) {
         await db.batch([
           db.prepare("DELETE FROM logs WHERE user_id = ?").bind(client.id),
           db.prepare("DELETE FROM notes WHERE client_id = ?").bind(client.id),
+          db.prepare("DELETE FROM photos WHERE user_id = ?").bind(client.id),
+          db.prepare("DELETE FROM assessments WHERE user_id = ?").bind(client.id),
           db.prepare("DELETE FROM sessions WHERE user_id = ?").bind(client.id),
           db.prepare("DELETE FROM users WHERE id = ?").bind(client.id)
         ]);

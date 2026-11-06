@@ -108,6 +108,37 @@ main{padding-block:24px 64px}
 .onb-num span{display:grid;place-items:center;height:40px;border-radius:8px;background:var(--surface-2);font-weight:700;font-size:13px}
 .onb-num:has(input:checked) span{background:var(--lime);color:var(--ink)}
 .onb-err{color:var(--bad);font-weight:600;font-size:14px}
+.onb-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px;scroll-margin-top:16px}
+.onb-tabs .phase-tab[aria-selected="true"]{background:var(--night);color:var(--lime)}
+.onb-tabs .phase-tab[aria-selected="true"] small{color:var(--on-night);opacity:.75}
+.pair-in{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field small.muted{font-weight:500;font-size:12px}
+.photo-field{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600}
+.photo-row{display:flex;align-items:center;gap:12px}
+.photo-pv{width:64px;height:64px;border-radius:12px;background:var(--surface-2);border:1px dashed var(--line);display:grid;place-items:center;overflow:hidden;flex:none;color:var(--muted)}
+.photo-pv img{width:100%;height:100%;object-fit:cover;display:block}
+.upload{position:relative;cursor:pointer;min-height:44px}
+.upload input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.upload:has(input:focus-visible){outline:2px solid var(--green-ink);outline-offset:2px}
+.as-q legend{display:flex;flex-direction:column;gap:3px;font-size:14px}
+.as-q legend b{font-weight:800}
+.as-qt{font-weight:500;color:var(--fg)}
+.as-consider{margin:-2px 0 8px;font-size:12px}
+.as-ends{display:flex;justify-content:space-between;gap:16px;font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
+.as-ends span:last-child{text-align:right}
+.as-na{margin-top:8px;align-self:flex-start;display:inline-flex}
+.ck-card{border:2px solid var(--lime);display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
+.ph-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+.ph-thumb{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--fg);width:96px}
+.ph-thumb img{width:96px;height:128px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:var(--surface-2)}
+.ph-thumb small{font-size:11px;color:var(--muted);line-height:1.2}
+.as-tbl{min-width:0}
+.as-tbl td,.as-tbl th{padding:7px 10px}
+.as-tbl .as-sec th,.as-tbl .as-sec td{background:var(--surface-2);font-weight:800}
+.as-tbl .as-sec th{text-align:left;font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.delta{font-weight:800}
+.delta.up{color:var(--green-ink)}
+.delta.down{color:var(--bad)}
 .onb-err:empty{display:none}
 .wait-card{display:flex;flex-direction:column;gap:12px}
 .wait-steps{display:flex;flex-direction:column;gap:10px;margin-top:6px}
@@ -1113,108 +1144,325 @@ function render(){
 }
 
 /* ---------- onboarding ---------- */
+// Photos: resized in the browser, then stored with the client's account
+const PHOTO_KINDS={clothed:"Clothed",front:"Front, in underwear",side:"Side",back:"Back",steps:"Steps, last 7 days",screentime:"Social media screen time"};
+const BODY_SHOTS=["clothed","front","side","back"];
+let PHOTO_BUF={}; // kind -> resized data URL, for the form that's open
+async function shrink(file,max=1600){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("That file couldn't be read. Try a JPG or PNG photo."));i.src=url});
+    const sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),cv=document.createElement("canvas");
+    cv.width=Math.round(img.naturalWidth*sc);cv.height=Math.round(img.naturalHeight*sc);
+    const g=cv.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,cv.width,cv.height);g.drawImage(img,0,0,cv.width,cv.height);
+    let q=.82,d=cv.toDataURL("image/jpeg",q);while(d.length>1800000&&q>.35){q-=.12;d=cv.toDataURL("image/jpeg",q)}
+    return d;
+  }finally{URL.revokeObjectURL(url)}
+}
+async function uploadPhotos(slot){
+  const failed=[];
+  for(const [kind,data] of Object.entries(PHOTO_BUF)){
+    try{await api("/photos",{method:"POST",body:{kind,slot,data}})}catch(e){failed.push(PHOTO_KINDS[kind])}
+  }
+  PHOTO_BUF={};return failed;
+}
+const photosOf=(uid,slot)=>((DATA&&DATA.photos&&DATA.photos[uid])||[]).filter(p=>!slot||p.slot===slot);
+const assessOf=uid=>(DATA&&DATA.assess&&DATA.assess[uid])||{};
+const photoUrl=id=>"/api/photos/"+id;
+function photoField(f){
+  const lab=`${esc(f.label)}${f.req?' <span class="req">*</span>':f.opt?' <span class="muted">(optional)</span>':""}`;
+  return `<div class="field photo-field"><span>${lab}</span>${f.hint?`<small class="muted">${esc(f.hint)}</small>`:""}
+    <div class="photo-row"><div class="photo-pv" id="pv-${f.kind}" aria-hidden="true">${PHOTO_BUF[f.kind]?`<img src="${PHOTO_BUF[f.kind]}" alt="">`:CAMERA}</div>
+    <label class="chip upload" for="ph-${f.kind}"><span id="pl-${f.kind}">${PHOTO_BUF[f.kind]?"Change photo":"Add photo"}</span><input type="file" id="ph-${f.kind}" data-photo="${f.kind}" accept="image/*"></label></div></div>`;
+}
+const CAMERA='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+// Asked before starting and every week: what a normal day looks like
+const DITL=[
+  {k:"steps_shot",label:"Screenshot of your steps over the last 7 days",type:"photo",kind:"steps",hint:"From the Health app, Google Fit or your watch. If you can't, write your average below."},
+  {k:"steps_avg",label:"Or write your average daily steps",type:"number",min:0,max:60000},
+  {k:"water",label:"Average water a day (litres)",type:"number",min:0,max:10,step:0.1,req:1},
+  {k:"wake",label:"Average wake up time",type:"time",req:1},
+  {k:"bed",label:"Average bed time",type:"time",req:1},
+  {k:"screen_shot",label:"Screen time screenshot, covering just your social media apps",type:"photo",kind:"screentime",hint:"Settings, Screen Time on iPhone. Digital Wellbeing on Android."}
+];
 const ONB=[
-  ["About you",[
+  ["Basic information","",[
     {k:"name",label:"Full name",type:"text",req:1,ac:"name"},
     {k:"email",label:"Email",type:"email",req:1,ac:"email"},
-    {k:"age",label:"Age",type:"number",req:1,min:16,max:99},
-    {k:"sex",label:"Sex",type:"radio",req:1,opts:["Female","Male"]},
-    {k:"height",label:"Height (cm)",type:"number",req:1,min:120,max:230},
-    {k:"weight",label:"Current weight (kg)",type:"number",req:1,min:35,max:250,step:0.1},
-    {k:"goal_weight",label:"Goal weight (kg, optional)",type:"number",min:35,max:250,step:0.1}]],
-  ["Your goal",[
-    {k:"goal",label:"Main goal",type:"radio",req:1,opts:["Lose body fat","Build muscle","Lose fat and build muscle","More energy, less stress"]},
-    {k:"why",label:"Why now? What's made you sign up?",type:"textarea"}]],
-  ["Your lifestyle",[
-    {k:"activity",label:"How active is your day, outside of training?",type:"radio",req:1,opts:["Mostly sitting","On my feet some of the day","On my feet most of the day","Physical job"]},
-    {k:"wake",label:"Usual wake up time",type:"time"},
-    {k:"bed",label:"Usual bed time",type:"time"},
-    {k:"sleep",label:"Sleep quality, 1 to 10",type:"scale"},
-    {k:"stress",label:"Stress level, 1 to 10",type:"scale"}]],
-  ["Training",[
-    {k:"experience",label:"Training experience",type:"radio",req:1,opts:["Beginner","Some experience","Experienced"]},
-    {k:"sessions",label:"Sessions a week you can commit to",type:"radio",opts:["2","3","4","5+"]},
-    {k:"where",label:"Where will you train?",type:"radio",opts:["Gym","Home","Both"]}]],
-  ["Food",[
-    {k:"diet",label:"Dietary requirements",type:"checks",opts:["None","Vegetarian","Vegan","Pescatarian","Dairy free","Gluten free"]},
-    {k:"avoid",label:"Allergies, or foods you won't eat",type:"text"},
-    {k:"meals",label:"Meals you usually eat a day",type:"radio",opts:["1 to 2","3","4","5+"]}]],
-  ["Health",[
-    {k:"health",label:"Any injuries or medical conditions Ellis should know about?",type:"textarea"},
-    {k:"other",label:"Anything else you'd like Ellis to know?",type:"textarea"}]]
+    {k:"phone",label:"Phone number",type:"tel",req:1,ac:"tel"},
+    {k:"dob",label:"Date of birth",type:"date",req:1,ac:"bday"},
+    {k:"occupation",label:"Occupation",type:"text",req:1},
+    {k:"relationship",label:"Relationship status",type:"radio",req:1,opts:["Single","In a relationship","Engaged","Married","Separated or divorced"]},
+    {k:"kids",label:"Kids? How many and their ages (or none)",type:"text"}]],
+  ["Basic stats","",[
+    {k:"weight_lb",label:"Bodyweight (lbs)",type:"number",req:1,min:70,max:600,step:0.1},
+    {k:"height",label:"Height",type:"height",req:1},
+    {k:"waist",label:"Waist measurement (inches)",type:"number",req:1,min:15,max:80,step:0.25,hint:"Around your belly button, standing relaxed."}]],
+  ["Photos","Only Ellis and the coaching team see these. Good light, plain background, same spot you'll use next time.",[
+    {k:"ph_clothed",label:"Clothed",type:"photo",kind:"clothed",req:1},
+    {k:"ph_front",label:"Front, in underwear",type:"photo",kind:"front",opt:1},
+    {k:"ph_side",label:"Side",type:"photo",kind:"side",opt:1},
+    {k:"ph_back",label:"Back",type:"photo",kind:"back",opt:1}]],
+  ["Day in the life","We'll ask these again every week, so you can see what's changing.",DITL],
+  ["Additional","",[
+    {k:"avoid",label:"Any food allergies or big dislikes",type:"textarea"},
+    {k:"train_time",label:"Ideal time of day to train at the gym",type:"radio",opts:["Early morning","Morning","Lunchtime","Afternoon","Evening"]},
+    {k:"stressors",label:"Life stressors that can affect you mentally or physically",type:"textarea"}]],
+  ["Physique","",[
+    {k:"physique_goal",label:"What are your long term physique goals?",type:"textarea",req:1}]],
+  ["Thinking","",[
+    {k:"holdback",label:"What holds you back from achieving your goals?",type:"textarea",req:1},
+    {k:"intention",label:"In one sentence, what's your true intention for starting Project Reset?",type:"text",req:1}]]
 ];
-const ONB_FIELDS=ONB.flatMap(x=>x[1]);
+const ONB_FIELDS=ONB.flatMap(x=>x[2]);
+// Forms sent before the new onboarding, still shown to Ellis as they were
+const ONB_LEGACY=[
+  ["About you",[{k:"age",label:"Age"},{k:"sex",label:"Sex"},{k:"height",label:"Height (cm)"},{k:"weight",label:"Current weight (kg)"},{k:"goal_weight",label:"Goal weight (kg)"}]],
+  ["Your goal",[{k:"goal",label:"Main goal"},{k:"why",label:"Why now?"}]],
+  ["Your lifestyle",[{k:"activity",label:"Activity outside training"},{k:"wake",label:"Usual wake up time"},{k:"bed",label:"Usual bed time"},{k:"sleep",label:"Sleep quality, 1 to 10"},{k:"stress",label:"Stress level, 1 to 10"}]],
+  ["Training",[{k:"experience",label:"Training experience"},{k:"sessions",label:"Sessions a week"},{k:"where",label:"Where they'll train"}]],
+  ["Food",[{k:"diet",label:"Dietary requirements"},{k:"avoid",label:"Allergies, or foods they won't eat"},{k:"meals",label:"Meals a day"}]],
+  ["Health",[{k:"health",label:"Injuries or medical conditions"},{k:"other",label:"Anything else"}]]
+];
+const isLegacy=a=>!!a&&!a.weight_lb&&(a.sex!=null||a.goal!=null||a.weight!=null);
+
+// The 1 to 10 assessment: before starting, then Day 7, 14 and 21
+const ASSESS=[
+  ["Energy & physical readiness",[
+    {k:"morning",t:"Morning readiness",q:"How physically ready do you feel when you wake up?",lo:"Exhausted, heavy & wanting to stay in bed",hi:"Awake, recovered & ready to move"},
+    {k:"energy",t:"Daily energy",q:"How stable is your physical energy throughout the day?",lo:"Frequent crashes, lethargy or large fluctuations",hi:"Consistent & reliable energy"},
+    {k:"move",t:"Desire to move",q:"How naturally inclined do you feel to walk, move & be physically active?",lo:"Movement feels like effort",hi:"I naturally want to move"},
+    {k:"train_ready",t:"Training readiness",q:"How physically & mentally ready do you feel to exercise or train?",lo:"Training feels overwhelming or draining",hi:"I feel capable, motivated & ready to perform"}]],
+  ["Recovery & regulation",[
+    {k:"sleep",t:"Sleep quality",q:"How restorative has your sleep felt?",lo:"Poor sleep & waking unrecovered",hi:"Deep, consistent & restorative"},
+    {k:"recovery",t:"Physical recovery",q:"How well is your body recovering from training, walking & everyday activity?",consider:["Muscular soreness","Joint comfort","General fatigue","Physical heaviness"],lo:"Constantly beaten up / fatigued",hi:"Recovering extremely well"},
+    {k:"tension",t:"Physical tension",q:"How relaxed does your body feel when you are not exercising?",consider:["Jaw","Neck","Shoulders","Chest","Stomach","Lower back"],lo:"Constant tension",hi:"Relaxed when relaxation is appropriate"},
+    {k:"stress",t:"Stress resistance",q:"After something stressful happens, how does it affect your eating, movement, training & daily behaviour?",lo:"Stress derails the rest of my day",hi:"I recover & continue normally"}]],
+  ["Nutrition response",[
+    {k:"hunger",t:"Hunger",q:"How normal & predictable does your hunger feel?",lo:"No appetite / extreme hunger / unpredictable",hi:"Hungry when I should be, e.g. after high effort activity & shortly after waking"},
+    {k:"cravings",t:"Cravings",q:"How in control do you feel around cravings, snacking & highly rewarding foods?",lo:"Cravings regularly control my decisions",hi:"I can enjoy food without feeling controlled by it"},
+    {k:"nutrition",t:"Nutrition consistency",q:"How easy has it been to eat in a way that supports your physique goal?",lo:"Constant battle / very inconsistent",hi:"Feels natural & manageable"},
+    {k:"digestion",t:"Digestion",q:"How comfortable & predictable has your digestion been?",consider:["Bloating","Reflux","Stomach discomfort","Bowel regularity","Feeling overly full"],lo:"Frequently uncomfortable",hi:"Comfortable & predictable"}]],
+  ["Physique behaviour",[
+    {k:"move_consist",t:"Movement consistency",q:"How easy has it been to get out & just walk?",lo:"I constantly avoid or struggle with movement",hi:"Movement fits naturally into my day"},
+    {k:"train_consist",t:"Training consistency",q:"How easy has it been to complete your planned training or exercise?",lo:"Frequently avoided, missed or forced",hi:"Consistent & manageable",na:"Not training at the moment"}]],
+  ["Behaviour & control",[
+    {k:"impulse",t:"Impulse control",q:"How easily can you pause before acting on an impulse that works against your goal?",consider:["Skipping activity","Ordering food impulsively","Snacking","Scrolling instead of sleeping","Missing training"],lo:"I usually act immediately",hi:"I can pause & make a deliberate choice"},
+    {k:"miss",t:"Recovering from a miss",q:"If you miss a meal target, workout, walk or other part of your plan, how easily can you get straight back on track?",lo:"One mistake often ruins the day",hi:"I immediately continue with the next action"},
+    {k:"routine",t:"Routine",q:"How much control do you currently feel over the basic structure of your day?",consider:["Wake time","Meals","Movement","Training","Recovery","Bedtime"],lo:"My day feels chaotic",hi:"My day has a reliable structure"}]],
+  ["Mental state around physique",[
+    {k:"decisions",t:"Physique decision making",q:"How easily can you make decisions based on what your body actually needs rather than how you emotionally feel in the moment?",lo:"My mood dictates most decisions",hi:"I can separate feelings from the action required"},
+    {k:"confidence",t:"Confidence in the process",q:"How confident do you currently feel that you can consistently perform the behaviours required to improve your physique & wellness?",lo:"I don't trust myself to maintain it",hi:"I trust myself to follow through"}]],
+  ["Physiological marker",[
+    {k:"drive",t:"Sexual drive & responsiveness",q:"How would you rate your normal sexual drive & physical responsiveness this week?",consider:["Libido","Sexual interest","Arousal","Morning or spontaneous erections where applicable"],lo:"Very low / absent",hi:"Strong & normal for me",optional:1}]]
+];
+const AS_QS=ASSESS.flatMap(x=>x[1]);
+const WEEK_QS=[
+  {k:"easier",label:"What feels physically easier or different this week?",hint:"Walking, training, getting out of bed, food preparation, digestion, recovery, sleeping"},
+  {k:"automatic",label:"What healthy behaviour feels more automatic now than it did before?"},
+  {k:"changes",label:"Have you noticed any unexpected changes in your body or mind that you would like to share?"}
+];
+const AS_SLOTS=[["start","Before",0],["d7","Day 7",7],["d14","Day 14",14],["d21","Day 21",21]];
+function assessFields(){
+  let n=0;
+  return ASSESS.map(([h,qs])=>`<section class="card onb-sec"><span class="eyebrow">${esc(h)}</span>
+    ${qs.map(q=>{n++;const nm="as_"+q.k;return `<fieldset class="field onb-set as-q"><legend><span><b>${n}. ${esc(q.t)}</b>${q.optional?' <span class="muted">(optional)</span>':' <span class="req">*</span>'}</span><span class="as-qt">${esc(q.q)}</span></legend>
+      ${q.consider?`<p class="as-consider"><span class="muted">Consider:</span> ${q.consider.map(esc).join(", ")}</p>`:""}
+      <div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(v=>`<label class="onb-num"><input type="radio" name="${nm}" value="${v}" aria-label="${v} out of 10"><span>${v}</span></label>`).join("")}</div>
+      <div class="as-ends"><span>1 = ${esc(q.lo)}</span><span>10 = ${esc(q.hi)}</span></div>
+      ${q.na?`<label class="chip onb-chip as-na"><input type="radio" name="${nm}" value="na"><span>N/A, ${esc(q.na.toLowerCase())}</span></label>`:""}</fieldset>`}).join("")}</section>`).join("");
+}
+function readAssess(form){
+  const fd=new FormData(form),scores={},miss=[];
+  AS_QS.forEach((q,i)=>{const v=fd.get("as_"+q.k);if(v==null||v===""){if(!q.optional)miss.push(i+1);return}scores[q.k]=v==="na"?"na":Number(v)});
+  return{scores,miss};
+}
 function onbField(f){
-  const id="onb-"+f.k,lab=`${esc(f.label)}${f.req?' <span class="req">*</span>':""}`;
+  const id="onb-"+f.k,lab=`<span>${esc(f.label)}${f.req?' <span class="req">*</span>':""}</span>`,hint=f.hint&&f.type!=="photo"?`<small class="muted">${esc(f.hint)}</small>`:"";
+  if(f.type==="photo")return photoField(f);
+  if(f.type==="height")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="pair-in"><label class="field" for="onb-hft">Feet<input class="input" id="onb-hft" name="height_ft" type="number" min="3" max="8" inputmode="numeric"></label><label class="field" for="onb-hin">Inches<input class="input" id="onb-hin" name="height_in" type="number" min="0" max="11.5" step="0.5" inputmode="decimal"></label></div></fieldset>`;
   if(f.type==="radio"||f.type==="checks")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="opts">${f.opts.map(o=>`<label class="chip onb-chip"><input type="${f.type==="radio"?"radio":"checkbox"}" name="${f.k}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("")}</div></fieldset>`;
-  if(f.type==="scale")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="scale">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<label class="onb-num"><input type="radio" name="${f.k}" value="${n}"><span>${n}</span></label>`).join("")}</div></fieldset>`;
-  if(f.type==="textarea")return `<label class="field" for="${id}">${lab}<textarea class="input" id="${id}" name="${f.k}" rows="3"></textarea></label>`;
-  return `<label class="field" for="${id}">${lab}<input class="input" id="${id}" name="${f.k}" type="${f.type}" ${f.min!=null?`min="${f.min}"`:""} ${f.max!=null?`max="${f.max}"`:""} ${f.step?`step="${f.step}"`:""} ${f.ac?`autocomplete="${f.ac}"`:""} ${f.type==="number"?'inputmode="decimal"':""}></label>`;
+  if(f.type==="textarea")return `<label class="field" for="${id}">${lab}${hint}<textarea class="input" id="${id}" name="${f.k}" rows="3"></textarea></label>`;
+  return `<label class="field" for="${id}">${lab}${hint}<input class="input" id="${id}" name="${f.k}" type="${f.type}" ${f.min!=null?`min="${f.min}"`:""} ${f.max!=null?`max="${f.max}"`:""} ${f.step?`step="${f.step}"`:""} ${f.ac?`autocomplete="${f.ac}"`:""} ${f.type==="number"?'inputmode="decimal"':""}></label>`;
 }
 function onboardView(){
+  PHOTO_BUF={};
   return `<div class="login wrap"><div class="onb-card">
     <div><button class="chip" data-act="onb-back">&lsaquo; Back to log in</button></div>
-    <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding form</h1>
-    <p class="muted">Ellis uses your answers to set your daily targets for steps, protein and water. Once they're set, you'll start on Day 0, your setup night.</p></div>
+    <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding</h1>
+    <p class="muted">Two parts: the basics, then a short assessment you'll repeat on Day 7, 14 and 21 so you can see what's changed. Ellis uses your answers to set your daily targets, and then you start on Day 0, your setup night.</p></div>
+    <div class="onb-tabs" role="tablist" aria-label="Onboarding parts">
+      <button type="button" class="phase-tab" role="tab" id="ot-basics" aria-controls="op-basics" aria-selected="true" data-onbtab="basics"><span>1. Basics</span><small>About you</small></button>
+      <button type="button" class="phase-tab" role="tab" id="ot-assess" aria-controls="op-assess" aria-selected="false" data-onbtab="assess"><span>2. Assessment</span><small>20 questions, 1 to 10</small></button>
+    </div>
     <form id="onbForm" class="stack" novalidate>
-      ${ONB.map(([h,fs],i)=>`<section class="card onb-sec"><span class="eyebrow">${i+1} of ${ONB.length}</span><h2 class="sec-title" style="font-size:22px">${h}</h2>${fs.map(onbField).join("")}</section>`).join("")}
-      <section class="card onb-sec"><span class="eyebrow">Your login</span><h2 class="sec-title" style="font-size:22px">Create your password</h2>
-        <label class="field" for="onb-pw">Password (8+ characters) <span class="req">*</span><input class="input" id="onb-pw" name="password" type="password" autocomplete="new-password"></label>
-        <label class="field" for="onb-pw2">Confirm password <span class="req">*</span><input class="input" id="onb-pw2" name="password2" type="password" autocomplete="new-password"></label>
-        <label class="consent"><input type="checkbox" name="consent" value="1"><span>I agree to Ellis Vine (GrowLikeVines) storing my answers, including health information, and my daily logs to coach me through Project Reset. <span class="req">*</span></span></label>
-      </section>
-      <div id="onbErr" class="onb-err" role="alert"></div>
-      <button class="btn primary" type="submit" style="min-height:52px">Send to Ellis</button>
+      <div class="stack" id="op-basics" role="tabpanel" aria-labelledby="ot-basics">
+        ${ONB.map(([h,intro,fs])=>`<section class="card onb-sec"><h2 class="sec-title" style="font-size:22px">${h}</h2>${intro?`<p class="muted" style="font-size:13px;margin-top:-6px">${esc(intro)}</p>`:""}${fs.map(onbField).join("")}</section>`).join("")}
+        <div id="onbErr1" class="onb-err" role="alert"></div>
+        <button type="button" class="btn primary" data-onbnext="1" style="min-height:52px">Next: the assessment</button>
+      </div>
+      <div class="stack" id="op-assess" role="tabpanel" aria-labelledby="ot-assess" hidden>
+        <section class="card onb-sec as-intro"><span class="eyebrow">Advanced assessment</span><h2 class="sec-title" style="font-size:22px">How the last 7 days have felt</h2>
+          <p class="muted" style="font-size:13px">Answer based on your overall experience during the previous 7 days. Score each question from 1 to 10. There are no right answers: this is your starting point.</p></section>
+        ${assessFields()}
+        <section class="card onb-sec"><span class="eyebrow">Your login</span><h2 class="sec-title" style="font-size:22px">Create your password</h2>
+          <label class="field" for="onb-pw">Password (8+ characters) <span class="req">*</span><input class="input" id="onb-pw" name="password" type="password" autocomplete="new-password"></label>
+          <label class="field" for="onb-pw2">Confirm password <span class="req">*</span><input class="input" id="onb-pw2" name="password2" type="password" autocomplete="new-password"></label>
+          <label class="consent"><input type="checkbox" name="consent" value="1"><span>I agree to Ellis Vine (GrowLikeVines) storing my answers, photos, health information and daily logs to coach me through Project Reset. <span class="req">*</span></span></label>
+        </section>
+        <div id="onbErr" class="onb-err" role="alert"></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="btn" data-onbtab="basics">&lsaquo; Back to the basics</button><button class="btn primary" type="submit" style="min-height:52px;flex:1">Send to Ellis</button></div>
+      </div>
     </form>
   </div></div>`;
 }
+function showOnbTab(t){
+  ["basics","assess"].forEach(k=>{const p=root.querySelector("#op-"+k),b=root.querySelector("#ot-"+k);if(p)p.hidden=k!==t;if(b)b.setAttribute("aria-selected",String(k===t))});
+  const card=root.querySelector(".onb-tabs");if(card)card.scrollIntoView({block:"start"});
+}
 function readOnb(form){
   const fd=new FormData(form),out={};
-  ONB_FIELDS.forEach(f=>{if(f.type==="checks")out[f.k]=fd.getAll(f.k);else{const v=(fd.get(f.k)||"").toString().trim();out[f.k]=f.type==="number"&&v?Number(v):v}});
+  ONB_FIELDS.forEach(f=>{
+    if(f.type==="photo")return;
+    if(f.type==="height"){const ft=Number(fd.get("height_ft"))||"",inch=fd.get("height_in");out.height_ft=ft;out.height_in=inch===""||inch==null?(ft?0:""):Number(inch);out.height=ft?`${ft}ft ${out.height_in||0}in`:"";return}
+    if(f.type==="checks")out[f.k]=fd.getAll(f.k);else{const v=(fd.get(f.k)||"").toString().trim();out[f.k]=f.type==="number"&&v?Number(v):v}
+  });
   return out;
 }
+function missingOnb(a){
+  const miss=ONB_FIELDS.filter(q=>q.req&&(q.type==="photo"?!PHOTO_BUF[q.kind]:(a[q.k]===""||a[q.k]==null))).map(q=>q.label.replace(/ \(.*\)/,""));
+  if(a.email&&!/^\S+@\S+\.\S+$/.test(a.email))miss.push("a valid email");
+  if(!PHOTO_BUF.steps&&!a.steps_avg)miss.push("your steps (a screenshot or your average)");
+  return miss;
+}
+const ditlOf=a=>({steps_avg:a.steps_avg||"",water:a.water||"",wake:a.wake||"",bed:a.bed||""});
+const kgOf=f=>f.weight_lb?Number(f.weight_lb)*0.45359:(Number(f.goal_weight)||Number(f.weight)||70);
 // Starting point for Ellis, not a rule: he can change every number
 function suggestTargets(f){
-  const kg=Number(f.goal_weight)||Number(f.weight)||70;
-  const steps={"Mostly sitting":8000,"On my feet some of the day":10000,"On my feet most of the day":12000,"Physical job":12000}[f.activity]||10000;
-  return{steps,protein:Math.round(kg*2/5)*5,water:Math.max(2.5,Math.round(Number(f.weight||70)*0.035*2)/2)};
+  const kg=kgOf(f),avg=Number(f.steps_avg)||0;
+  const steps=avg?clamp(Math.ceil((avg+2000)/500)*500,6000,12000):({"Mostly sitting":8000,"On my feet some of the day":10000,"On my feet most of the day":12000,"Physical job":12000}[f.activity]||10000);
+  return{steps,protein:Math.round(kg*2/5)*5,water:Math.max(2.5,Math.round(kg*0.035*2)/2)};
 }
 function waitingView(p){
+  const have=new Set(photosOf(p.id,"start").map(x=>x.kind)),missing=BODY_SHOTS.filter(k=>!have.has(k));
   return `<div class="stack">
     <section class="card wait-card"><span class="eyebrow">Form received ${esc(fmtWhen(p.created_at))}</span>
       <h1 class="display" style="font-size:clamp(40px,9vw,60px)">Thanks, ${esc((p.name||"").split(" ")[0])}.</h1>
       <p>Ellis is going through your answers and setting your daily targets for steps, protein and water.</p>
       <p class="muted">As soon as they're in, your programme opens on <b>Day 0</b>: your setup night, where you plan your first day.</p>
-      <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding form sent</div><div class="now"><span class="pb-num">2</span>Ellis sets your targets</div><div><span class="pb-num">3</span>Day 0, your setup night</div></div>
+      <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding sent</div><div class="now"><span class="pb-num">2</span>Ellis sets your targets</div><div><span class="pb-num">3</span>Day 0, your setup night</div></div>
     </section>
+    ${missing.length?`<section class="card onb-sec"><h2 class="sec-title" style="font-size:20px">${have.has("clothed")?"Add the rest of your photos":"Add your starting photos"}</h2>
+      <p class="muted" style="font-size:13px">${have.has("clothed")?"These are optional, but they make your Day 28 comparison much clearer.":"Your clothed photo didn't come through. Add it here so Ellis has your starting point."}</p>
+      ${missing.map(k=>`<div class="photo-row"><span style="flex:1;font-weight:600;font-size:14px">${esc(PHOTO_KINDS[k])}${k==="clothed"?' <span class="req">*</span>':""}</span><label class="chip upload" for="wp-${k}">Add photo<input type="file" id="wp-${k}" data-photonow="${k}" data-slot="start" accept="image/*"></label></div>`).join("")}</section>`:""}
     <button class="btn" data-act="refresh" style="align-self:flex-start">Check again</button>
   </div>`;
+}
+
+/* ---------- weekly check-in (Day 7, 14, 21) ---------- */
+// A check-in opens on its day and stays open until the next one is due
+function dueCheckin(c){
+  const d=clientDayNum(c),done=assessOf(c.id);
+  for(const [slot,label,day] of AS_SLOTS.slice(1).reverse()){if(d>=day){return done[slot]?null:{slot,label,day,week:day/7}}}
+  return null;
+}
+function checkinCard(c){
+  const due=dueCheckin(c);if(!due)return"";
+  return `<section class="card ck-card"><div><span class="eyebrow">Week ${due.week} check-in · ${due.label}</span>
+    <h2 class="display" style="font-size:clamp(30px,8vw,40px)">How's this week felt?</h2>
+    <p class="muted" style="font-size:14px">Your steps and screen time, the same 20 questions you answered before starting, and three short questions. About 5 minutes.</p></div>
+    <button class="btn primary" data-act="ck-open" data-slot="${due.slot}" style="align-self:flex-start">Start your check-in</button></section>`;
+}
+function weeklyView(slot){
+  const S0=AS_SLOTS.find(x=>x[0]===slot),wk=S0[2]/7;
+  return `<div class="stack">
+    <div><button class="chip" data-act="ck-close">&lsaquo; Back to today</button></div>
+    <div><span class="eyebrow">Week ${wk} check-in · ${S0[1]}</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Week ${wk} check-in</h1>
+    <p class="muted">Answer based on your overall experience during the previous 7 days.</p></div>
+    <form id="wkForm" class="stack" novalidate data-slot="${slot}">
+      <section class="card onb-sec"><h2 class="sec-title" style="font-size:22px">Day in the life</h2>${DITL.map(onbField).join("")}</section>
+      ${assessFields()}
+      <section class="card onb-sec"><span class="eyebrow">Weekly observation</span><h2 class="sec-title" style="font-size:22px">In your own words</h2>
+        ${WEEK_QS.map(q=>`<label class="field" for="wq-${q.k}">${esc(q.label)}${q.hint?`<small class="muted">For example: ${esc(q.hint.toLowerCase())}</small>`:""}<textarea class="input" id="wq-${q.k}" name="wq_${q.k}" rows="3"></textarea></label>`).join("")}</section>
+      <div id="wkErr" class="onb-err" role="alert"></div>
+      <button class="btn primary" type="submit" style="min-height:52px">Send to Ellis</button>
+    </form>
+  </div>`;
+}
+
+/* ---------- coach: answers, photos and check-ins ---------- */
+function photoStrip(uid,slot,kinds){
+  const ps=photosOf(uid,slot).filter(p=>!kinds||kinds.includes(p.kind));
+  if(!ps.length)return "";
+  return `<div class="ph-strip">${ps.map(p=>`<a class="ph-thumb" href="${photoUrl(p.id)}" target="_blank" rel="noopener"><img src="${photoUrl(p.id)}" alt="${esc(PHOTO_KINDS[p.kind])} photo" loading="lazy"><small>${esc(PHOTO_KINDS[p.kind])}</small></a>`).join("")}</div>`;
+}
+function answersHtml(c){
+  const a=c.form||{},val=v=>Array.isArray(v)?(v.length?v.join(", "):""):v===""||v==null?"":String(v);
+  const dl=(fs)=>`<dl>${fs.map(q=>`<div><dt>${esc(q.label)}</dt><dd>${val(a[q.k])?esc(val(a[q.k])):'<span class="muted">Not answered</span>'}</dd></div>`).join("")}</dl>`;
+  if(isLegacy(a))return ONB_LEGACY.map(([h,fs])=>`<div class="onb-ans"><span class="eyebrow">${h}</span>${dl(fs)}</div>`).join("");
+  const unit={weight_lb:" lbs",waist:" in",water:" L"};
+  return ONB.map(([h,,fs])=>{
+    if(h==="Photos")return `<div class="onb-ans"><span class="eyebrow">Photos</span>${photoStrip(c.id,"start",BODY_SHOTS)||'<p class="muted" style="font-size:13px">No photos yet.</p>'}</div>`;
+    const rows=fs.filter(q=>q.k!=="name"&&q.type!=="photo").map(q=>({label:q.label,k:q.k,v:val(a[q.k])?val(a[q.k])+(unit[q.k]||""):""}));
+    return `<div class="onb-ans"><span class="eyebrow">${h}</span><dl>${rows.map(r=>`<div><dt>${esc(r.label)}</dt><dd>${r.v?esc(r.v):'<span class="muted">Not answered</span>'}</dd></div>`).join("")}</dl>${h==="Day in the life"?photoStrip(c.id,"start",["steps","screentime"]):""}</div>`;
+  }).join("");
+}
+const avgOf=arr=>{const n=arr.filter(v=>typeof v==="number");return n.length?n.reduce((x,y)=>x+y,0)/n.length:null};
+function assessTable(c){
+  const A=assessOf(c.id),slots=AS_SLOTS.filter(([s])=>A[s]);
+  if(!slots.length)return `<p class="muted" style="font-size:13px">No assessment yet.</p>`;
+  const first=A[slots[0][0]].scores||{},last=A[slots[slots.length-1][0]].scores||{};
+  const cell=v=>v==="na"?'<span class="muted">N/A</span>':v==null?'<span class="muted">–</span>':v;
+  const delta=(a,b)=>{if(typeof a!=="number"||typeof b!=="number"||slots.length<2)return'<span class="muted">–</span>';const d=Math.round((b-a)*10)/10;return `<span class="delta ${d>0?"up":d<0?"down":""}">${d>0?"+":""}${d}</span>`};
+  let n=0;
+  const body=ASSESS.map(([h,qs])=>{
+    const av=slots.map(([s])=>avgOf(qs.map(q=>(A[s].scores||{})[q.k])));
+    return `<tr class="as-sec"><th scope="row">${esc(h)}</th>${av.map(v=>`<td class="num">${v==null?"–":v.toFixed(1)}</td>`).join("")}<td class="num">${delta(av[0],av[av.length-1])}</td></tr>`+
+      qs.map(q=>{n++;return `<tr><td>${n}. ${esc(q.t)}</td>${slots.map(([s])=>`<td class="num">${cell((A[s].scores||{})[q.k])}</td>`).join("")}<td class="num">${delta(first[q.k],last[q.k])}</td></tr>`}).join("")}).join("");
+  const all=slots.map(([s])=>avgOf(AS_QS.map(q=>(A[s].scores||{})[q.k])));
+  const ditl=[["steps_avg","Average steps",v=>Number(v).toLocaleString("en-GB")],["water","Water a day",v=>v+" L"],["wake","Wake up time",v=>v],["bed","Bed time",v=>v]];
+  return `<div class="tbl-wrap"><table class="as-tbl"><thead><tr><th>Question</th>${slots.map(([,l])=>`<th class="num">${l}</th>`).join("")}<th class="num">Change</th></tr></thead><tbody>
+    <tr class="as-sec as-all"><th scope="row">Overall average</th>${all.map(v=>`<td class="num">${v==null?"–":v.toFixed(1)}</td>`).join("")}<td class="num">${delta(all[0],all[all.length-1])}</td></tr>
+    ${body}
+    <tr class="as-sec"><th scope="row" colspan="${slots.length+2}">Day in the life</th></tr>
+    ${ditl.map(([k,l,f])=>`<tr><td>${l}</td>${slots.map(([s])=>{const v=((A[s].ditl)||{})[k];return `<td class="num">${v!==""&&v!=null?esc(f(v)):'<span class="muted">–</span>'}</td>`}).join("")}<td></td></tr>`).join("")}
+  </tbody></table></div>`;
+}
+function checkinsCard(c){
+  const A=assessOf(c.id),weekly=AS_SLOTS.slice(1).filter(([s])=>A[s]),due=dueCheckin(c);
+  return `<section class="card stack" style="gap:14px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Assessments & check-ins</h2><span class="muted" style="font-size:12px">${due?`${due.label} check-in due, not sent yet`:weekly.length?`Last sent ${fmtShort(new Date(A[weekly[weekly.length-1][0]].at))}`:"Before starting, then Day 7, 14 and 21"}</span></div>
+    ${assessTable(c)}
+    ${weekly.map(([s,l])=>{const w=A[s].written||{};return `<div class="onb-ans"><span class="eyebrow">${l} · sent ${esc(fmtWhen(A[s].at))}</span>
+      <dl>${WEEK_QS.map(q=>`<div><dt>${esc(q.label)}</dt><dd>${w[q.k]?esc(w[q.k]):'<span class="muted">Not answered</span>'}</dd></div>`).join("")}</dl>${photoStrip(c.id,s)}</div>`}).join("")}
+  </section>`;
 }
 function reviewView(){
   const f=allUsers().find(c=>c.id===S.review);if(!f){S.review=null;return overviewView()}
   const a=f.form||{},sug=suggestTargets(a),t=f.targets||sug,active=f.status!=="pending";
-  const val=v=>Array.isArray(v)?(v.length?v.join(", "):""):v===""||v==null?"":String(v);
+  const kg=kgOf(a);
   return `<div class="stack">
     <div><button class="chip" data-act="review-back">&lsaquo; ${active?"Back to client":"All clients"}</button></div>
-    <div class="detail-head"><div><span class="eyebrow">${active?"Targets":"New sign-up"} · form sent ${esc(fmtWhen(f.created_at))}</span><h1 class="display">${esc(f.name)}</h1><p class="muted" style="font-size:13px">${esc(a.email||"")}</p></div>${active?`<span class="pill ok">Started</span>`:`<span class="pill warn">Waiting for targets</span>`}</div>
+    <div class="detail-head"><div><span class="eyebrow">${active?"Targets":"New sign-up"} · form sent ${esc(fmtWhen(f.created_at))}</span><h1 class="display">${esc(f.name)}</h1><p class="muted" style="font-size:13px">${esc([a.email,a.phone].filter(Boolean).join(" · "))}</p></div>${active?`<span class="pill ok">Started</span>`:`<span class="pill warn">Waiting for targets</span>`}</div>
     <div class="two">
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Onboarding answers</h2></div>
-        ${ONB.map(([h,fs])=>`<div class="onb-ans"><span class="eyebrow">${h}</span><dl>${fs.filter(q=>q.k!=="name").map(q=>`<div><dt>${esc(q.label)}</dt><dd>${val(a[q.k])?esc(val(a[q.k])):'<span class="muted">Not answered</span>'}</dd></div>`).join("")}</dl></div>`).join("")}
-      </section>
+      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Onboarding answers</h2></div>${answersHtml(f)}</section>
+      <div class="stack">
       <section class="card target-set"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Daily targets</h2></div>
-        <p class="muted" style="font-size:13px">Suggested from their answers: ${sug.steps.toLocaleString("en-GB")} steps (activity), ${sug.protein}g protein (2g per kg of ${a.goal_weight?"goal":"current"} weight), ${sug.water}L water (about 35ml per kg). Change anything you like.</p>
+        <p class="muted" style="font-size:13px">Suggested from their answers: ${sug.steps.toLocaleString("en-GB")} steps (${a.steps_avg?"their average plus 2,000":"default"}), ${sug.protein}g protein (2g per kg of ${a.weight_lb?Math.round(kg)+"kg, "+a.weight_lb+" lbs":"bodyweight"}), ${sug.water}L water (about 35ml per kg). Change anything you like.</p>
         <label class="field" for="tg-steps">Steps a day<input class="input" id="tg-steps" type="number" min="1000" step="500" value="${t.steps}"></label>
         <label class="field" for="tg-protein">Protein a day (g)<input class="input" id="tg-protein" type="number" min="20" step="5" value="${t.protein}"></label>
         <label class="field" for="tg-water">Water a day (L)<input class="input" id="tg-water" type="number" min="1" step="0.5" value="${t.water}"></label>
         <button class="btn primary" data-act="assign" data-c="${f.id}" style="min-height:52px">${active?"Save targets":"Assign targets & start Day 0"}</button>
         ${active?"":`<small class="muted">They start on Day 0 tonight, and Day 1 begins tomorrow morning.</small>`}
       </section>
+      ${active?"":`<section class="card stack" style="gap:12px"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Before starting assessment</h2></div>${assessTable(f)}</section>`}
       <section class="card target-set"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Account</h2></div>
         <label class="field" for="cpw">Set a new password for them<input class="input" id="cpw" type="text" autocomplete="off" placeholder="8+ characters"></label>
         <button class="btn" data-act="client-pw" data-c="${f.id}">Set password</button>
         <small class="muted">For when they forget theirs. Send it to them yourself; it logs them out everywhere else.</small>
         <button class="btn danger" data-act="client-del" data-c="${f.id}">${S.delArm===f.id?"Tap again to delete everything for "+esc(f.name.split(" ")[0]):"Remove client"}</button>
       </section>
+      </div>
     </div>
   </div>`;
 }
@@ -1270,6 +1518,7 @@ function topBar(){
 /* ---------- client: today ---------- */
 function clientView(){
   {const m=me();if(m.status!=="active")return waitingView(m)}
+  if(S.checkin&&S.tab==="today")return weeklyView(S.checkin);
   if(S.tab==="programme")return programmeView();
   if(S.tab==="progress")return progressView(me());
   return todayView();
@@ -1368,6 +1617,7 @@ function todayView(){
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
+    ${dn===today?checkinCard(c):""}
     ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Tonight is Day 0</h2><p>Tonight you set everything up: see your targets, plan tomorrow's morning, training and meals, and your first to-do list. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
     ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
     ${pblock("day",2,st.day,dayView(x),log)}
@@ -1813,7 +2063,7 @@ function testClientCard(){
     </form></section>`;
 }
 function pendingSignupsCard(){const ps=pendingClients();return ps.length?`<section class="card signups"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">New sign-ups</h2><span class="pill warn">${ps.length} waiting for targets</span></div>
-      ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc([p.form&&p.form.goal,p.form&&p.form.weight&&p.form.weight+"kg",p.form&&p.form.activity].filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))}</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
+      ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc((f=>isLegacy(f)?[f.goal,f.weight&&f.weight+"kg",f.activity]:[f.occupation,f.weight_lb&&f.weight_lb+" lbs",f.height,f.intention&&"“"+f.intention+"”"])(p.form||{}).filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))}</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
 function overviewView(){
   const all=allClients().map(statsFor);
   if(!all.length)return `<div class="stack">
@@ -1916,6 +2166,7 @@ function detailView(c){
       </section>
     </div>
     ${trendCharts(st)}
+    ${checkinsCard(c)}
     <section class="card stack" style="gap:10px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Note to ${esc(c.name.split(" ")[0])}</h2>${note.at?`<span class="muted" style="font-size:12px">Last sent ${fmtShort(new Date(note.at))}</span>`:""}</div>
       <label for="coachNote" class="muted" style="font-size:13px">Shows at the top of their Today screen.</label>
       <textarea class="input" id="coachNote" placeholder="Great week. Your evening steps are the one to tighten up next.">${esc(note.text||"")}</textarea>
@@ -1958,7 +2209,7 @@ async function boot(){
   }
   S.booting=false;render();
 }
-function afterLogin(){S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;return boot().then(()=>window.scrollTo(0,0))}
+function afterLogin(){S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;S.checkin=null;return boot().then(()=>window.scrollTo(0,0))}
 const busy=(form,on)=>{const b=form&&form.querySelector("button[type=submit]");if(b){b.disabled=on;b.classList.toggle("busy",on)}};
 
 root.addEventListener("submit",e=>{
@@ -1969,13 +2220,28 @@ root.addEventListener("submit",e=>{
     api("/test-client",{method:"POST",body:Object.fromEntries(fd)}).then(()=>{toast("Test client created. Log out and log in as "+fd.get("email"));return boot()}).catch(x=>{err.textContent=x.message;busy(f,false)});return}
   if(e.target.id==="setupForm"){const f=e.target,err=root.querySelector("#setupErr"),fd=new FormData(f);busy(f,true);
     api("/setup",{method:"POST",body:Object.fromEntries(fd)}).then(()=>{S.needsSetup=false;toast("Coach account created");return afterLogin()}).catch(x=>{err.textContent=x.message;busy(f,false)});return}
-  if(e.target.id==="onbForm"){const f=e.target,a=readOnb(f),fd=new FormData(f),miss=ONB_FIELDS.filter(q=>q.req&&(a[q.k]===""||a[q.k]==null));const err=root.querySelector("#onbErr");
-    if(a.email&&!/^\S+@\S+\.\S+$/.test(a.email))miss.push({label:"a valid email"});
-    const pw=String(fd.get("password")||"");if(pw.length<8)miss.push({label:"a password of 8+ characters"});else if(pw!==fd.get("password2"))miss.push({label:"matching passwords"});
-    if(!fd.get("consent"))miss.push({label:"the consent box"});
-    if(miss.length){err.textContent="Please fill in: "+miss.map(q=>q.label.replace(/ \(.*\)/,"")).join(", ")+".";err.scrollIntoView({block:"center"});return}
+  if(e.target.id==="onbForm"){const f=e.target,a=readOnb(f),fd=new FormData(f),err=root.querySelector("#onbErr");
+    const m1=missingOnb(a);if(m1.length){showOnbTab("basics");const e1=root.querySelector("#onbErr1");e1.textContent="Please fill in: "+m1.join(", ")+".";e1.scrollIntoView({block:"center"});return}
+    const as=readAssess(f),miss=[];
+    if(as.miss.length)miss.push("assessment question"+(as.miss.length>1?"s ":" ")+as.miss.join(", "));
+    const pw=String(fd.get("password")||"");if(pw.length<8)miss.push("a password of 8+ characters");else if(pw!==fd.get("password2"))miss.push("matching passwords");
+    if(!fd.get("consent"))miss.push("the consent box");
+    if(miss.length){err.textContent="Please fill in: "+miss.join(", ")+".";err.scrollIntoView({block:"center"});return}
     busy(f,true);err.textContent="";
-    api("/signup",{method:"POST",body:{name:a.name,email:a.email,password:pw,consent:true,form:a}}).then(()=>{toast("Form sent to Ellis");return afterLogin()}).catch(x=>{err.textContent=x.message;err.scrollIntoView({block:"center"});busy(f,false)});return}
+    api("/signup",{method:"POST",body:{name:a.name,email:a.email,password:pw,consent:true,form:a,assessment:{scores:as.scores,ditl:ditlOf(a)}}})
+      .then(()=>{err.textContent="Uploading your photos…";return uploadPhotos("start")})
+      .then(failed=>{toast(failed.length?"Sent. "+failed.join(", ")+" didn't upload: add it on the next screen":"Sent to Ellis");return afterLogin()})
+      .catch(x=>{err.textContent=x.message;err.scrollIntoView({block:"center"});busy(f,false)});return}
+  if(e.target.id==="wkForm"){const f=e.target,slot=f.dataset.slot,a=readOnb(f),fd=new FormData(f),err=root.querySelector("#wkErr"),as=readAssess(f),miss=[];
+    const d=ditlOf(a);DITL.forEach(q=>{if(q.req&&!d[q.k])miss.push(q.label.replace(/ \(.*\)/,"").toLowerCase())});
+    if(!PHOTO_BUF.steps&&!d.steps_avg)miss.push("your steps (a screenshot or your average)");
+    if(as.miss.length)miss.push("question"+(as.miss.length>1?"s ":" ")+as.miss.join(", "));
+    if(miss.length){err.textContent="Please fill in: "+miss.join(", ")+".";err.scrollIntoView({block:"center"});return}
+    const written={};WEEK_QS.forEach(q=>{written[q.k]=String(fd.get("wq_"+q.k)||"").trim()});
+    busy(f,true);err.textContent="Sending…";
+    uploadPhotos(slot).then(failed=>api("/assessments/"+slot,{method:"PUT",body:{data:{scores:as.scores,ditl:d,written}}}).then(()=>failed))
+      .then(failed=>{S.checkin=null;toast(failed.length?"Check-in sent, but "+failed.join(", ")+" didn't upload":"Check-in sent to Ellis");return boot()}).then(()=>window.scrollTo(0,0))
+      .catch(x=>{err.textContent=x.message;busy(f,false)});return}
   if(e.target.id==="ownForm"){const inp=root.querySelector("#ownTask"),v=inp.value.trim();if(!v)return;setItems(a=>[...a,{id:uid(),kind:"own",label:v}]);render();const n=root.querySelector("#ownTask");if(n)n.focus()}
 });
 root.addEventListener("click",e=>{
@@ -1984,6 +2250,10 @@ root.addEventListener("click",e=>{
   const act=b.dataset.act;
   if(act==="onboard"){S.onboard=true;render();window.scrollTo(0,0);return}
   if(act==="onb-back"){S.onboard=false;return render()}
+  if(b.dataset.onbtab){showOnbTab(b.dataset.onbtab);return}
+  if(b.dataset.onbnext){const f=root.querySelector("#onbForm"),m=missingOnb(readOnb(f)),e1=root.querySelector("#onbErr1");if(m.length){e1.textContent="Please fill in: "+m.join(", ")+".";e1.scrollIntoView({block:"center"});return}e1.textContent="";showOnbTab("assess");return}
+  if(act==="ck-open"){S.checkin=b.dataset.slot;PHOTO_BUF={};render();window.scrollTo(0,0);return}
+  if(act==="ck-close"){S.checkin=null;PHOTO_BUF={};render();window.scrollTo(0,0);return}
   if(act==="review"){S.review=b.dataset.c;S.delArm=null;render();window.scrollTo(0,0);return}
   if(act==="review-back"){S.review=false;return render()}
   if(act==="assign"){const id=b.dataset.c,c=allUsers().find(x=>x.id===id);if(!c)return;const g=q=>Number((root.querySelector(q)||{}).value)||0;const t={steps:g("#tg-steps"),protein:g("#tg-protein"),water:g("#tg-water")};if(!t.steps||!t.protein||!t.water)return toast("Fill in all three targets");const first=c.status==="pending";b.disabled=true;
@@ -2094,6 +2364,10 @@ root.addEventListener("input",e=>{
 });
 root.addEventListener("change",e=>{
   if(e.target.dataset.ptime!==undefined){const i=Number(e.target.dataset.ptime),l=curCtx().log,a=(l.plan_times||[]).slice();while(a.length<MAX_MEALS)a.push("");a[i]=e.target.value;edit("plan_times",a);if(!l.tmr_train_after)edit("tmr_train_after","");return render()}
+  const pk=e.target.dataset.photo;if(pk){const file=e.target.files&&e.target.files[0];if(!file)return;const lab=root.querySelector("#pl-"+pk),pv=root.querySelector("#pv-"+pk);if(lab)lab.textContent="Preparing…";
+    shrink(file).then(d=>{PHOTO_BUF[pk]=d;if(pv)pv.innerHTML=`<img src="${d}" alt="">`;if(lab)lab.textContent="Change photo"}).catch(x=>{if(lab)lab.textContent="Add photo";toast(x.message)});return}
+  const pn=e.target.dataset.photonow;if(pn){const file=e.target.files&&e.target.files[0];if(!file)return;const lab=e.target.parentElement;lab.firstChild.textContent="Uploading…";
+    shrink(file).then(data=>api("/photos",{method:"POST",body:{kind:pn,slot:e.target.dataset.slot,data}})).then(()=>{toast("Photo added");return boot()}).catch(x=>{lab.firstChild.textContent="Add photo";toast(x.message)});return}
   const fk=e.target.dataset.file;if(fk){const f=e.target.files&&e.target.files[0];if(f){edit(fk,f.name);render()}return}
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
