@@ -29,7 +29,7 @@ Coach tools: client overview and detail pages, notes to a client (shown at the t
 The app is a Cloudflare Worker with static assets, deployed from GitHub with Workers Builds (the same way as the REPS dashboard).
 
 1. **Create the database.** **Storage & databases → D1 SQL Database → Create Database**, name it `growlikevines`, and copy its **Database ID**.
-2. **Put the ID in `wrangler.jsonc`** in place of `00000000-0000-0000-0000-000000000000`, and push.
+2. **Put the ID in `wrangler.jsonc`** (already done: `4a397150-56d5-4d6c-ae20-cefb863e3516`).
 3. **Create the Worker.** **Workers & Pages → Create application → Import a repository**, pick `repshealth/growlikevines`. Project name `growlikevines`, build command empty, deploy command `npx wrangler deploy` (the default). Deploy.
 4. **Add the setup key.** In the Worker, **Settings → Variables and Secrets → Add**, type **Secret**, name `SETUP_KEY`, a long random value. Secrets apply straight away.
 5. **Create Ellis's coach account.** Open the Worker's address. A first-time setup screen asks for the setup key and Ellis's details. It never shows again after that.

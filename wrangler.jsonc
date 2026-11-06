@@ -12,7 +12,7 @@
     {
       "binding": "DB",
       "database_name": "growlikevines",
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "4a397150-56d5-4d6c-ae20-cefb863e3516"
     }
   ],
   "observability": { "enabled": true }
