@@ -544,6 +544,9 @@ select.input{appearance:auto}
 .tstep.done .tick svg{opacity:1}
 .tstep.off{opacity:.45}
 .tstep small{color:var(--lime);font-weight:700}
+.numhead{display:flex;flex-direction:column;gap:2px;border-left:3px solid var(--lime);padding:2px 0 2px 10px;font-size:13px}
+.numhead b{font-size:14px}
+.numhead span{color:var(--muted);font-weight:500}
 .region{display:block;width:100%;font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--green-ink)}
 .meal1-cue{border:2px solid var(--lime);background:var(--bg);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
 .meal1-cue .eyebrow{color:var(--green-ink)}
@@ -694,13 +697,24 @@ const INFO={
   "Massage":"A massage, a foam roll or a massage gun session.",
   "Time out (15 mins of something you enjoy)":"Nothing specific. 15 minutes doing something you enjoy, phone away.",
   "Journalling":"Write down what's on your mind. No rules, just get it out of your head.",
+  am_water500:"Drink 500ml of water as soon as you're up. You've gone all night without any, and rehydrating first thing lifts your energy and focus.",
+  am_outside:"Get outside within 30 minutes of waking, even if it's cloudy. Natural light early in the day sets your body clock, so you feel alert now and sleepy tonight.",
+  am_lights:"Put the lights on bright when you get up. Bright light tells your brain it's daytime and raises your alertness.",
+  am_sun:"Get daylight on your face this morning, ideally 10 minutes or more outside without sunglasses. Morning light is one of the strongest signals for your body clock.",
+  am_phone:"Keep the lights bright and your phone out of reach for the first part of your day, so you start it on your terms, not on notifications.",
+  am_meal1:"Meal 1 eaten, or ready to eat, within 90 minutes of waking. Eating early keeps your energy steady through the morning.",
+  am_shower:"Showered, dressed and ready, so your body and brain know the day has started.",
+  pm_moon:"Step outside for a few minutes this evening. Low, natural evening light tells your body the day is ending and helps you wind down.",
+  pm_dim:"Dim the lights and put your phone away for the last part of your evening. Bright light and screens at night keep your brain switched on and push back sleep.",
+  pm_meal:"Your final meal eaten, or prepped and ready. Being fed and watered is one of the biggest signals to your nervous system that it's safe to rest.",
+  pm_shower:"Shower and change into comfortable clothes to mark the end of your day.",
   meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs come in from Meal 2 and around your training. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
   pre:"Your pre-workout meal (protein and carbs, at least an hour before) and a 5 to 10 minute warm up. Tick this once both are done.",
   workout:"Follow your session from the workout library, or your own workout.",
   base:"Bring your heart rate back down after training: an easy walk with nose breathing, then a short Reset, before your post-workout meal."
 };
 const infoBtn=(id,label)=>INFO[id]?`<button class="info-btn${S.info===id?" on":""}" data-info="${esc(id)}" aria-expanded="${S.info===id}" aria-label="About ${esc(label||id)}">i</button>`:"";
-const infoBox=id=>S.info===id&&INFO[id]?`<div class="info-box"><p>${esc(INFO[id])}</p><span class="info-soon">${SOON}</span></div>`:"";
+const infoBox=id=>S.info===id&&INFO[id]?`<div class="info-box"><p>${esc(INFO[id])}</p>${/^(am|pm)_/.test(id)?"":`<span class="info-soon">${SOON}</span>`}</div>`:"";
 const TMR_TASKS=[...MOVE,"Breath work"];
 const LOWER=["The Reset","Breath work","Meditation","Yoga / Pilates","Steps","Massage","Time out (15 mins of something you enjoy)","Journalling"];
 const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
@@ -735,14 +749,14 @@ const MORNING=[
   {id:"m2",title:"Low arousal task",text:"Complete your low arousal task (the guided PDF is on its way). It was set last night, so amend it if you need to.",
    asks:[{k:"m_lower",type:"pick",multi:true,label:"Your low arousal task",options:LOWER,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick your low arousal task"}]},
   {id:"m3",title:"Review & open the day",region:"Prefrontal cortex",text:"Log your numbers so far and see what's left against your targets. Then your check boxes.",
-   asks:[{k:"steps",type:"number",label:"Steps so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water so far (L)",target:"water",step:0.5,remaining:true},{k:"am_sun",type:"choice",yn:true,label:"Outside sun light exposure",options:[["yes","Yes"],["no","No"]]},{k:"am_phone",type:"choice",yn:true,label:"Lights bright & phone away",options:[["yes","Yes"],["no","No"]]},{k:"am_meal1",type:"choice",yn:true,label:"Meal 1 eaten or ready to be eaten within 90 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_shower",type:"choice",yn:true,label:"Showered & presentable for the day",options:[["yes","Yes"],["no","No"]]},{k:"am_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
+   asks:[{k:"_nh",type:"numhead",title:"What you've done so far today",text:"Put in what you've actually done since you woke up, not your target. We'll show you what's left."},{k:"steps",type:"number",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true},{k:"am_sun",type:"choice",yn:true,label:"Outside sun light exposure",options:[["yes","Yes"],["no","No"]]},{k:"am_phone",type:"choice",yn:true,label:"Lights bright & phone away",options:[["yes","Yes"],["no","No"]]},{k:"am_meal1",type:"choice",yn:true,label:"Meal 1 eaten or ready to be eaten within 90 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_shower",type:"choice",yn:true,label:"Showered & presentable for the day",options:[["yes","Yes"],["no","No"]]},{k:"am_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
 ];
 const ML=3;
 const brainHit=log=>{const b=new Set();if(log.m1)(Array.isArray(log.m_action)?log.m_action:[]).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 // Evening shift: review & close the day, then check points.
 const EVENING=[
   {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",text:"Log anything left from today and your final numbers. Then set tomorrow: meals, morning tasks, training, a summary of today, your intentions and your wake up time. It'll all be at the top of tomorrow's Morning.",
-   asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"steps",type:"number",label:"Steps",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+   asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"_nh",type:"numhead",title:"What you've done today",text:"Your totals for the whole day: everything you've actually done, not your target. If you've still got steps or water to go tonight, put in what you've done so far."},{k:"steps",type:"number",label:"Steps I did today",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I ate today (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I drank today (L)",target:"water",step:0.5,remaining:true},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>planFoodsOf(l).some(f=>foodsCount(f))&&hasEveningMeal(l),reqMsg:"Plan your meals, with one in the evening (6pm or later),"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's morning tasks: pick at least one",options:TMR_TASKS,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick at least one morning task"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout"),groups:WORKOUTS},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes",groups:WORKOUTS,req:l=>!!l.tmr_workout,reqMsg:"Pick your workout"},{k:"tmr_workout_name",type:"text",label:"What's your own workout? (optional)",when:l=>l.tmr_train==="yes"&&l.tmr_workout==="My own workout"},{k:"day_summary",type:"textarea",label:"A. Summarise your day"},{k:"intentions",type:"textarea",label:"B. Set your intentions for tomorrow"},{k:"tmr_wake",type:"time",label:"Set your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e2",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",text:"Complete your low arousal task (the guided PDF is on its way), then tick off your check points.",
    asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal task",options:LOWER,req:l=>(l.pm_tool||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_dim","Lights dimmed & phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"pm_state",type:"rating",label:"Rate your current state, 1 to 10"}]}
 ];
@@ -934,11 +948,11 @@ function statsFor(c){
   let lastLog=null;for(let i=days.length-1;i>=0;i--){if(days[i].any){lastLog=days[i];break}}
   const since=lastLog?today-lastLog.d:today;
   const numAvg=k=>{const v=rows.map(x=>Number(x.log[k])).filter(n=>n>0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:null};
-  let status="ok";if(since>=2||avg7<45)status="bad";else if(avg7<70)status="warn";
+  let status="ok";if(today===0)status="new";else if(since>=2||avg7<45)status="bad";else if(avg7<70)status="warn";
   return{c,days,rows,today,todayRow,avg7,pts7,morn7,eve7,proc7,senses7,streak,since,status,
     steps7:numAvg("steps"),protein7:numAvg("protein"),am7:numAvg("am_state"),pm7:numAvg("pm_state")};
 }
-const STATUS={ok:["ok","On track"],warn:["warn","Slipping"],bad:["bad","At risk"]};
+const STATUS={new:["ok","Day 0"],ok:["ok","On track"],warn:["warn","Slipping"],bad:["bad","At risk"]};
 const lvl=p=>p>=70?"l3":p>=40?"l2":p>0?"l1":"";
 
 /* ---------- content (from the Project Reset Notion page) ---------- */
@@ -1361,7 +1375,7 @@ function askHtml(a,log,wk,locked){
   const v=log[a.k],dis=locked?"disabled":"",id=`a-${a.idp||""}${a.k}`;
   switch(a.type){
     case"rating":return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
-    case"choice":return `<div class="ask"><span>${a.label}</span><div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
+    case"choice":return `<div class="ask">${a.yn&&INFO[a.k]?`<span class="ask-h">${a.label}${infoBtn(a.k,a.label)}</span>${infoBox(a.k)}`:`<span>${a.label}</span>`}<div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
     case"number":{const tgt=a.target?wk[a.target]:null,hit=tgt!=null&&Number(v)>=tgt;
       return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}${a.remaining&&tgt!=null&&!hit?` <span class="togo num">${(Math.round((tgt-(Number(v)||0))*10)/10).toLocaleString("en-GB")} to go</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
     case"time":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="time" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis}></label>`;
@@ -1388,7 +1402,7 @@ function askHtml(a,log,wk,locked){
       return `<div class="ask"><span>Anything left to log? Tick what you did</span><div class="review">${todoM.map(q=>`<div class="rv"><span>Meal ${q.slot}${q.text?" · "+esc(q.text):""}</span><button class="chip" data-mealtick="${q.key}" ${dis}>Ate it</button></div>`).join("")}${todoW.map(q=>`<div class="rv"><span>Walk after Meal ${q.slot}</span><button class="chip" data-walktick="${q.key}" ${dis}>Done</button></div>`).join("")}${tr?`<div class="rv"><span>Training session${log.workout?" · "+esc(log.workout==="My own workout"&&log.workout_name?log.workout_name:log.workout):""}</span><button class="chip" data-traintick="1" ${dis}>Trained</button></div>`:""}</div></div>`}
     case"checks":{const n=a.items.filter(([k])=>log[k]==="yes").length,open=S.dd===a.k;
       return `<div class="ask"><span>${a.label} <span class="muted num">${n} of ${a.items.length}</span></span><div class="dd${open?" open":""}"><button class="dd-btn" data-dd="${a.k}" ${dis} aria-expanded="${open}"><span>${n?esc(a.items.filter(([k])=>log[k]==="yes").map(x=>x[1]).join(", ")):"Tap to tick what you've done"}</span><span class="dd-car">${open?"▴":"▾"}</span></button>
-        ${open?`<div class="dd-list">${a.items.map(([k,l])=>`<div class="dd-row"><button class="dd-opt" data-chkitem="${k}" aria-pressed="${log[k]==="yes"}" ${dis}><span class="dd-box">${TICK}</span><span>${esc(l)}</span></button></div>`).join("")}<button class="btn primary" data-dd="${a.k}" style="align-self:flex-start;margin-top:4px">Done</button></div>`:""}</div></div>`}
+        ${open?`<div class="dd-list">${a.items.map(([k,l])=>`<div class="dd-row"><button class="dd-opt" data-chkitem="${k}" aria-pressed="${log[k]==="yes"}" ${dis}><span class="dd-box">${TICK}</span><span>${esc(l)}</span></button>${infoBtn(k,l)}</div>${infoBox(k)}`).join("")}<button class="btn primary" data-dd="${a.k}" style="align-self:flex-start;margin-top:4px">Done</button></div>`:""}</div></div>`}
     case"finalmeal":{const f=dayPairs(log).find(q=>q.eve);if(!f)return "";
       if(f.done)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Meal ${f.slot}, your evening meal, logged ${esc(f.done)}</b><small>${esc(f.text||"")}${f.water===true?" · water ✓":""}</small></div><button class="link" data-mealtick="${f.key}" ${dis}>Undo</button></div>`;
       const open=S.openMeal===f.key||!foodsCount(f.foods);
@@ -1398,6 +1412,7 @@ function askHtml(a,log,wk,locked){
         ${open?`<div class="picker-box">${foodPicker(f.key,f.slot,f.foods,locked)}</div>`:""}
         ${askHtml({k:"final_water",type:"choice",label:"Did you have water with it?",options:[["yes","Yes"],["no","No"]]},log,{},locked)}
         <div><button class="btn primary" data-finallog="${f.key}" ${log.final_water&&!locked?"":"disabled"}>Log Meal ${f.slot}</button>${log.final_water?"":`<span class="muted" style="font-size:12px;margin-left:8px">Answer the water question first. Not eaten yet? Carry on, you can log it later tonight.</span>`}</div></div>`}
+    case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps or a meal to go tonight?</b> Leave them unticked and carry on. Once your Evening is done they'll be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
     case"pick":{const arr=Array.isArray(v)?v:(v?[v]:[]),planned=log[a.k+"_planned"]&&arr.length,open=S.openPick===a.k||!planned,ddOpen=S.dd===a.k;
@@ -1476,7 +1491,7 @@ function stepsView(ph,x){
     html+=`<div class="step ${done?"done":locked?"locked":current?"current":""}">
       <div class="step-num">${done?TICK:i+1}</div>
       <div class="step-body">
-        <div class="step-head">${s.region?`<span class="region">${esc(s.region)}</span>`:""}<h3>${s.title}</h3><span class="draft" title="Wording to be confirmed by Ellis">Draft</span></div>
+        <div class="step-head">${s.region?`<span class="region">${esc(s.region)}</span>`:""}<h3>${s.title}</h3></div>
         <p>${s.text}</p>
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
@@ -1529,7 +1544,7 @@ function trainHtml(log,lockedBy){
   </div></div>`;
 }
 const CHECKINS=[2,3]; // after these meals, update your numbers before the next meal
-const NUM_ASKS=[{k:"steps",label:"Steps",target:"steps",remaining:true},{k:"protein",label:"Protein (g)",target:"protein",remaining:true},{k:"water",label:"Water (L)",target:"water",step:0.5,remaining:true}];
+const NUM_ASKS=[{k:"steps",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true}];
 function gauge(v,t,label,unit){
   const n=Number(v)||0,pctv=t?Math.min(1,n/t):0,hit=t&&n>=t,r=19,c=2*Math.PI*r;
   const fmt=x=>unit==="steps"?(x>=1000?(Math.round(x/100)/10)+"k":String(x)):x+unit;
@@ -1766,9 +1781,9 @@ function coachView(){
 }
 function overviewView(){
   const all=allClients().map(statsFor);
-  const counts={ok:0,warn:0,bad:0};all.forEach(s=>counts[s.status]++);
+  const counts={ok:0,warn:0,bad:0,new:0};all.forEach(s=>counts[s.status]++);
   const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
-  const order={bad:0,warn:1,ok:2};
+  const order={bad:0,warn:1,ok:2,new:3};
   const keyed={status:s=>order[s.status]*1000+s.avg7,name:s=>s.c.name,day:s=>s.today,today:s=>s.todayRow.sc.pts,pts:s=>s.pts7,avg7:s=>s.avg7,morn:s=>s.morn7,eve:s=>s.eve7,proc:s=>s.proc7??-1,senses:s=>s.senses7,steps:s=>s.steps7||0,last:s=>s.since};
   let rows=all.filter(s=>S.filter==="all"||s.status===S.filter);
   const f=keyed[S.sort.k];rows.sort((a,b)=>{const x=f(a),y=f(b);return(x>y?1:x<y?-1:0)*S.sort.dir});
