@@ -35,7 +35,7 @@ The app is a Cloudflare Worker with static assets, deployed from GitHub with Wor
 5. **Create Ellis's coach account.** Open the Worker's address. A first-time setup screen asks for the setup key and Ellis's details. It never shows again after that.
 6. **Custom domain.** **Settings → Domains & Routes → Add → Custom domain**.
 
-After this, every push to `main` deploys automatically.
+After this, every push to `main` deploys automatically to the `glv-reset-app` Worker.
 
 ## Running it locally
 
