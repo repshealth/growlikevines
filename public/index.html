@@ -127,7 +127,8 @@ main{padding-block:24px 64px}
 .as-ends{display:flex;justify-content:space-between;gap:16px;font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
 .as-ends span:last-child{text-align:right}
 .as-na{margin-top:8px;align-self:flex-start;display:inline-flex}
-.ck-card{border:2px solid var(--lime);display:flex;flex-direction:column;gap:12px;box-shadow:0 0 0 4px var(--lime-dim)}
+.ck-task{display:flex;flex-direction:column;gap:14px}
+.ck-task .pb-num{background:var(--night);color:var(--lime)}
 .ph-strip{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
 .ph-thumb{display:flex;flex-direction:column;gap:4px;text-decoration:none;color:var(--fg);width:96px}
 .ph-thumb img{width:96px;height:128px;object-fit:cover;border-radius:10px;border:1px solid var(--line);display:block;background:var(--surface-2)}
@@ -1367,12 +1368,14 @@ function dueCheckin(c){
   for(const [slot,label,day] of AS_SLOTS.slice(1).reverse()){if(d>=day){return done[slot]?null:{slot,label,day,week:day/7}}}
   return null;
 }
+// On Day 7, 14 and 21 the check-in is the first task of the day: the Morning stays locked until it's sent
 function checkinCard(c){
   const due=dueCheckin(c);if(!due)return"";
-  return `<section class="card ck-card"><div><span class="eyebrow">Week ${due.week} check-in · ${due.label}</span>
-    <h2 class="display" style="font-size:clamp(30px,8vw,40px)">How's this week felt?</h2>
-    <p class="muted" style="font-size:14px">Your steps and screen time, the same 20 questions you answered before starting, and three short questions. About 5 minutes.</p></div>
-    <button class="btn primary" data-act="ck-open" data-slot="${due.slot}" style="align-self:flex-start">Start your check-in</button></section>`;
+  const late=clientDayNum(c)>due.day;
+  return `<section class="pblock open active ck-task" id="blk-checkin">
+    <header class="pb-head"><span class="pb-num">!</span><div><span class="eyebrow">First task today · Week ${due.week} check-in</span><h2 class="display pb-title">Check-in</h2>
+    <p class="muted" style="font-size:13px">${late?`Your ${due.label} check-in still needs doing.`:`It's ${due.label}.`} Before your Morning opens, send Ellis your weekly check-in: your steps and screen time, the same 20 questions you answered before starting, and three short questions. About 5 minutes.</p></div></header>
+    <button class="btn primary" data-act="ck-open" data-slot="${due.slot}" style="min-height:52px">Start your check-in</button></section>`;
 }
 function weeklyView(slot){
   const S0=AS_SLOTS.find(x=>x[0]===slot),wk=S0[2]/7;
@@ -1601,7 +1604,7 @@ function todayView(){
   if(x.dn>0&&!mealsOf(x.log).some(m=>m.slot===1)){saveEdit(x.c.id,x.dk,"meals",[{id:uid(),slot:1,text:""},...mealsOf(x.log)]);x=curCtx()}
   const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
   const note=(DATA.notes||{})[c.id];
-  const st=blockStates(log,c,dn);
+  const st=blockStates(log,c,dn),ck=dn===today&&dn>0&&!stepsDone(log,"morning")?dueCheckin(c):null;
   const prog=(id,label,count)=>`<button class="phase-tab ${st[id]}" data-jump="${id}"><span>${st[id]==="upcoming"?LOCK+" ":""}${label}</span><small class="num">${st[id]==="skipped"?"Starts tonight":st[id]==="done"?"Done ✓":count}</small></button>`;
   const allDone=st.evening==="done";
   return `<div class="stack">
@@ -1617,9 +1620,9 @@ function todayView(){
       <button class="chip" data-act="day" data-d="${dn+1}" ${dn>=today?"disabled":""}>Day ${Math.min(PROGRAMME_DAYS,dn+1)} &rsaquo;</button>
     </div>
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
-    ${dn===today?checkinCard(c):""}
+    ${ck?checkinCard(c):""}
     ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Tonight is Day 0</h2><p>Tonight you set everything up: see your targets, plan tomorrow's morning, training and meals, and your first to-do list. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
-    ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
+    ${ck&&st.morning!=="hidden"?`<section class="pblock upcoming" id="blk-morning"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Morning</b><small>Opens when your check-in is sent.</small></span></div></section>`:pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
     ${pblock("day",2,st.day,dayView(x),log)}
     ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup night",goal:"Get ready for Day 1",intro:"Three steps tonight and your first day is planned."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
