@@ -570,6 +570,16 @@ select.input{appearance:auto}
 .dd-opt[aria-pressed=true] .dd-box{background:var(--lime);border-color:var(--lime)}
 .dd-opt[aria-pressed=true] .dd-box svg{opacity:1}
 .train-row .guide-link{align-self:flex-start;color:var(--lime);font-size:13px;font-weight:700;margin:0 0 2px 4px;text-decoration:underline}
+.presteps{display:flex;flex-direction:column;gap:6px;margin:0 0 4px 18px;padding-left:12px;border-left:2px solid color-mix(in srgb,var(--lime) 50%,transparent)}
+.prestep{display:flex;gap:10px;align-items:flex-start;text-align:left;background:transparent;border:0;color:var(--on-night);font:inherit;padding:6px 4px;cursor:pointer;border-radius:8px}
+.prestep:hover{background:color-mix(in srgb,var(--on-night) 8%,transparent)}
+.prestep .tick{flex:none;width:22px;height:22px;border-radius:6px;border:2px solid color-mix(in srgb,var(--on-night) 50%,transparent);display:grid;place-items:center;margin-top:1px}
+.prestep .tick svg{opacity:0;width:12px;height:12px}
+.prestep.done .tick{background:var(--lime);border-color:var(--lime)}
+.prestep.done .tick svg{opacity:1}
+.prestep.done .tick svg path{stroke:var(--ink)}
+.prestep b{display:block;font-size:13px}
+.prestep small{display:block;font-size:12px;font-weight:500;opacity:.8;margin-top:2px;line-height:1.4}
 .guide-list{margin:4px 0 2px 0;padding-left:18px;display:flex;flex-direction:column;gap:2px}
 .tstep-row{display:flex;align-items:center;gap:8px}
 .tstep-row .tstep{flex:1}
@@ -1541,8 +1551,7 @@ function trainHtml(log,lockedBy){
       ${S.tedit&&!log.train_done?`<div class="tedit"><label class="ask" for="a-train_time"><span>New training time</span><input class="input" type="time" id="a-train_time" data-input="train_time" value="${esc(log.train_time||"")}"></label><small>Your pre and post-workout meals move with it: Meal ${ta} is now your pre-workout meal and Meal ${ta+1} your post-workout meal.</small><div class="opts">${mealsOf(log).filter(m=>m.slot<MAX_MEALS).map(m=>`<button class="chip" data-dtrainafter="${m.slot}" aria-pressed="${ta===m.slot}">After Meal ${m.slot}</button>`).join("")}</div></div>`:""}
       <div class="tsteps">
         ${row("train_pre","1 · Completed pre-workout tasks","_none",true)}
-        ${lk?"":`<button class="link guide-link" data-guide="1">${S.guide?"Hide the workout guide":"Here's the workout guide to see the tasks →"}</button>`}
-        ${S.guide&&!lk?`<div class="info-box"><b>Pre-workout tasks</b><ul class="guide-list"><li>Eat your pre-workout meal${pre?` (Meal ${pre.slot}${pre.done?", ticked "+esc(pre.done):""})`:""}: protein and carbs, at least an hour before</li><li>Warm up for 5 to 10 minutes</li></ul><span class="info-soon">Ellis's full workout guide (PDF) is coming soon.</span></div>`:""}
+        ${!lk&&!log.train_pre?`<div class="presteps">${PRE_STEPS.map(([k,t,d],i)=>`<button class="prestep${log[k]?" done":""}" data-ptick="${k}" aria-pressed="${!!log[k]}"><span class="tick">${TICK}</span><span><b>${i+1}. ${t}</b><small>${d}${k==="train_p1"&&pre?` Your pre-workout meal is Meal ${pre.slot}${pre.done?", ticked "+esc(pre.done):""}.`:""}</small></span></button>`).join("")}</div>`:""}
         ${row("train_wo","2 · Workout","workout",!!log.train_pre)}
         ${row("train_base","3 · Post-workout: back to baseline","base",!!log.train_wo)}
       </div>
@@ -1551,6 +1560,12 @@ function trainHtml(log,lockedBy){
     </div>
   </div></div>`;
 }
+// Ellis's pre-workout steps, ticked inside the training session
+const PRE_STEPS=[
+  ["train_p1","Clear & set mind","Prep and eat your food in a relaxed environment, with no thought of the workout yet."],
+  ["train_p2","Set the workout","Whether it's pre-assigned or still to be written, write it out, pen on paper, before you get to where you train. As you write it, visualise yourself doing the movements."],
+  ["train_p3","Action the set up","Change of clothes, change of music, anything that moves you further into a performance mindset while changing your environment. Travel to the gym, or find a new space at home away from comfort and work. Even if you're training at home or driving, get a short walk in before you go inside and start."]
+];
 const CHECKINS=[2,3]; // after these meals, update your numbers before the next meal
 const NUM_ASKS=[{k:"steps",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true}];
 function gauge(v,t,label,unit){
@@ -1992,10 +2007,13 @@ root.addEventListener("click",e=>{
   if(b.dataset.dd){const k=b.dataset.dd;S.dd=S.dd===k?null:k;S.info=null;return render()}
   if(b.dataset.info){S.info=S.info===b.dataset.info?null:b.dataset.info;return render()}
   if(b.dataset.pick){const k=b.dataset.pick,o=b.dataset.val,cur=curCtx().log[k],arr=Array.isArray(cur)?cur:(cur?[cur]:[]);edit(k,b.dataset.multi?(arr.includes(o)?arr.filter(z=>z!==o):[...arr,o]):(arr.includes(o)?[]:[o]));return render()}
-  if(b.dataset.tstep){const k=b.dataset.tstep,ks=["train_pre","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
+  if(b.dataset.tstep){if(b.dataset.tstep==="train_pre"){const on=!!curCtx().log.train_pre,t=nowHHMM();PRE_STEPS.forEach(([q])=>edit(q,on?"":(curCtx().log[q]||t)))}const k=b.dataset.tstep,ks=["train_pre","train_wo","train_base"],i=ks.indexOf(k),l=curCtx().log;
     if(l[k]){ks.slice(i).forEach(q=>edit(q,""));edit("train_done","")}else{const t=nowHHMM();edit(k,t);if(k==="train_wo"&&!l.train_start)edit("train_start",t);if(ks.every(q=>q===k||curCtx().log[q])){edit("train_done",t);S.wopen=false;toast("Training session done")}}
     return render()}
   if(b.dataset.guide){S.guide=!S.guide;return render()}
+  if(b.dataset.ptick){const k=b.dataset.ptick,l=curCtx().log;edit(k,l[k]?"":nowHHMM());
+    if(PRE_STEPS.every(([q])=>curCtx().log[q])&&!curCtx().log.train_pre){edit("train_pre",nowHHMM());toast("Pre-workout steps done. Time to train.")}
+    return render()}
   if(b.dataset.tedit){S.tedit=!S.tedit;return render()}
   if(b.dataset.dtrainafter){edit("train_after",Number(b.dataset.dtrainafter));return render()}
   if(b.dataset.trainstart){edit("train_start",nowHHMM());S.wopen=true;return render()}
