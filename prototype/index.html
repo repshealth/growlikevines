@@ -708,7 +708,7 @@ const INFO={
   pm_dim:"Dim the lights and put your phone away for the last part of your evening. Bright light and screens at night keep your brain switched on and push back sleep.",
   pm_meal:"Your final meal eaten, or prepped and ready. Being fed and watered is one of the biggest signals to your nervous system that it's safe to rest.",
   pm_shower:"Shower and change into comfortable clothes to mark the end of your day.",
-  meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs come in from Meal 2 and around your training. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
+  meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs only go in two meals: pre-workout carbs in the meal before you train, and evening carbs in your evening meal. Plan as many meals as you need, up to 5, but one of them must be in the evening (6pm or later): being fed is one of the biggest signals that calms your nervous system before sleep.",
   pre:"Your pre-workout meal (protein and carbs, at least an hour before) and a 5 to 10 minute warm up. Tick this once both are done.",
   workout:"Follow your session from the workout library, or your own workout.",
   base:"Bring your heart rate back down after training: an easy walk with nose breathing, then a short Reset, before your post-workout meal."
@@ -720,22 +720,27 @@ const LOWER=["The Reset","Breath work","Meditation","Yoga / Pilates","Steps","Ma
 const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
 const FEELS=["Wired","Flat","Settled","Connected","Emotional","Hungry","Clear head","Weakness creeping in"];
 // Approved foods from the meal plans. Veg & fat are open at every meal, carbs from Meal 2 (none at Meal 1).
+// Approved foods (Ellis's table). Carbs only go in two meals: pre-workout carbs in the pre-workout meal, evening carbs in the evening meal.
 const FOOD_CATS=[
-  {k:"protein",name:"Protein",from:1,items:["Whole eggs","Greek yoghurt","Cottage cheese","Smoked salmon","Whey isolate","Turkey bacon","Chicken breast","Chicken thigh","Turkey","Oily fish","White fish","Tuna","Shellfish","Beef 5% mince","Beef steak","Lamb","Protein yoghurt","Biltong","Fresh pasteurised cow's milk"]},
-  {k:"fruit",name:"Fruit",from:1,items:["Strawberries","Blueberries","Raspberries","Blackberries","Orange","Banana","Kiwi","Apple","Pear","Grapes","Pineapple","Mango","Melon","Peach","Grapefruit","Pomegranate","Fresh orange juice"]},
-  {k:"veg",name:"Veg",from:1,items:["Mixed leaves","Spinach","Kale","Broccoli","Peppers","Cucumber","Tomatoes","Mushrooms","Kimchi","Sauerkraut","Asparagus","Green beans","Baby carrots","Spring onions","Soup or broth"]},
-  {k:"fat",name:"Fat",from:1,items:["Avocado","Nuts","Seeds","Nut butter","Hummus","Cheese","Olive oil","Organic butter","Olives","Kefir","Dark chocolate","Duck fat","Coconut oil"]},
-  {k:"carbs",name:"Carbs",from:2,items:["Rice","Potato","Gluten free oats","Rice cakes","Chickpeas","Couscous","Sourdough bread","Cream of rice","Honey","Rice Krispies"]}
+  {k:"protein",name:"Protein",from:1,items:["Chicken","Beef","Oily fish","White fish","Eggs","Turkey","Shellfish","Greek yogurt","Cottage cheese","Whey isolate","Vegan isolate","Beans","Milk","Lamb"]},
+  {k:"fat",name:"Fats",from:1,items:["Organic butter","Cheese","Hummus","Olives","Olive oil","Nut butter","Seeds","Nuts","Avocado","Kefir","Dark chocolate"]},
+  {k:"ecarbs",name:"Evening carbs",from:99,role:"eve",items:["White potato","Sweet potato","Gluten free oats","Rice","Gluten free sourdough bread","Couscous"]},
+  {k:"pcarbs",name:"Pre-workout carbs",from:99,role:"pre",items:["White potato","Sweet potato","Gluten free oats","Rice","Cream of rice","Sourdough bread","Low fat cereal","Rice cakes","Square bars","Natural fruit juice"]},
+  {k:"fruit",name:"Fruit",from:1,items:["Dried fruit","Berries","Oranges","Kiwi","Banana","Grapes","Pineapple","Melon","Grapefruit","Pomegranate","Honey"]},
+  {k:"veg",name:"Veg / other",from:1,items:["Spinach","Mushrooms","Green beans","Carrots","Onions","Fermented veg","Asparagus","Broccoli","Broth","Soup","Kale"]},
+  {k:"carbs",name:"Carbs",from:99,legacy:true,items:[]}
 ];
 const MAX_MEALS=5;
 const foodsCount=f=>f?FOOD_CATS.reduce((a,c)=>a+((f[c.k]||[]).length),0):0;
 const foodsSummary=f=>f?FOOD_CATS.map(c=>(f[c.k]||[])).flat().join(", "):"";
-function foodPicker(key,slot,foods,dis){
-  const f=foods||{},cur=(S.fcat[key])||"protein";
+// ctx says which carbs this meal can have: {pre:true} for the pre-workout meal, {eve:true} for the evening meal
+function foodPicker(key,slot,foods,dis,ctx){
+  ctx=ctx||{};const f=foods||{},cats=FOOD_CATS.filter(c=>!c.legacy),okCat=c=>!c.role||!!ctx[c.role];
+  let cur=S.fcat[key]||"protein";if(!cats.some(c=>c.k===cur&&okCat(c)))cur="protein";
   return `<div class="picker">
-    <div class="fcats" role="tablist">${FOOD_CATS.map(c=>{const n=(f[c.k]||[]).length,off=slot<c.from;return `<button class="fcat${cur===c.k?" on":""}${off?" off":""}" data-fcat="${key}" data-val="${c.k}" ${dis||off?"disabled":""} aria-pressed="${cur===c.k}"><span>${c.name}</span><small class="num">${off?"From Meal "+c.from:n?n+" picked":"–"}</small></button>`}).join("")}</div>
-    ${FOOD_CATS.filter(c=>c.k===cur).map(c=>`<div class="opts fopts">${c.items.map(it=>`<button class="chip" data-food="${key}" data-fc="${c.k}" data-val="${esc(it)}" aria-pressed="${(f[c.k]||[]).includes(it)}" ${dis?"disabled":""}>${esc(it)}</button>`).join("")}</div>`).join("")}
-    ${slot===1?`<p class="muted" style="font-size:12px">No carbs at Meal 1. Carbs open from Meal 2.</p>`:""}
+    <div class="fcats" role="tablist">${cats.map(c=>{const n=(f[c.k]||[]).length,off=!okCat(c);return `<button class="fcat${cur===c.k?" on":""}${off?" off":""}" data-fcat="${key}" data-val="${c.k}" ${dis||off?"disabled":""} aria-pressed="${cur===c.k}"><span>${c.name}</span><small class="num">${off?(c.role==="pre"?"Pre-workout meal only":"Evening meal only"):n?n+" picked":"–"}</small></button>`}).join("")}</div>
+    ${cats.filter(c=>c.k===cur).map(c=>`<div class="opts fopts">${c.items.map(it=>`<button class="chip" data-food="${key}" data-fc="${c.k}" data-val="${esc(it)}" aria-pressed="${(f[c.k]||[]).includes(it)}" ${dis?"disabled":""}>${esc(it)}</button>`).join("")}</div>`).join("")}
+    ${!ctx.pre&&!ctx.eve?`<p class="muted" style="font-size:12px">No carbs in this meal. Carbs are only for your pre-workout meal and your evening meal.</p>`:""}
   </div>`;
 }
 const NN_LIST=["Walk before Meal 1","Steps spread through the day","Morning sunlight","Evening walk & moonlight","Breathwork","Protein every meal","Fruit & veg every meal","Water & salt","No caffeine after 1pm","Reset every 90 mins","Phone off 1hr before bed"];
@@ -1389,14 +1394,14 @@ function askHtml(a,log,wk,locked){
           <div class="fsum">${FOOD_CATS.filter(c=>(f[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f[c.k].join(", "))}</span>`).join("")}</div>
           <button class="btn" data-mealopen="m1" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal==="m1"?"Done":"Change"}</button></div>`
         :log.meal1?`<small class="muted" style="font-weight:500">Planned last night: ${esc(log.meal1)}</small>`:""}
-        ${open?`<div class="picker-box">${foodPicker("m1",1,f,locked)}</div>`:""}</div>`}
+        ${open?`<div class="picker-box">${foodPicker("m1",1,f,locked,{pre:dayTrainAfter(log)===1})}</div>`:""}</div>`}
     case"meal1":{const m=mealsOf(log).find(q=>q.slot===1),f=m&&m.foods,has=foodsCount(f),open=m&&(S.openMeal===m.id||!has);
       if(!m)return "";
       return `<div class="ask"><span>What's in it</span>
         ${has?`<div class="meal-card"><div class="meal-card-h"><b>Meal 1</b>${m.planned?`<span class="kind">Planned last night</span>`:""}</div>
           <div class="fsum">${FOOD_CATS.filter(c=>(f[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f[c.k].join(", "))}</span>`).join("")}</div>
           <button class="btn" data-mealopen="${m.id}" ${locked?"disabled":""} style="align-self:flex-start">${S.openMeal===m.id?"Done":"Change"}</button></div>`:""}
-        ${open?`<div class="picker-box">${foodPicker(m.id,1,f,locked)}</div>`:""}</div>`}
+        ${open?`<div class="picker-box">${foodPicker(m.id,1,f,locked,{pre:dayTrainAfter(log)===1})}</div>`:""}</div>`}
     case"catchup":{const pairs=dayPairs(log).filter(q=>!q.eve),todoM=pairs.filter(q=>!q.done),todoW=pairs.filter(q=>q.done&&!q.walk),tr=log.train==="yes"&&!log.train_done;
       if(!todoM.length&&!todoW.length&&!tr)return `<div class="ask"><span>Anything left to log?</span><small class="muted" style="font-weight:500">Everything from today is logged.</small></div>`;
       return `<div class="ask"><span>Anything left to log? Tick what you did</span><div class="review">${todoM.map(q=>`<div class="rv"><span>Meal ${q.slot}${q.text?" · "+esc(q.text):""}</span><button class="chip" data-mealtick="${q.key}" ${dis}>Ate it</button></div>`).join("")}${todoW.map(q=>`<div class="rv"><span>Walk after Meal ${q.slot}</span><button class="chip" data-walktick="${q.key}" ${dis}>Done</button></div>`).join("")}${tr?`<div class="rv"><span>Training session${log.workout?" · "+esc(log.workout==="My own workout"&&log.workout_name?log.workout_name:log.workout):""}</span><button class="chip" data-traintick="1" ${dis}>Trained</button></div>`:""}</div></div>`}
@@ -1409,7 +1414,7 @@ function askHtml(a,log,wk,locked){
       return `<div class="meal1-cue"><span class="eyebrow">Your evening meal</span><h3 class="sec-title" style="font-size:22px">Meal ${f.slot}${f.time?`, planned for ${esc(f.time)}`:""}</h3>
         <p class="muted" style="font-size:13px;margin-top:-6px">Fed, watered, ready for sleep. Log it once you've eaten.</p>
         ${foodsCount(f.foods)?`<div class="meal-card"><div class="meal-card-h"><b>Meal ${f.slot}</b>${f.planned?`<span class="kind">Planned last night</span>`:""}</div><div class="fsum">${FOOD_CATS.filter(c=>(f.foods[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(f.foods[c.k].join(", "))}</span>`).join("")}</div><button class="btn" data-mealopen="${f.key}" ${dis} style="align-self:flex-start">${S.openMeal===f.key?"Done":"Change"}</button></div>`:""}
-        ${open?`<div class="picker-box">${foodPicker(f.key,f.slot,f.foods,locked)}</div>`:""}
+        ${open?`<div class="picker-box">${foodPicker(f.key,f.slot,f.foods,locked,{eve:true,pre:dayTrainAfter(log)===f.slot})}</div>`:""}
         ${askHtml({k:"final_water",type:"choice",label:"Did you have water with it?",options:[["yes","Yes"],["no","No"]]},log,{},locked)}
         <div><button class="btn primary" data-finallog="${f.key}" ${log.final_water&&!locked?"":"disabled"}>Log Meal ${f.slot}</button>${log.final_water?"":`<span class="muted" style="font-size:12px;margin-left:8px">Answer the water question first. Not eaten yet? Carry on, you can log it later tonight.</span>`}</div></div>`}
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
@@ -1430,9 +1435,9 @@ function askHtml(a,log,wk,locked){
         ${log.tmr_train==="yes"&&!log.tmr_train_time?`<div class="train-place"><span>Add your training time above and we'll place it between your meals.</span></div>`:""}${ta&&log.tmr_train_time?`<div class="train-place"><span>Training${log.tmr_train_time?" at <b class=\"num\">"+esc(log.tmr_train_time)+"</b>":""} goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-trainafter="${n}" aria-pressed="${ta===n}" ${dis}>Meal ${n}</button>`).join("")}</div><small class="muted">Meal ${ta} (${planMealTime(log,ta)}) is your pre-workout meal, Meal ${ta+1} (${planMealTime(log,ta+1)}) your post-workout meal. Change it if your day runs differently.</small>${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).length?`<small style="color:var(--warn);font-weight:700">Plan ${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).map(n=>"Meal "+n+(n===ta?" (pre-workout)":" (post-workout)")).join(" and ")} below.</small>`:""}</div>`:""}
         <div class="plan-slots">${plan.map((f,i)=>{const key="plan"+i,open=S.openMeal===key,c=foodsCount(f),role=mealRole(i+1,ta);
           return `<div class="plan-slot${c?" filled":""}${open?" open":""}">
-            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:c&&mins(planMealTime(log,i+1))>=18*60?` <span class="role eve">Evening meal</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking · no carbs":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${role&&!(f.carbs||[]).length?`<small class="carb-cue">Add a carb source to fuel your training</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
+            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:c&&mins(planMealTime(log,i+1))>=18*60?` <span class="role eve">Evening meal</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${role&&!(f.carbs||[]).length?`<small class="carb-cue">Add a carb source to fuel your training</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
             ${c?`<label class="plan-time">Time <input type="time" class="input" data-ptime="${i}" id="pt-${i}" value="${esc(planMealTime(log,i+1))}" ${dis}></label>`:""}
-            ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis)}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
+            ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis,{pre:planTrainAfter(log)===i+1,eve:mins(planMealTime(log,i+1))>=18*60})}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
           </div>${ta===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b>${log.tmr_train_time?" · "+esc(log.tmr_train_time):""}</span></div>`:""}`}).join("")}</div></div>`}
     case"todo":{const list=todoOf(log),quick=[["own","Hardest task first"],["walk","Steps block after a meal"],["reset","Breathwork"],["train","Gym workout"],["walk","Nasal walk outside"]].filter(q=>!list.some(t=>t[1]===q[1]));
       return `<div class="ask"><span>${a.label} <span class="muted num">${list.length} ${list.length===1?"task":"tasks"}</span></span>
@@ -1579,7 +1584,7 @@ function pairHtml(p,ta,lockedBy){
       </div>
       ${!p.done&&!p.fixed?`<button class="x" data-mdel="${p.key}" aria-label="Remove Meal ${p.slot}">×</button>`:""}
     </div>
-    ${S.openMeal===p.key?`<div class="pick-wrap">${foodPicker(p.key,p.slot,p.foods,false)}<div class="pick-foot">${p.done||lockedBy?`<button class="btn" data-mealopen="${p.key}">Done</button>`:`<button class="btn primary" data-mealtick="${p.key}">Log Meal ${p.slot}</button><span class="muted" style="font-size:12px">${foodsCount(p.foods)} picked</span>`}</div></div>`:""}
+    ${S.openMeal===p.key?`<div class="pick-wrap">${foodPicker(p.key,p.slot,p.foods,false,{pre:ta===p.slot,eve:!!p.eve||(!!p.time&&mins(p.time)>=18*60)})}<div class="pick-foot">${p.done||lockedBy?`<button class="btn" data-mealopen="${p.key}">Done</button>`:`<button class="btn primary" data-mealtick="${p.key}">Log Meal ${p.slot}</button><span class="muted" style="font-size:12px">${foodsCount(p.foods)} picked</span>`}</div></div>`:""}
     <div class="pi walk${p.walk?" done":""}${p.done?"":" locked"}">
       <button class="item-tick" data-walktick="${p.key}" aria-pressed="${!!p.walk}" ${p.done?"":"disabled"} aria-label="${p.walk?"Untick":"Tick"} walk after Meal ${p.slot}"><span class="tick">${TICK}</span></button>
       <div class="item-main"><div class="item-title"><span>Walk block after Meal ${p.slot}</span>${p.walk?`<span class="stamp">${esc(p.walk)}</span>`:""}</div>${p.done?"":`<span class="kind">${LOCK} Unlocks when Meal ${p.slot} is ticked</span>`}</div>
@@ -1591,7 +1596,7 @@ function mealsCard(log){
   const next=2+meals.length;
   return `<section class="card">
     <div class="sec-head"><h2 class="sec-title">Meals</h2><span class="muted num">${done} logged</span></div>
-    <p class="muted" style="font-size:12px;margin-top:-2px">${log.train==="yes"?"Training day: carbs with your meals around training.":"Rest day: fats, not carbs, with your meals."} Every 3 to 4 hours, protein every time.</p>
+    <p class="muted" style="font-size:12px;margin-top:-2px">${log.train==="yes"?"Training day: pre-workout carbs before your session, evening carbs with your evening meal.":"Rest day: carbs only with your evening meal."} Every 3 to 4 hours, protein every time.</p>
     <div class="items">
       <div class="item done meal"><span class="item-tick"><span class="tick">${TICK}</span></span><div class="item-main"><div class="item-title"><span>Meal 1${log.meal1?": "+esc(log.meal1):""}</span>${log.m3?`<span class="stamp">${esc(log.m3)}</span>`:""}</div><span class="kind">Logged in your Morning${(log.meal1_tags||[]).length?" · "+esc(log.meal1_tags.join(", ")):""}</span></div></div>
       ${meals.map(m=>mealHtml(m,opts)).join("")}
