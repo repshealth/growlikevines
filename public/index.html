@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 <title>Project Reset App</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -58,6 +60,9 @@ p{margin:0}
 .mark span:last-child{background:var(--lime);color:var(--ink);padding:0 .12em;align-self:flex-start;margin-top:.04em}
 .mark.sm{font-size:19px}
 .mark.lg{font-size:clamp(54px,14vw,84px);transform:skew(-4deg)}
+.logo{display:block;height:auto;max-width:100%}
+.logo.sm{width:auto;height:40px}
+.logo.lg{width:min(260px,72vw)}
 
 /* Top bar */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);box-shadow:0 1px 0 var(--lime)}
@@ -1100,7 +1105,7 @@ const DUMBBELL='<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="tru
 const LOCK='<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><rect x="2" y="5.5" width="8" height="5.5" rx="1.2" fill="currentColor"/><path d="M3.8 5.5V4a2.2 2.2 0 014.4 0v1.5" fill="none" stroke="currentColor" stroke-width="1.3"/></svg>';
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
 function render(){
-  if(S.booting){root.innerHTML=`<div class="login wrap"><div class="mark lg" aria-label="Project Reset"><span>Project</span><span>Reset</span></div></div>`;return}
+  if(S.booting){root.innerHTML=`<div class="login wrap"><img class="logo lg" src="/logo.webp" alt="Project Reset" width="800" height="580"></div>`;return}
   if(!DATA){S.session=null;root.innerHTML=S.needsSetup?setupView():S.onboard?onboardView():loginView();return}
   S.session={role:DATA.me.role,clientId:DATA.me.id};
   root.innerHTML=topBar()+`<main class="wrap"><div class="${S.session.role==="coach"?"wide":"col"}">${S.session.role==="coach"?coachView():clientView()}</div></main>`;
@@ -1217,7 +1222,7 @@ function reviewView(){
 /* ---------- login ---------- */
 function loginView(){
   return `<div class="login wrap"><div class="login-card">
-    <div class="login-hero"><div class="mark lg" aria-label="Project Reset"><span>Project</span><span>Reset</span></div>
+    <div class="login-hero"><img class="logo lg" src="/logo.webp" alt="Project Reset" width="800" height="580">
     <p>28 days to set a new standard.</p></div>
     ${S.bootError?`<p class="onb-err">${esc(S.bootError)}</p>`:""}
     <form id="loginForm" novalidate>
@@ -1235,7 +1240,7 @@ function loginView(){
 }
 function setupView(){
   return `<div class="login wrap"><div class="login-card">
-    <div class="login-hero"><div class="mark lg" aria-label="Project Reset"><span>Project</span><span>Reset</span></div>
+    <div class="login-hero"><img class="logo lg" src="/logo.webp" alt="Project Reset" width="800" height="580">
     <p>First-time setup: create the coach account.</p></div>
     <form id="setupForm" novalidate>
       <label class="field" for="su-key">Setup key<input class="input" id="su-key" name="key" type="password" autocomplete="off"><small class="muted">The SETUP_KEY you saved in Cloudflare.</small></label>
@@ -1254,7 +1259,7 @@ function topBar(){
   const cur=coach?S.coachTab:S.tab;
   const name=coach?"Ellis Vine":me().name;
   return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
-    <div class="mark sm" aria-label="Project Reset"><span>Project</span><span>Reset</span></div>
+    <img class="logo sm" src="/logo.webp" alt="Project Reset" width="800" height="580">
     <nav class="tabs" aria-label="Sections">${tabs.map(([k,l])=>`<button class="tab" data-tab="${k}" ${cur===k?'aria-current="page"':""}>${l}</button>`).join("")}</nav>
     <div class="who"><span class="avatar" title="${esc(name)}">${initials(name)}</span><button class="link" data-act="logout">Log out</button></div>
   </div></header>`;
