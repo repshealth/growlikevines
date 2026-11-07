@@ -346,7 +346,13 @@ export async function onRequest(context) {
       if (INTRO_VIDEOS.slice(0, i).some(k => !done[k])) return err(400, "Watch the videos in order.");
       if (!done[INTRO_VIDEOS[i]]) done[INTRO_VIDEOS[i]] = new Date().toISOString();
       await db.prepare("UPDATE users SET intro = ? WHERE id = ?").bind(JSON.stringify(done), me.id).run();
-      return json({ ok: true, intro: done });
+      // Day 0 is the evening they finish the videos, so a client who logs in a few days after targets are set still gets their setup night
+      let start_date = me.start_date;
+      if (me.status === "active" && INTRO_VIDEOS.every(k => done[k])) {
+        const logged = await db.prepare("SELECT 1 FROM logs WHERE user_id = ? LIMIT 1").bind(me.id).first();
+        if (!logged) { start_date = londonToday(); await db.prepare("UPDATE users SET start_date = ? WHERE id = ?").bind(start_date, me.id).run(); }
+      }
+      return json({ ok: true, intro: done, start_date });
     }
 
     if (path === "/note" && method === "GET") {

@@ -1429,9 +1429,9 @@ function introView(c){
       <span class="pb-text"><b>${esc(v.title)}</b>${isDone?`<span class="pb-done">Done</span>`:""}<small>${isDone?"Watched "+esc(fmtWhen(done[v.k])):"Opens when you've watched "+esc(INTRO_VIDEOS[i-1].title)}</small></span>
       ${isDone?`<span class="pb-edit">Watch again</span>`:""}</button></section>`;
   }).join("");
-  return `<section class="card intro-head"><span class="eyebrow">${active?"Your targets are in":"Before you start"}</span>
+  return `<section class="card intro-head"><span class="eyebrow">Your targets are in</span>
       <h1 class="display" style="font-size:clamp(36px,8vw,54px)">Watch these 3 videos</h1>
-      <p class="muted">${active?"Watch them in order to open Day 0, your setup night.":"Watch them in order while Ellis sets your targets. Each one unlocks the next."}</p>
+      <p class="muted">Watch them in order. Each one unlocks the next, and once all 3 are done, tonight is your <b>Day 0</b>: your setup night.</p>
       <div class="intro-dots">${INTRO_VIDEOS.map(v=>`<span class="${done[v.k]?"on":""}"></span>`).join("")}<b class="num">${INTRO_VIDEOS.filter(v=>done[v.k]).length} of 3 watched</b></div>
     </section>
     <div class="stack">${blocks}</div>`;
@@ -1442,9 +1442,9 @@ function waitingView(p){
   return `<div class="stack">
     <section class="card wait-card"><span class="eyebrow">Form received ${esc(fmtWhen(p.created_at))}</span>
       <h1 class="display" style="font-size:clamp(40px,9vw,60px)">Thanks, ${esc((p.name||"").split(" ")[0])}.</h1>
-      <p>Ellis is going through your answers and setting your daily targets for steps, protein and water.</p>
-      <p class="muted">As soon as they're in, your programme opens on <b>Day 0</b>: your setup night, where you plan your first day.</p>
-      <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding sent</div><div class="${introDone(p)?"done":"now"}"><span class="pb-num">${introDone(p)?TICK:2}</span>Watch the 3 intro videos</div><div class="now"><span class="pb-num">3</span>Ellis sets your targets</div><div><span class="pb-num">4</span>Day 0, your setup night</div></div>
+      <p>Ellis is going through your answers and setting your daily targets for steps, protein and water. <b>We'll be in touch as soon as they're set.</b></p>
+      <p class="muted">Then log back in here. You'll watch 3 short videos, and that evening is your <b>Day 0</b>: your setup night, where you plan your first day.</p>
+      <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding sent</div><div class="now"><span class="pb-num">2</span>Ellis sets your targets</div><div><span class="pb-num">3</span>Watch 3 intro videos</div><div><span class="pb-num">4</span>Day 0, your setup night</div></div>
     </section>
     ${missing.length?`<section class="card onb-sec"><h2 class="sec-title" style="font-size:20px">${have.has("clothed")?"Add the rest of your photos":"Add your starting photos"}</h2>
       <p class="muted" style="font-size:13px">${have.has("clothed")?"These are optional, but they make your Day 28 comparison much clearer.":"Your clothed photo didn't come through. Add it here so Ellis has your starting point."}</p>
@@ -1612,7 +1612,7 @@ function topBar(){
 
 /* ---------- client: today ---------- */
 function clientView(){
-  {const m=me();if(m.status!=="active")return introDone(m)?waitingView(m):`<div class="stack">${introView(m)}${waitingView(m)}</div>`;if(!introDone(m))return `<div class="stack">${introView(m)}</div>`}
+  {const m=me();if(m.status!=="active")return waitingView(m);if(!introDone(m))return `<div class="stack">${introView(m)}</div>`}
   if(S.checkin&&S.tab==="today")return weeklyView(S.checkin);
   if(S.tab==="programme")return programmeView();
   if(S.tab==="progress")return progressView(me());
@@ -2160,7 +2160,7 @@ function testClientCard(){
     </form></section>`;
 }
 function pendingSignupsCard(){const ps=pendingClients();return ps.length?`<section class="card signups"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">New sign-ups</h2><span class="pill warn">${ps.length} waiting for targets</span></div>
-      ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc((f=>isLegacy(f)?[f.goal,f.weight&&f.weight+"kg",f.activity]:[f.occupation,f.weight_lb&&f.weight_lb+" lbs",f.height,f.intention&&"“"+f.intention+"”"])(p.form||{}).filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))} · Intro videos ${INTRO_VIDEOS.filter(v=>p.intro&&p.intro[v.k]).length} of 3</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
+      ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc((f=>isLegacy(f)?[f.goal,f.weight&&f.weight+"kg",f.activity]:[f.occupation,f.weight_lb&&f.weight_lb+" lbs",f.height,f.intention&&"“"+f.intention+"”"])(p.form||{}).filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))}</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
 function overviewView(){
   const all=allClients().map(statsFor);
   if(!all.length)return `<div class="stack">
@@ -2362,8 +2362,8 @@ root.addEventListener("click",e=>{
   if(act==="test-next"){b.disabled=true;flush().then(()=>api("/test/nextday",{method:"POST"})).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Moved to the next day")}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="test-restart"){if(!S.restartArm){S.restartArm=true;return render()}S.restartArm=false;b.disabled=true;dirty.clear();pendingSet(DATA.me.id,{});api("/test/restart",{method:"POST"}).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Back to Day 0")}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(b.dataset.vidopen){const k="vid_"+b.dataset.vidopen;S.open[k]=!S.open[k];return render()}
-  if(b.dataset.vidwatched){const v=b.dataset.vidwatched;b.disabled=true;api("/intro",{method:"POST",body:{video:v}}).then(r=>{DATA.me.intro=r.intro;const i=INTRO_VIDEOS.findIndex(x=>x.k===v);render();const nx=INTRO_VIDEOS[i+1];
-      if(nx){toast("Done. Next: "+nx.title);setTimeout(()=>{const el=document.getElementById("vid-"+nx.k);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},60)}else{toast("All 3 watched");window.scrollTo({top:0,behavior:"smooth"})}}).catch(x=>{toast(x.message);b.disabled=false});return}
+  if(b.dataset.vidwatched){const v=b.dataset.vidwatched;b.disabled=true;api("/intro",{method:"POST",body:{video:v}}).then(r=>{DATA.me.intro=r.intro;if(r.start_date)DATA.me.start_date=r.start_date;const i=INTRO_VIDEOS.findIndex(x=>x.k===v);render();const nx=INTRO_VIDEOS[i+1];
+      if(nx){toast("Done. Next: "+nx.title);setTimeout(()=>{const el=document.getElementById("vid-"+nx.k);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},60)}else{toast("All 3 watched. Welcome to Day 0");window.scrollTo({top:0,behavior:"smooth"})}}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="refresh"){S.booting=false;b.disabled=true;return boot().then(()=>{if(me()&&me().status!=="active")toast("Not yet. Ellis will set your targets soon.")})}
   if(act==="logout"){flush(true);api("/logout",{method:"POST"}).catch(()=>{}).then(()=>{DATA=null;S.session=null;S.review=null;S.detail=null;render()});return}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
