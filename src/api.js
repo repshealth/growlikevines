@@ -65,6 +65,7 @@ async function ensureSchema(db) {
   await db.batch(SCHEMA.map(q => db.prepare(q)));
   // Added after launch: test accounts
   try { await db.prepare("ALTER TABLE users ADD COLUMN test INTEGER NOT NULL DEFAULT 0").run(); } catch (e) { /* already there */ }
+  try { await db.prepare("ALTER TABLE users ADD COLUMN intro TEXT").run(); } catch (e) { /* already there */ }
   schemaReady = true;
 }
 
@@ -132,8 +133,12 @@ const publicUser = u => ({
   id: u.id, email: u.email, name: u.name, role: u.role, status: u.status,
   form: u.form ? JSON.parse(u.form) : null,
   targets: u.targets ? JSON.parse(u.targets) : null,
-  start_date: u.start_date, created_at: u.created_at, assigned_at: u.assigned_at, test: !!u.test
+  start_date: u.start_date, created_at: u.created_at, assigned_at: u.assigned_at, test: !!u.test,
+  intro: u.intro ? JSON.parse(u.intro) : {}
 });
+
+// The three intro videos, watched in order after the onboarding form
+const INTRO_VIDEOS = ["overview", "meals", "workout"];
 
 async function getSettings(db) {
   const row = await db.prepare("SELECT value FROM settings WHERE key = 'weeks'").first();
@@ -330,6 +335,18 @@ export async function onRequest(context) {
         db.prepare("UPDATE users SET start_date = ? WHERE id = ?").bind(londonToday(), me.id)
       ]);
       return json({ ok: true });
+    }
+
+    if (path === "/intro" && method === "POST") {
+      if (me.role !== "client") return err(403, "Only clients watch the intro videos.");
+      const b = await readBody(request);
+      const i = INTRO_VIDEOS.indexOf(String(b.video || ""));
+      if (i < 0) return err(400, "Unknown video");
+      const done = me.intro ? JSON.parse(me.intro) : {};
+      if (INTRO_VIDEOS.slice(0, i).some(k => !done[k])) return err(400, "Watch the videos in order.");
+      if (!done[INTRO_VIDEOS[i]]) done[INTRO_VIDEOS[i]] = new Date().toISOString();
+      await db.prepare("UPDATE users SET intro = ? WHERE id = ?").bind(JSON.stringify(done), me.id).run();
+      return json({ ok: true, intro: done });
     }
 
     if (path === "/note" && method === "GET") {
