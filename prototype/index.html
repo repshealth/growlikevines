@@ -2066,13 +2066,21 @@ root.addEventListener("input",e=>{
   clearTimeout(timers[k]);timers[k]=setTimeout(()=>edit(k,v),300);
 });
 root.addEventListener("change",e=>{
-  if(e.target.dataset.ptime!==undefined){const i=Number(e.target.dataset.ptime),l=curCtx().log,a=(l.plan_times||[]).slice();while(a.length<MAX_MEALS)a.push("");a[i]=e.target.value;edit("plan_times",a);if(!l.tmr_train_after)edit("tmr_train_after","");return render()}
+  // Time boxes save straight away but only redraw once the picker closes: iPhone fires "change" on every scroll of the wheel, and redrawing then closes it
+  const timeLater=()=>{clearTimeout(timers._trender);timers._trender=setTimeout(render,250)};
+  if(e.target.dataset.ptime!==undefined){const i=Number(e.target.dataset.ptime),l=curCtx().log,a=(l.plan_times||[]).slice();while(a.length<MAX_MEALS)a.push("");a[i]=e.target.value;edit("plan_times",a);if(!l.tmr_train_after)edit("tmr_train_after","");if(document.activeElement===e.target){S.timeDirty=true;return}return timeLater()}
   const fk=e.target.dataset.file;if(fk){const f=e.target.files&&e.target.files[0];if(f){edit(fk,f.name);render()}return}
   const k=e.target.dataset.input;if(!k)return;
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
   if(k==="tmr_train_time")edit("tmr_train_after","");
   if(k==="train_time")edit("train_after","");
-  clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number"||e.target.type==="time"||e.target.tagName==="SELECT")render();
+  clearTimeout(timers[k]);edit(k,v);
+  if(e.target.type==="time"){if(document.activeElement===e.target){S.timeDirty=true;return}return timeLater()}
+  if(e.target.type==="number"||e.target.tagName==="SELECT")render();
+});
+root.addEventListener("focusout",e=>{
+  if(e.target.type!=="time"||!S.timeDirty)return;
+  S.timeDirty=false;clearTimeout(timers._trender);timers._trender=setTimeout(render,250); // a tap on a button in the meantime redraws anyway
 });
 
 render();

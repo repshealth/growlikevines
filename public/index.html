@@ -931,15 +931,21 @@ const fmtWhen=iso=>{if(!iso)return"";const d=new Date(iso);return fmtShort(d)+" 
 function logsFor(c){return (DATA&&DATA.logs&&DATA.logs[c.id])||{}}
 // Client saves: kept in memory straight away, sent to the server shortly after
 const dirty=new Set();let saveT=null,retryT=null,saving=false;
+// Unsent days are also kept on this device, so a tick made just before the app closes (or with no signal) isn't lost
+const PKEY=cid=>"pr_pending_"+cid;
+const pendingGet=cid=>{try{return JSON.parse(localStorage.getItem(PKEY(cid))||"{}")||{}}catch(e){return {}}};
+const pendingSet=(cid,o)=>{try{Object.keys(o).length?localStorage.setItem(PKEY(cid),JSON.stringify(o)):localStorage.removeItem(PKEY(cid))}catch(e){}};
 function saveEdit(cid,date,k,v){
   const L=DATA.logs[cid]=DATA.logs[cid]||{};L[date]={...(L[date]||{}),[k]:v};
+  const pd=pendingGet(cid);pd[date]=L[date];pendingSet(cid,pd);
   dirty.add(date);clearTimeout(saveT);saveT=setTimeout(flush,600);
 }
 async function flush(keepalive){
   clearTimeout(saveT);if(saving&&!keepalive)return;if(!DATA||DATA.me.role!=="client"||!dirty.size)return;
   saving=true;const cid=DATA.me.id,ds=[...dirty];dirty.clear();
   for(const d of ds){
-    try{await api("/logs/"+d,{method:"PUT",body:{data:DATA.logs[cid][d]},keepalive})}
+    try{const sent=DATA.logs[cid][d],js=JSON.stringify(sent);await api("/logs/"+d,{method:"PUT",body:{data:sent},keepalive});
+      const pd=pendingGet(cid);if(pd[d]&&JSON.stringify(pd[d])===js){delete pd[d];pendingSet(cid,pd)}}
     catch(e){dirty.add(d);if(e.status===401){saving=false;toast("You've been logged out. Log in again to keep saving.");DATA=null;return render()}
       if(!keepalive){toast("Couldn't save. Check your connection, trying again.");clearTimeout(retryT);retryT=setTimeout(flush,5000)}}
   }
@@ -2202,8 +2208,10 @@ function setMeals(fn){const x=curCtx();const meals=mealsOf(x.log).map(i=>({...i}
 function setItems(fn){const x=curCtx();const items=itemsOf(x.log).map(i=>({...i}));saveEdit(x.c.id,x.dk,"items",fn(items)||items)}
 async function boot(){
   try{const d=await api("/state");
-    if(d.me.role==="client")d.logs={[d.me.id]:d.logs||{}};
+    if(d.me.role==="client"){d.logs={[d.me.id]:d.logs||{}};
+      const pd=pendingGet(d.me.id);for(const day in pd){d.logs[d.me.id][day]=pd[day];dirty.add(day)}}
     DATA=d;S.needsSetup=false;
+    if(dirty.size)setTimeout(flush,0);
     WEEKS=(d.settings&&d.settings.weeks?d.settings.weeks:DEFAULT_WEEKS).map(w=>({...DEFAULT_WEEKS[0],...w}));
   }catch(e){
     DATA=null;
@@ -2264,7 +2272,7 @@ root.addEventListener("click",e=>{
   if(act==="client-pw"){const id=b.dataset.c,v=(root.querySelector("#cpw")||{}).value||"";if(v.length<8)return toast("Use 8+ characters");b.disabled=true;api("/clients/"+id+"/password",{method:"POST",body:{password:v}}).then(()=>{toast("Password set. Send it to them.");root.querySelector("#cpw").value="";b.disabled=false}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="client-del"){const id=b.dataset.c;if(S.delArm!==id){S.delArm=id;return render()}b.disabled=true;api("/clients/"+id,{method:"DELETE"}).then(()=>{toast("Client removed");S.delArm=null;S.review=null;S.detail=null;return boot()}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="test-next"){b.disabled=true;flush().then(()=>api("/test/nextday",{method:"POST"})).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Moved to the next day")}).catch(x=>{toast(x.message);b.disabled=false});return}
-  if(act==="test-restart"){if(!S.restartArm){S.restartArm=true;return render()}S.restartArm=false;b.disabled=true;dirty.clear();api("/test/restart",{method:"POST"}).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Back to Day 0")}).catch(x=>{toast(x.message);b.disabled=false});return}
+  if(act==="test-restart"){if(!S.restartArm){S.restartArm=true;return render()}S.restartArm=false;b.disabled=true;dirty.clear();pendingSet(DATA.me.id,{});api("/test/restart",{method:"POST"}).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Back to Day 0")}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="refresh"){S.booting=false;b.disabled=true;return boot().then(()=>{if(me()&&me().status!=="active")toast("Not yet. Ellis will set your targets soon.")})}
   if(act==="logout"){flush(true);api("/logout",{method:"POST"}).catch(()=>{}).then(()=>{DATA=null;S.session=null;S.review=null;S.detail=null;render()});return}
   if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
@@ -2366,7 +2374,9 @@ root.addEventListener("input",e=>{
   clearTimeout(timers[k]);timers[k]=setTimeout(()=>edit(k,v),300);
 });
 root.addEventListener("change",e=>{
-  if(e.target.dataset.ptime!==undefined){const i=Number(e.target.dataset.ptime),l=curCtx().log,a=(l.plan_times||[]).slice();while(a.length<MAX_MEALS)a.push("");a[i]=e.target.value;edit("plan_times",a);if(!l.tmr_train_after)edit("tmr_train_after","");return render()}
+  // Time boxes save straight away but only redraw once the picker closes: iPhone fires "change" on every scroll of the wheel, and redrawing then closes it
+  const timeLater=()=>{clearTimeout(timers._trender);timers._trender=setTimeout(render,250)};
+  if(e.target.dataset.ptime!==undefined){const i=Number(e.target.dataset.ptime),l=curCtx().log,a=(l.plan_times||[]).slice();while(a.length<MAX_MEALS)a.push("");a[i]=e.target.value;edit("plan_times",a);if(!l.tmr_train_after)edit("tmr_train_after","");if(document.activeElement===e.target){S.timeDirty=true;return}return timeLater()}
   const pk=e.target.dataset.photo;if(pk){const file=e.target.files&&e.target.files[0];if(!file)return;const lab=root.querySelector("#pl-"+pk),pv=root.querySelector("#pv-"+pk);if(lab)lab.textContent="Preparing…";
     shrink(file).then(d=>{PHOTO_BUF[pk]=d;if(pv)pv.innerHTML=`<img src="${d}" alt="">`;if(lab)lab.textContent="Change photo"}).catch(x=>{if(lab)lab.textContent="Add photo";toast(x.message)});return}
   const pn=e.target.dataset.photonow;if(pn){const file=e.target.files&&e.target.files[0];if(!file)return;const lab=e.target.parentElement;lab.firstChild.textContent="Uploading…";
@@ -2376,7 +2386,13 @@ root.addEventListener("change",e=>{
   let v=e.target.value;if(e.target.type==="number")v=v===""?"":Number(v);
   if(k==="tmr_train_time")edit("tmr_train_after","");
   if(k==="train_time")edit("train_after","");
-  clearTimeout(timers[k]);edit(k,v);if(e.target.type==="number"||e.target.type==="time"||e.target.tagName==="SELECT")render();
+  clearTimeout(timers[k]);edit(k,v);
+  if(e.target.type==="time"){if(document.activeElement===e.target){S.timeDirty=true;return}return timeLater()}
+  if(e.target.type==="number"||e.target.tagName==="SELECT")render();
+});
+root.addEventListener("focusout",e=>{
+  if(e.target.type!=="time"||!S.timeDirty)return;
+  S.timeDirty=false;clearTimeout(timers._trender);timers._trender=setTimeout(render,250); // a tap on a button in the meantime redraws anyway
 });
 
 S.booting=true;render();boot();
