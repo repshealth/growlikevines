@@ -428,7 +428,7 @@ export async function onRequest(context) {
       const b = await readBody(request);
       if (b.weeks === null) await db.prepare("DELETE FROM settings WHERE key = 'weeks'").run();
       else {
-        if (!Array.isArray(b.weeks) || b.weeks.length !== 4) return err(400, "Bad settings");
+        if (!Array.isArray(b.weeks) || b.weeks.length < 3 || b.weeks.length > 4) return err(400, "Bad settings");
         await db.prepare("INSERT INTO settings (key, value) VALUES ('weeks', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value")
           .bind(JSON.stringify(b.weeks).slice(0, 20000)).run();
       }
