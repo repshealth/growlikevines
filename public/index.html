@@ -566,6 +566,9 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .togo{font-size:11px;font-weight:700;color:var(--warn)}
 .cue{align-self:flex-start;font-size:12px;font-weight:800;color:var(--ink);background:var(--lime);padding:3px 10px;border-radius:999px}
+.copy-day{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px;border-radius:12px;border:1.5px dashed var(--lime);background:var(--lime-dim);font-size:13px}
+.copy-day .btn{flex:none}
+.copy-one{align-self:flex-start;font-size:12px;font-weight:700;color:var(--green-ink);margin:-2px 0 2px 44px;text-align:left}
 .meal-rules{list-style:none;margin:6px 0 0;padding:10px 12px;border-radius:10px;background:var(--surface-2);display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600}
 .meal-rules li.ok{color:var(--green-ink)}
 .meal-rules li.ok svg{width:11px;height:11px;vertical-align:-1px}
@@ -865,7 +868,19 @@ const planTrainAfter=log=>log.tmr_train==="yes"&&log.tmr_train_time?(log.tmr_tra
 const dayTrainAfter=log=>log.train==="yes"?(log.train_after||dayTrainAfterFromTimes(log)):0;
 function dayTrainAfterFromTimes(log){const t=mins(log.train_time||"12:00");let a=0;mealsOf(log).forEach(m=>{if(m.slot<MAX_MEALS&&m.time&&mins(m.time)<=t-60)a=Math.max(a,m.slot)});return clamp(a||autoTrainAfter("07:00",log.train_time),1,MAX_MEALS-1)}
 const mealRole=(slot,after)=>!after?"":slot===after?"Pre-workout":slot===after+1?"Post-workout":"";
-const planFvOk=log=>planFoodsOf(log).every(f=>!foodsCount(f)||fvOk(f));
+const planCtx=(log,slot)=>{const ta=planTrainAfter(log);return{pre:ta===slot,post:!!ta&&ta+1===slot,eve:mins(planMealTime(log,slot))>=18*60}};
+// what's wrong with a planned meal under Ellis's rules ("" if nothing)
+function planIssue(f,ctx){
+  if(!foodsCount(f))return "";
+  if(!fvOk(f))return `Add ${fvMissing(f).join(" and ")}: needed in every meal`;
+  if(hasCarbs(f)&&hasFats(f))return "Carbs and fats in the same meal: remove one";
+  if((f.pcarbs||[]).length&&!ctx.pre)return "Pre-workout carbs only go in your pre-workout meal";
+  if((f.ecarbs||[]).length&&!(ctx.eve||ctx.post))return "Carbs only go in your evening and post-workout meals";
+  return "";
+}
+const planFvOk=log=>planFoodsOf(log).every((f,i)=>!planIssue(f,planCtx(log,i+1)));
+// today's meals, to copy into tomorrow's plan
+const copySource=log=>mealsOf(log).filter(m=>foodsCount(m.foods)).sort((a,b)=>a.slot-b.slot);
 const hasEveningMeal=log=>planFoodsOf(log).some((f,i)=>foodsCount(f)&&mins(planMealTime(log,i+1))>=18*60);
 const planFoodsOf=log=>{const a=Array.isArray(log.plan_foods)?log.plan_foods.slice(0,MAX_MEALS):[];while(a.length<MAX_MEALS)a.push({});return a};
 const MEAL_EXAMPLES=["Eggs, spinach, berries","Greek yoghurt, berries, honey","Chicken, rice, greens","Salmon, potatoes, broccoli","Steak, sweet potato, peppers","Protein shake, banana"];
@@ -1717,12 +1732,14 @@ function askHtml(a,log,wk,locked){
       const eve=hasEveningMeal(log);
       return `<div class="ask"><span class="ask-h">${a.label} <span class="muted num">${n} planned</span>${infoBtn("meal_plan","planning your meals")}</span>${infoBox("meal_plan")}
         <small class="muted" style="font-weight:500">Plan as many meals as you need, up to ${MAX_MEALS}. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
+        ${copySource(log).length&&!dis?`<div class="copy-day"><span><b>Eating the same tomorrow?</b> Copy today's ${copySource(log).length} meals, then change anything you need.</span><button class="btn" data-plancopy="all">Copy today's meals</button></div>`:""}
         ${n?`<div class="train-place${eve?" ok":""}"><span>${eve?`${TICK} Evening meal planned`:`One of your meals needs to be in the evening, 6pm or later. Set a meal's time below.`}</span></div>`:""}
         ${log.tmr_train==="yes"&&!log.tmr_train_time?`<div class="train-place"><span>Add your training time above and we'll place it between your meals.</span></div>`:""}${ta&&log.tmr_train_time?`<div class="train-place"><span>Training${log.tmr_train_time?" at <b class=\"num\">"+esc(log.tmr_train_time)+"</b>":""} goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-trainafter="${n}" aria-pressed="${ta===n}" ${dis}>Meal ${n}</button>`).join("")}</div><small class="muted">Meal ${ta} (${planMealTime(log,ta)}) is your pre-workout meal, Meal ${ta+1} (${planMealTime(log,ta+1)}) your post-workout meal. Change it if your day runs differently.</small>${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).length?`<small style="color:var(--warn);font-weight:700">Plan ${[ta,ta+1].filter(n=>!foodsCount(plan[n-1])).map(n=>"Meal "+n+(n===ta?" (pre-workout)":" (post-workout)")).join(" and ")} below.</small>`:""}</div>`:""}
         <div class="plan-slots">${plan.map((f,i)=>{const key="plan"+i,open=S.openMeal===key,c=foodsCount(f),role=mealRole(i+1,ta);
           return `<div class="plan-slot${c?" filled":""}${open?" open":""}">
-            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:c&&mins(planMealTime(log,i+1))>=18*60?` <span class="role eve">Evening meal</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${c&&!fvOk(f)?`<small class="carb-cue">Add ${fvMissing(f).join(" and ")}: needed in every meal</small>`:""}${role==="Pre-workout"&&!(f.pcarbs||[]).length&&!hasFats(f)?`<small class="carb-cue">Add a pre-workout carb to fuel your training</small>`:""}${!role&&c&&mins(planMealTime(log,i+1))>=18*60&&!(f.ecarbs||[]).length&&!hasFats(f)?`<small class="carb-cue">Add an evening carb to help you wind down</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
+            <button class="plan-head" data-mealopen="${key}" ${dis}><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role">${role}</span>`:c&&mins(planMealTime(log,i+1))>=18*60?` <span class="role eve">Evening meal</span>`:""}</b><small>${c?esc(foodsSummary(f)):i===0?"Within 90 mins of waking":"Tap to plan"} · ${(log.plan_times||[])[i]?"at "+esc(log.plan_times[i]):"around "+estMealTime(log.tmr_wake,i+1)}</small>${planIssue(f,planCtx(log,i+1))?`<small class="carb-cue">${planIssue(f,planCtx(log,i+1))}</small>`:""}${role==="Pre-workout"&&!(f.pcarbs||[]).length&&!hasFats(f)?`<small class="carb-cue">Add a pre-workout carb to fuel your training</small>`:""}${!role&&c&&mins(planMealTime(log,i+1))>=18*60&&!(f.ecarbs||[]).length&&!hasFats(f)?`<small class="carb-cue">Add an evening carb to help you wind down</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
             ${c?`<label class="plan-time">Time <input type="time" class="input" data-ptime="${i}" id="pt-${i}" value="${esc(planMealTime(log,i+1))}" ${dis}></label>`:""}
+            ${(()=>{const src=copySource(log).find(m=>m.slot===i+1);return src&&!dis&&JSON.stringify(src.foods)!==JSON.stringify(f)?`<button class="link copy-one" data-plancopy="${i}">${c?"Swap for":"Same as"} today's Meal ${i+1}: ${esc(foodsSummary(src.foods))}</button>`:""})()}
             ${open?`<div class="pick-wrap">${foodPicker(key,i+1,f,dis,{pre:planTrainAfter(log)===i+1,post:!!planTrainAfter(log)&&planTrainAfter(log)+1===i+1,eve:mins(planMealTime(log,i+1))>=18*60})}${c?`<button class="link" data-planclear="${i}" style="align-self:flex-start;color:var(--bad)">Clear Meal ${i+1}</button>`:""}</div>`:""}
           </div>${ta===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b>${log.tmr_train_time?" · "+esc(log.tmr_train_time):""}</span></div>`:""}`}).join("")}</div></div>`}
     case"todo":{const list=todoOf(log),quick=[["own","Hardest task first"],["walk","Steps block after a meal"],["reset","Breathwork"],["train","Gym workout"],["walk","Nasal walk outside"]].filter(q=>!list.some(t=>t[1]===q[1]));
@@ -2364,6 +2381,11 @@ root.addEventListener("click",e=>{
   if(b.dataset.wopen){S.wopen=!S.wopen;return render()}
   if(b.dataset.trainafter){edit("tmr_train_after",Number(b.dataset.trainafter));return render()}
   if(b.dataset.traintick){const l=curCtx().log,t=l.train_done?"":nowHHMM();edit("train_pre",t);edit("train_wo",t);edit("train_base",t);edit("train_done",t);if(!l.train_start&&!l.train_done)edit("train_start",nowHHMM());S.wopen=false;return render()}
+  if(b.dataset.plancopy){const l=curCtx().log,src=copySource(l),plan=planFoodsOf(l),times=(l.plan_times||[]).slice();while(times.length<MAX_MEALS)times.push("");
+    const put=(i,m)=>{plan[i]=JSON.parse(JSON.stringify(m.foods||{}));if(m.time)times[i]=m.time};
+    if(b.dataset.plancopy==="all"){for(let i=0;i<MAX_MEALS;i++){const m=src.find(q=>q.slot===i+1);if(m)put(i,m);else{plan[i]={};times[i]=""}}toast("Copied today's meals. Check anything flagged.")}
+    else{const i=Number(b.dataset.plancopy),m=src.find(q=>q.slot===i+1);if(m)put(i,m);toast("Meal "+(i+1)+" copied")}
+    edit("plan_foods",plan);edit("plan_times",times);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));if(!l.tmr_train_after)edit("tmr_train_after","");S.openMeal=null;return render()}
   if(b.dataset.planclear){const i=Number(b.dataset.planclear),plan=planFoodsOf(curCtx().log);plan[i]={};edit("plan_foods",plan);edit("meals_tmr",plan.filter(f=>foodsCount(f)).map(foodsSummary));return render()}
   if(b.dataset.mpdel){const l=mealPlanOf(curCtx().log).slice();l.splice(Number(b.dataset.mpdel),1);edit("meals_tmr",l);return render()}
   if(b.dataset.mpadd){const inp=root.querySelector("#mpInput"),v=inp&&inp.value.trim();if(!v)return;edit("meals_tmr",[...mealPlanOf(curCtx().log),v]);render();const n=root.querySelector("#mpInput");if(n)n.focus();return}
