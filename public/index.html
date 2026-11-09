@@ -598,6 +598,7 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .protq .opts{flex-wrap:wrap}
 .prot-other{display:flex;gap:6px;align-items:center;margin-top:6px}
 .prot-other .input{max-width:170px;padding:8px 10px}
+.stepq small{font-size:12px;opacity:.75;font-weight:500}
 .prot-done{align-self:flex-start;font-size:12px;font-weight:700;color:var(--green-ink)}
 .copy-day{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px;border-radius:12px;border:1.5px dashed var(--lime);background:var(--lime-dim);font-size:13px}
 .copy-day .btn{flex:none}
@@ -963,7 +964,7 @@ const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
 const finalSlot=log=>{const mx=Math.max(0,...mealsOf(log).map(m=>m.slot));return mx>1?mx:0};
 function dayPairs(log){
   const pairs=[],fs=finalSlot(log);
-  mealsOf(log).forEach(m=>pairs.push({eve:m.slot===fs,key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,prot:m.prot,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
+  mealsOf(log).forEach(m=>pairs.push({eve:m.slot===fs,key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,prot:m.prot,steps:m.steps,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
   return pairs;
 }
 function scoreOf(log){
@@ -2008,7 +2009,9 @@ function pairHtml(p,ta,lockedBy){
     ${S.openMeal===p.key?`<div class="pick-wrap">${foodPicker(p.key,p.slot,p.foods,false,{pre:ta===p.slot,post:!!ta&&ta+1===p.slot,eve:!!p.eve||(!!p.time&&mins(p.time)>=18*60)})}<div class="pick-foot">${p.done||lockedBy?`<button class="btn" data-mealopen="${p.key}">Done</button>`:`<button class="btn primary" data-mealtick="${p.key}">Log Meal ${p.slot}</button><span class="muted" style="font-size:12px">${foodsCount(p.foods)} picked</span>`}</div></div>`:""}
     <div class="pi walk${p.walk?" done":""}${p.done?"":" locked"}">
       <button class="item-tick" data-walktick="${p.key}" aria-pressed="${!!p.walk}" ${p.done?"":"disabled"} aria-label="${p.walk?"Untick":"Tick"} walk after Meal ${p.slot}"><span class="tick">${TICK}</span></button>
-      <div class="item-main"><div class="item-title"><span>Walk block after Meal ${p.slot}</span>${p.walk?`<span class="stamp">${esc(p.walk)}</span>`:""}</div>${p.done?"":`<span class="kind">${LOCK} Unlocks when Meal ${p.slot} is ticked</span>`}</div>
+      <div class="item-main"><div class="item-title"><span>Walk block after Meal ${p.slot}</span>${p.walk?`<span class="stamp">${esc(p.walk)}</span>`:""}</div>${p.done?"":`<span class="kind">${LOCK} Unlocks when Meal ${p.slot} is ticked</span>`}
+        ${p.walk&&p.steps===undefined?`<div class="fu stepq"><span>How many steps are you on now?</span><small>Check your phone or watch: your total for today so far.</small><div class="prot-other"><input class="input" type="number" inputmode="numeric" min="0" max="100000" id="ws-${p.key.replace(/\W/g,"")}" placeholder="e.g. 6500"><button class="chip" data-stepsave="${p.key}">Save</button><button class="link" data-stepskip="${p.key}">Skip</button></div></div>`:""}
+        ${p.walk&&p.steps!==undefined?`<button class="link prot-done" data-stepedit="${p.key}">${p.steps==="?"?"Steps: skipped · add them":"Steps "+Number(p.steps).toLocaleString("en-GB")+" · change"}</button>`:""}</div>
     </div>
   </div>`;
 }
@@ -2523,6 +2526,11 @@ root.addEventListener("click",e=>{
     applyProt(key,v);return render()}
   if(b.dataset.protedit){const id=b.dataset.protedit,m=mealsOf(curCtx().log).find(q=>q.id===id);if(m){const before=Number(m.prot)>0?Number(m.prot):0;if(before)edit("protein",Math.max(0,Math.round((Number(curCtx().log.protein)||0)-before)));setMeals(a=>a.map(q=>q.id===id?{...q,prot:undefined}:q))}return render()}
   if(b.dataset.water){const id=b.dataset.water,v=b.dataset.val==="1";if(v){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10);toast("+500ml water")}if(id==="m1")edit("meal1_water",v);else setMeals(a=>a.map(m=>m.id===id?{...m,fu:v}:m));return render()}
+  if(b.dataset.stepsave){const id=b.dataset.stepsave,inp=root.querySelector("#ws-"+id.replace(/\W/g,"")),v=Math.round(Number(inp&&inp.value));
+    if(!(v>=0&&v<=100000)||inp.value==="")return toast("Enter your step count, e.g. 6500");
+    edit("steps",v);setMeals(a=>a.map(q=>q.id===id?{...q,steps:v}:q));toast("Steps updated: "+v.toLocaleString("en-GB"));return render()}
+  if(b.dataset.stepskip){const id=b.dataset.stepskip;setMeals(a=>a.map(q=>q.id===id?{...q,steps:"?"}:q));return render()}
+  if(b.dataset.stepedit){const id=b.dataset.stepedit;setMeals(a=>a.map(q=>q.id===id?{...q,steps:undefined}:q));return render()}
   if(b.dataset.walktick){const id=b.dataset.walktick;if(id==="m1"){edit("meal1_walk",curCtx().log.meal1_walk?"":nowHHMM())}else setMeals(a=>a.map(m=>m.id===id?{...m,walk:m.walk?"":nowHHMM()}:m));return render()}
   if(b.dataset.madd){let nid;const fs=finalSlot(curCtx().log);setMeals(a=>{nid=uid();const mx=Math.max(0,...a.map(m=>m.slot));if(!fs)return[...a,{id:nid,slot:mx+1,text:""}];return[...a.map(m=>m.slot===fs?{...m,slot:fs+1}:m),{id:nid,slot:fs,text:""}].sort((p,q)=>p.slot-q.slot)});S.openMeal=nid;S.fcat[nid]="protein";return render()}
   if(b.dataset.mdel){setMeals(a=>a.filter(m=>m.id!==b.dataset.mdel).map((m,i)=>({...m,slot:i+2})));return render()}
