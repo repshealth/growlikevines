@@ -2642,7 +2642,8 @@ root.addEventListener("change",e=>{
 });
 root.addEventListener("focusout",e=>{
   // leaving the last of a group of boxes: now it's safe to redraw (a tap on a button redraws anyway)
-  if(e.target.type==="number"){clearTimeout(timers._nrender);timers._nrender=setTimeout(()=>{const f=document.activeElement;if(f&&root.contains(f)&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA"))return;render()},250);return}
+  // only boxes that save as you type (data-input) can be redrawn safely: form boxes (onboarding, Ellis's targets, the check-in) hold their value until the form is sent
+  if(e.target.type==="number"&&e.target.dataset.input!==undefined){clearTimeout(timers._nrender);timers._nrender=setTimeout(()=>{const f=document.activeElement;if(f&&root.contains(f)&&(f.tagName==="INPUT"||f.tagName==="TEXTAREA"))return;render()},250);return}
   if(e.target.type!=="time"||!S.timeDirty)return;
   S.timeDirty=false;clearTimeout(timers._trender);timers._trender=setTimeout(render,250); // a tap on a button in the meantime redraws anyway
 });
