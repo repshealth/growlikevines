@@ -73,6 +73,8 @@ p{margin:0}
 .tab:hover{color:var(--fg)}
 .tab[aria-current="page"]{background:var(--lime);color:var(--ink)}
 .who{display:flex;align-items:center;gap:10px;font-size:13px}
+/* phones: logo and account on the first row, the four tabs across the full width below */
+@media (max-width:640px){.top-in{gap:8px 12px;padding-block:8px}.who{margin-left:auto}.tabs{order:3;flex-basis:100%;justify-content:space-between}.tab{flex:1;padding:8px 6px;text-align:center}}
 .avatar{width:30px;height:30px;border-radius:50%;background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:12px}
 .link{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;text-underline-offset:3px;padding:4px}
 .link:hover{color:var(--fg)}
@@ -600,6 +602,19 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .prot-other .input{max-width:170px;padding:8px 10px}
 .stepq small{font-size:12px;opacity:.75;font-weight:500}
 .prot-done{align-self:flex-start;font-size:12px;font-weight:700;color:var(--green-ink)}
+.day-guides{display:flex;flex-wrap:wrap;gap:4px 16px}
+.guide-go{align-self:flex-start;font-size:13px;font-weight:700;color:var(--green-ink);text-align:left}
+.guide-card{display:flex;flex-direction:column;gap:10px}
+.g-targets{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.g-targets div{background:var(--night);color:var(--on-night);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}
+.g-targets span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;opacity:.75;font-weight:700}
+.g-targets b{font-family:var(--display);font-size:26px;color:var(--lime)}
+.g-rules,.g-list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:14px;line-height:1.5}
+.g-foods{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+.g-food{border:1px solid var(--line);border-radius:12px;padding:12px}
+.g-food h3{font-size:15px;margin:0}
+.g-food small{display:block;font-size:11px;font-weight:700;color:var(--green-ink);margin-top:2px}
+.g-food p{margin:6px 0 0;font-size:13px;line-height:1.5}
 .copy-day{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px;border-radius:12px;border:1.5px dashed var(--lime);background:var(--lime-dim);font-size:13px}
 .copy-day .btn{flex:none}
 .copy-one{align-self:flex-start;font-size:12px;font-weight:700;color:var(--green-ink);margin:-2px 0 2px 44px;text-align:left}
@@ -852,6 +867,7 @@ function foodPicker(key,slot,foods,dis,ctx){
   return `<div class="picker">
     <div class="fcats" role="tablist">${cats.map(c=>{const n=(f[c.k]||[]).length,off=!okCat(c);return `<button class="fcat${cur===c.k?" on":""}${off?" off":""}${(c.k==="fruit"||c.k==="veg")&&!n?" need":""}" data-fcat="${key}" data-val="${c.k}" ${dis||off?"disabled":""} aria-pressed="${cur===c.k}"><span>${c.name}${c.k==="fruit"||c.k==="veg"?" *":""}</span><small class="num">${off?catBlock(c,f,ctx):n?n+" picked":c.k==="fruit"||c.k==="veg"?"Needed":"–"}</small></button>`}).join("")}</div>
     ${cats.filter(c=>c.k===cur).map(c=>`<div class="opts fopts">${c.items.map(it=>`<button class="chip" data-food="${key}" data-fc="${c.k}" data-val="${esc(it)}" aria-pressed="${(f[c.k]||[]).includes(it)}" ${dis?"disabled":""}>${esc(it)}</button>`).join("")}</div>`).join("")}
+    ${guideLink("nutrition","View the Nutrition Guide")}
     <ul class="meal-rules">
       <li class="${fvOk(f)?"ok":""}">${fvOk(f)?TICK+" ":""}Fruit and veg in every meal${fvOk(f)?"":`: add ${fvMissing(f).join(" and ")}`}. Start with the fruit, or a light appetizer like soup.</li>
       ${ctx.pre?`<li>Pre-workout meal: carbs from the pre-workout list.</li>`:ctx.eve||ctx.post?`<li>${ctx.post?"Post-workout":"Evening"} meal: carbs allowed.</li>`:`<li>No carbs in this meal. Carbs are only for your evening, pre-workout and post-workout meals.</li>`}
@@ -1626,7 +1642,7 @@ function setupView(){
 
 function topBar(){
   const coach=S.session.role==="coach";
-  const tabs=coach?[["overview","Clients"],["settings","Number setter"]]:[["today","Today"],["programme","Programme"],["progress","Progress"]];
+  const tabs=coach?[["overview","Clients"],["settings","Number setter"]]:[["today","Today"],["nutrition","Nutrition"],["workout","Workout"],["progress","Progress"]];
   const cur=coach?S.coachTab:S.tab;
   const name=coach?"Ellis Vine":me().name;
   return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
@@ -1642,7 +1658,8 @@ function topBar(){
 function clientView(){
   {const m=me();if(m.status!=="active")return waitingView(m);if(!introDone(m))return `<div class="stack">${introView(m)}</div>`}
   if(S.checkin&&S.tab==="today")return weeklyView(S.checkin);
-  if(S.tab==="programme")return programmeView();
+  if(S.tab==="nutrition")return nutritionView();
+  if(S.tab==="workout")return workoutView();
   if(S.tab==="progress")return progressView(me());
   return todayView();
 }
@@ -1811,6 +1828,7 @@ function askHtml(a,log,wk,locked){
       const eve=hasEveningMeal(log);
       return `<div class="ask"><span class="ask-h">${a.label} <span class="muted num">${n} planned</span>${infoBtn("meal_plan","planning your meals")}</span>${infoBox("meal_plan")}
         <small class="muted" style="font-weight:500">Plan as many meals as you need, up to ${MAX_MEALS}. They'll be waiting in tomorrow's Day, so all you do is tick them off.</small>
+        ${guideLink("nutrition","View the Nutrition Guide")}
         ${!log.tmr_wake?`<small class="muted">Meal times start as a guess from a 7am wake up. They update when you set your alarm at the end, and you can change any of them.</small>`:""}
         ${copySource(log).length&&!dis?`<div class="copy-day"><span><b>Eating the same tomorrow?</b> Copy today's ${copySource(log).length} meals, then change anything you need.</span><button class="btn" data-plancopy="all">Copy today's meals</button></div>`:""}
         ${n?`<div class="train-place${eve?" ok":""}"><span>${eve?`${TICK} Evening meal planned`:`One of your meals needs to be in the evening, 6pm or later. Set a meal's time below.`}</span></div>`:""}
@@ -1901,6 +1919,7 @@ function dayView(x){
   <section class="card">
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after. Your evening meal is logged in your Evening.</p>
+    <div class="day-guides">${guideLink("nutrition","View the Nutrition Guide")}${log.train==="yes"?guideLink("workout","View the Workout Guide"):""}</div>
     <div class="pairs">${(()=>{const ta=dayTrainAfter(log);let h="",placed=false,pending=0;pairs.forEach((q,qi)=>{h+=pairHtml(q,ta,pending);const tr=ta&&q.slot===ta;if(!q.fixed&&q.done&&q.water!=null){h+=checkinHtml(q.slot,log,x.wk,tr&&log.train==="yes",!pairs[qi+1]);if(!log["chk"+q.slot])pending=q.slot}if(tr){h+=trainHtml(log,pending);placed=true}});if(ta&&!placed)h+=trainHtml(log,pending);return h})()}</div>
     ${fin?`<div class="pair eve-meal"><div class="pi"><span class="item-tick"><span class="tick">${fin.done?TICK:MOON}</span></span><div class="item-main"><div class="item-title"><span>Meal ${fin.slot} <span class="role eve">Evening meal</span></span>${fin.done?`<span class="stamp">${esc(fin.done)}</span>`:fin.time?`<span class="kind">Planned ${esc(fin.time)}</span>`:""}</div><span class="muted" style="font-size:13px">${fin.text?esc(fin.text)+" · ":""}You log this one in your Evening.</span></div></div></div>`:""}
     ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add a meal</button>`:""}
@@ -1921,6 +1940,7 @@ function trainHtml(log,lockedBy){
       <span class="muted" style="font-size:13px">${esc(log.workout_name||(w&&w!=="My own workout"?w:"Your own workout"))}${log.train_done?"":` · <button class="link" data-tedit="1" style="color:var(--lime)">${S.tedit?"Done":"Time changed?"}</button>`}</span>
       ${S.tedit&&!log.train_done?`<div class="tedit"><label class="ask" for="a-train_time"><span>New training time</span><input class="input" type="time" id="a-train_time" data-input="train_time" value="${esc(log.train_time||"")}"></label><small>Your pre and post-workout meals move with it: Meal ${ta} is now your pre-workout meal and Meal ${ta+1} your post-workout meal.</small><div class="opts">${mealsOf(log).filter(m=>m.slot<MAX_MEALS).map(m=>`<button class="chip" data-dtrainafter="${m.slot}" aria-pressed="${ta===m.slot}">After Meal ${m.slot}</button>`).join("")}</div></div>`:""}
       ${lk?"":`<button class="link tvid-link" data-tvid="1">▶ ${S.tvid?"Hide":"Watch"} how your training session works</button>`}${S.tvid&&!lk?videoEmbed(TRAIN_VIDEO,"Training walkthrough","Ellis is recording a walkthrough of your training session. It'll appear here."):""}
+      ${lk?"":`<button class="link tvid-link" data-guidepage="workout">Unsure? View the Workout Guide →</button>`}
       <div class="tsteps">
         ${row("train_pre","1 · Completed pre-workout tasks","_none",true)}
         ${!lk&&!log.train_pre?`<div class="presteps">${PRE_STEPS.map(([k,t,d],i)=>`<button class="prestep${log[k]?" done":""}" data-ptick="${k}" aria-pressed="${!!log[k]}"><span class="tick">${TICK}</span><span><b>${i+1}. ${t}</b><small>${d}${k==="train_p1"&&pre?` Your pre-workout meal is Meal ${pre.slot}${pre.done?", ticked "+esc(pre.done):""}.`:""}</small></span></button>`).join("")}</div>`:""}
@@ -2107,6 +2127,56 @@ function pillarHtml(P){
   <div class="body"><h4>The way to approach this</h4>${P.approach.map(blockHtml).join("")}
   <h4>Non negotiables</h4><div>${NN.filter(n=>n.p===P.id).map(n=>`<div class="nn-item"><strong>${esc(n.name)}</strong><p>${esc(n.desc)}</p></div>`).join("")}</div>
   ${(P.extra||[]).map(blockHtml).join("")}</div></details>`;
+}
+/* ---------- Nutrition and Workout guides ---------- */
+// Clients land here from "View the Nutrition / Workout Guide" links next to their meals and training, and go straight back
+const guideLink=(page,label)=>`<button class="link guide-go" data-guidepage="${page}">Unsure? ${label} →</button>`;
+function guideTop(title,lead){
+  return `<div>${S.guideFrom?`<button class="chip" data-guideback="1">&lsaquo; Back to today</button>`:""}</div>
+    <div class="hero-p"><span class="eyebrow">Project Reset</span><h1 class="display">${title}</h1><p class="muted" style="max-width:56ch">${lead}</p></div>`;
+}
+const gcard=(title,body,id)=>`<section class="card guide-card"${id?` id="${id}"`:""}><h2 class="sec-title" style="font-size:22px">${title}</h2>${body}</section>`;
+function nutritionView(){
+  const v=INTRO_VIDEOS.find(x=>x.k==="meals"),c=me(),wk=c&&c.status==="active"?tgtFor(c,Math.max(1,clientDayNum(c))):null;
+  const cats=FOOD_CATS.filter(x=>!x.legacy),when={pcarbs:"Pre-workout meal only",ecarbs:"Evening and post-workout meals",fat:"Never in the same meal as carbs",fruit:"Every meal",veg:"Every meal"};
+  return `<div class="stack">
+    ${guideTop("Nutrition guide","Everything about your meals in one place: how to plan them, the rules, and the foods to build them from.")}
+    ${gcard("Watch: "+esc(v.title),videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here."))}
+    ${wk?gcard("Your daily targets",`<div class="g-targets"><div><span>Protein</span><b class="num">${wk.protein}g</b></div><div><span>Water</span><b class="num">${wk.water}L</b></div><div><span>Steps</span><b class="num">${Number(wk.steps).toLocaleString("en-GB")}</b></div></div><p class="muted" style="font-size:13px">These come before everything else. After every meal you update your totals, and the gauges at the bottom of your day fill up.</p>`):""}
+    ${gcard("The meal rules",`<ol class="g-rules">
+      <li><b>Fruit and veg in every meal.</b> Start with the fruit, or a light appetizer like soup.</li>
+      <li><b>Carbs only in three meals:</b> your evening meal, and the meals before and after training.</li>
+      <li><b>Pre-workout carbs are their own list,</b> for the meal before you train.</li>
+      <li><b>Carbs or fats, never both</b> in the same meal.</li>
+      <li><b>One meal in the evening,</b> 6pm or later. Being fed is one of the biggest signals to your body that it's safe to rest.</li>
+      <li><b>Water with every meal.</b></li></ol>`)}
+    ${gcard("How your meals work",`<ul class="g-list">
+      <li><b>The night before:</b> plan tomorrow's meals in your Evening. Pick the foods for each meal and its time, or copy today's meals in one tap.</li>
+      <li><b>Meal 1:</b> eaten and logged in your Morning, within 90 minutes of waking.</li>
+      <li><b>Through the day:</b> tick each meal as you eat it, say if you had water, do your walk block, then update your steps, protein and water.</li>
+      <li><b>Your evening meal:</b> logged in your Evening, as part of winding down.</li>
+      <li><b>Training days:</b> your pre-workout meal sits before your session and your post-workout meal after it. The app moves them if your training time changes.</li></ul>`)}
+    ${gcard("Approved foods",`<div class="g-foods">${cats.map(x=>`<div class="g-food"><h3>${esc(x.name)}</h3>${when[x.k]?`<small>${when[x.k]}</small>`:""}<p>${x.items.map(esc).join(" · ")}</p></div>`).join("")}</div>`)}
+    ${PILLARS.filter(P=>P.id==="eat").map(pillarHtml).join("")}
+  </div>`;
+}
+function workoutView(){
+  const v=INTRO_VIDEOS.find(x=>x.k==="workout");
+  const steps=(list)=>`<ol class="g-rules">${list.map(([k,t,d])=>`<li><b>${esc(t)}.</b> ${esc(d)}</li>`).join("")}</ol>`;
+  return `<div class="stack">
+    ${guideTop("Workout guide","How your training days work, and the steps either side of your session that make the training count.")}
+    ${gcard("Watch: "+esc(v.title),videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here."))}
+    ${TRAIN_VIDEO?gcard("Watch: your training session",videoEmbed(TRAIN_VIDEO,"Training walkthrough")):""}
+    ${gcard("Setting up a training day",`<ul class="g-list">
+      <li><b>The night before:</b> in your Evening, say you're training tomorrow and when. For now you log your own workout, and you can note what you're training.</li>
+      <li><b>On the day:</b> your training session sits in your Day between your pre-workout and post-workout meals. If your time changes, tap "Time changed?" and the meals move with it.</li>
+      <li><b>Your session has three parts:</b> your pre-workout steps, the workout, then closing the workout down. It ticks itself once all three are done.</li></ul>`)}
+    ${gcard("1 · Pre-workout steps",steps(PRE_STEPS),"g-pre")}
+    ${gcard("2 · The workout",`<p>Warm up properly, then do your session. While you train, go for the bonus points:</p><ul class="g-list">${BONUS.map(([k,t])=>`<li><b>${esc(t)}</b></li>`).join("")}</ul>`)}
+    ${gcard("3 · Close the workout",steps(CLOSE_STEPS),"g-close")}
+    ${gcard("Your morning action",`<p>Your morning walk is a must every day. On top of it you can plan a morning action the night before:</p><ul class="g-list">${MOVE.map(m=>`<li><b>${esc(m)}:</b> ${esc(INFO[m]||"")}</li>`).join("")}</ul>`)}
+    ${PILLARS.filter(P=>P.id==="evolve"||P.id==="steps").map(pillarHtml).join("")}
+  </div>`;
 }
 function programmeView(){
   const how=[
@@ -2421,8 +2491,10 @@ root.addEventListener("click",e=>{
       if(nx){toast("Done. Next: "+nx.title);setTimeout(()=>{const el=document.getElementById("vid-"+nx.k);if(el)el.scrollIntoView({behavior:"smooth",block:"start"})},60)}else{toast("All 3 watched. Welcome to Day 0");window.scrollTo({top:0,behavior:"smooth"})}}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="refresh"){S.booting=false;b.disabled=true;return boot().then(()=>{if(me()&&me().status!=="active")toast("Not yet. Ellis will set your targets soon.")})}
   if(act==="logout"){flush(true);api("/logout",{method:"POST"}).catch(()=>{}).then(()=>{DATA=null;S.session=null;S.review=null;S.detail=null;render()});return}
-  if(b.dataset.pillar){S.tab="programme";S.openPillar=b.dataset.pillar;render();return}
-  if(b.dataset.tab){if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
+  if(b.dataset.pillar){S.tab=b.dataset.pillar==="eat"?"nutrition":"workout";S.openPillar=b.dataset.pillar;render();return}
+  if(b.dataset.guidepage){S.guideFrom={y:window.scrollY};S.tab=b.dataset.guidepage;render();window.scrollTo(0,0);return}
+  if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.guideFrom=null;S.tab="today";render();window.scrollTo(0,y);return}
+  if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
   if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
   if(b.dataset.open){S.open[b.dataset.open]=true;S.scrollTo=b.dataset.open;return render()}
   if(b.dataset.collapse){S.open[b.dataset.collapse]=false;S.scrollTo=b.dataset.collapse;return render()}
