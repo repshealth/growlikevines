@@ -66,6 +66,7 @@ async function ensureSchema(db) {
   // Added after launch: test accounts
   try { await db.prepare("ALTER TABLE users ADD COLUMN test INTEGER NOT NULL DEFAULT 0").run(); } catch (e) { /* already there */ }
   try { await db.prepare("ALTER TABLE users ADD COLUMN intro TEXT").run(); } catch (e) { /* already there */ }
+  try { await db.prepare("ALTER TABLE users ADD COLUMN prefs TEXT").run(); } catch (e) { /* already there */ }
   schemaReady = true;
 }
 
@@ -134,7 +135,8 @@ const publicUser = u => ({
   form: u.form ? JSON.parse(u.form) : null,
   targets: u.targets ? JSON.parse(u.targets) : null,
   start_date: u.start_date, created_at: u.created_at, assigned_at: u.assigned_at, test: !!u.test,
-  intro: u.intro ? JSON.parse(u.intro) : {}
+  intro: u.intro ? JSON.parse(u.intro) : {},
+  prefs: u.prefs ? JSON.parse(u.prefs) : {}
 });
 
 // The three intro videos, watched in order after the onboarding form
@@ -334,6 +336,17 @@ export async function onRequest(context) {
         db.prepare("DELETE FROM photos WHERE user_id = ? AND slot != 'start'").bind(me.id),
         db.prepare("UPDATE users SET start_date = ? WHERE id = ?").bind(londonToday(), me.id)
       ]);
+      return json({ ok: true });
+    }
+
+    // The client's own food settings: foods they never eat (hidden from their picker and shopping list) and their saved meal plans
+    if (path === "/prefs" && method === "POST") {
+      if (me.role !== "client") return err(403, "Only clients have food settings.");
+      const b = await readBody(request);
+      if (!b || typeof b.prefs !== "object" || Array.isArray(b.prefs)) return err(400, "Bad settings");
+      const text = JSON.stringify(b.prefs);
+      if (text.length > 50000) return err(413, "Those settings are too large.");
+      await db.prepare("UPDATE users SET prefs = ? WHERE id = ?").bind(text, me.id).run();
       return json({ ok: true });
     }
 
