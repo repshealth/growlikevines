@@ -144,7 +144,8 @@ const INTRO_VIDEOS = ["overview", "meals", "workout"];
 
 async function getSettings(db) {
   const row = await db.prepare("SELECT value FROM settings WHERE key = 'weeks'").first();
-  return { weeks: row ? JSON.parse(row.value) : null };
+  const q = await db.prepare("SELECT value FROM settings WHERE key = 'quote'").first();
+  return { weeks: row ? JSON.parse(row.value) : null, quote: q ? JSON.parse(q.value) : null };
 }
 async function extrasFor(db, userId) {
   const q = userId ? " WHERE user_id = ?" : "";
@@ -439,6 +440,13 @@ export async function onRequest(context) {
 
     if (path === "/settings" && method === "PUT") {
       const b = await readBody(request);
+      // The quote at the top of every client's Morning
+      if (b.quote !== undefined) {
+        const text = String((b.quote && b.quote.text) || "").trim().slice(0, 1000), by = String((b.quote && b.quote.by) || "").trim().slice(0, 200);
+        if (!text) await db.prepare("DELETE FROM settings WHERE key = 'quote'").run();
+        else await db.prepare("INSERT INTO settings (key, value) VALUES ('quote', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(JSON.stringify({ text, by })).run();
+        if (b.weeks === undefined) return json({ ok: true });
+      }
       if (b.weeks === null) await db.prepare("DELETE FROM settings WHERE key = 'weeks'").run();
       else {
         if (!Array.isArray(b.weeks) || b.weeks.length < 3 || b.weeks.length > 4) return err(400, "Bad settings");
