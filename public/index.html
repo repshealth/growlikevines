@@ -568,6 +568,10 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 @media (max-width:420px){.gauge{grid-template-columns:40px;grid-template-rows:auto auto auto;justify-items:center;text-align:center}.gauge svg{grid-row:auto;width:40px;height:40px}.g-v{font-size:15px}}
 .nums{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .togo{font-size:11px;font-weight:700;color:var(--warn)}
+.num-lbl{display:flex;flex-direction:column;gap:2px}
+.num-sub{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:0}
+.num-sub .hitok{color:var(--green-ink);font-weight:700}
+.num-sub .hitok svg{width:11px;height:11px;vertical-align:-1px}
 .cue{align-self:flex-start;font-size:12px;font-weight:800;color:var(--ink);background:var(--lime);padding:3px 10px;border-radius:999px}
 .intro-head{display:flex;flex-direction:column;gap:8px}
 .intro-dots{display:flex;align-items:center;gap:6px;font-size:13px;margin-top:4px}
@@ -1844,7 +1848,7 @@ function askHtml(a,log,wk,locked){
     case"rating":return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
     case"choice":return `<div class="ask">${a.yn&&INFO[a.k]?`<span class="ask-h">${a.label}${infoBtn(a.k,a.label)}</span>${infoBox(a.k)}`:`<span>${a.label}</span>`}<div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
     case"number":{const tgt=a.target?wk[a.target]:null,hit=tgt!=null&&Number(v)>=tgt;
-      return `<label class="ask" for="${id}"><span>${a.label}${tgt!=null?` <span class="muted num">target ${Number(tgt).toLocaleString("en-GB")}</span>`:""}${v!==undefined&&v!==""&&tgt!=null?` <span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}${a.remaining&&tgt!=null&&!hit?` <span class="togo num">${(Math.round((tgt-(Number(v)||0))*10)/10).toLocaleString("en-GB")} to go</span>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
+      return `<label class="ask" for="${id}"><span class="num-lbl">${a.label}${tgt!=null?`<small class="num-sub num">Target ${Number(tgt).toLocaleString("en-GB")}${v!==undefined&&v!==""&&hit?` · <b class="hitok">${TICK} Target hit</b>`:a.remaining?` · ${(Math.round((tgt-(Number(v)||0))*10)/10).toLocaleString("en-GB")} to go`:""}</small>`:""}</span><input class="input" type="number" inputmode="decimal" min="0" step="${a.step||1}" id="${id}" data-input="${a.k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}
     case"time":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="time" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis}></label>`;
     case"textarea":return `<label class="ask" for="${id}"><span class="ask-h">${a.label}${a.info?infoBtn(a.info,a.label):""}</span>${a.info?infoBox(a.info):""}<textarea class="input" id="${id}" data-input="${a.k}" ${dis}>${esc(v||"")}</textarea></label>`;
     case"text":return `<label class="ask" for="${id}"><span>${a.label}</span><input class="input" type="text" id="${id}" data-input="${a.k}" value="${esc(v||"")}" ${dis} autocomplete="off"></label>`;
