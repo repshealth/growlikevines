@@ -1037,7 +1037,7 @@ const todoOf=log=>Array.isArray(log.todo_tmr)?log.todo_tmr:[];
 const finalSlot=log=>{const mx=Math.max(0,...mealsOf(log).map(m=>m.slot));return mx>1?mx:0};
 function dayPairs(log){
   const pairs=[],fs=finalSlot(log);
-  mealsOf(log).forEach(m=>pairs.push({eve:m.slot===fs,key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,prot:m.prot,steps:m.steps,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
+  mealsOf(log).forEach(m=>pairs.push({eve:m.slot===fs,key:m.id,slot:m.slot,text:m.text||"",foods:m.foods,time:m.time||"",done:m.done||"",water:m.fu,prot:m.prot,para:m.para,ready:m.ready,steps:m.steps,walk:m.walk||"",planned:m.planned,fixed:m.slot===1&&!!log.mm}));
   return pairs;
 }
 // Pre-workout meals have no walk block after them: the workout rules cover that
@@ -1053,7 +1053,7 @@ function scoreOf(log){
   const tr=log.train==="yes"?1:0,td=log.train_done?1:0,TT=[...PRE_STEPS,...MID_STEPS,...CLOSE_STEPS],tt=tr?TT.filter(([k])=>log[k]).length:0;
   const extraMax=meals.reduce((n,x)=>n+3+(readyApplies(log,x.slot)?1:0),0);
   const extra=meals.filter(x=>x.done).reduce((n,x)=>n+(x.fu===true?1:0)+(x.para==="yes"?1:0)+(Number(x.prot)>0?1:0)+(readyApplies(log,x.slot)&&x.ready==="yes"?1:0),0);
-  const chkP=pairs.filter(q=>!q.eve&&q.slot>1),chk=chkP.filter(q=>log["chk"+q.slot]&&log["chk"+q.slot]!=="skip").length;
+  const chkP=walkPairs(log).filter(q=>q.walk),chk=chkP.filter(q=>log["chk"+q.slot]&&log["chk"+q.slot]!=="skip").length;
   const pts=full+ml+wk+nn+td+tt+extra+chk,max=steps.length+meals.length+wp.length+yna.length+tr+(tr?TT.length:0)+extraMax+chkP.length;
   const ans=pairs.filter(x=>x.done&&x.water!==undefined&&x.water!==null),fuYes=ans.filter(x=>x.water===true).length;
   const pd=pairs.filter(x=>x.done).length;
@@ -1997,7 +1997,7 @@ function dayView(x){
     <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after. Once you've trained, close the day below. Your evening meal is logged in your Evening.</p>
     <div class="day-guides">${guideLink("nutrition","View the Nutrition Guide")}${log.train==="yes"?guideLink("workout","View the Workout Guide"):""}</div>
-    <div class="pairs">${(()=>{const ta=dayTrainAfter(log),nx=pairs.find(q=>!q.done&&!q.fixed);let h="",placed=false;pairs.forEach((q,qi)=>{h+=pairHtml(q,ta,0,log,!!nx&&nx.key===q.key);const tr=ta&&q.slot===ta&&log.train==="yes";if(!q.fixed&&q.done&&q.slot>1)h+=checkinHtml(q.slot,log,x.wk,tr,!pairs[qi+1]);if(tr){h+=trainHtml(log,0);placed=true}});if(ta&&!placed)h+=trainHtml(log,0);return h})()}</div>
+    <div class="pairs">${(()=>{const ta=dayTrainAfter(log),nx=pairs.find(q=>!q.done&&!q.fixed);let h="",placed=false;pairs.forEach((q,qi)=>{h+=pairHtml(q,ta,0,log,!!nx&&nx.key===q.key);const tr=ta&&q.slot===ta&&log.train==="yes";if(q.walk)h+=checkinHtml(q.slot,log,x.wk,tr,!pairs[qi+1]);if(tr){h+=trainHtml(log,0);placed=true}});if(ta&&!placed)h+=trainHtml(log,0);return h})()}</div>
     ${fin?`<div class="pair eve-meal"><div class="pi"><span class="item-tick"><span class="tick">${fin.done?TICK:MOON}</span></span><div class="item-main"><div class="item-title"><span>Meal ${fin.slot} <span class="role eve">Evening meal</span></span>${fin.done?`<span class="stamp">${esc(fin.done)}</span>`:fin.time?`<span class="kind">Planned ${esc(fin.time)}</span>`:""}</div><span class="muted" style="font-size:13px">${fin.text?esc(fin.text)+" · ":""}You log this one in your Evening.</span></div></div></div>`:""}
     ${next<=MAX_MEALS?`<button class="btn" data-madd="1" style="margin-top:12px">+ Add a meal</button>`:""}
     ${(()=>{const fv=fvCount(mealsOf(log).filter(m=>m.done).map(m=>m.foods)),pl=fvCount(mealsOf(log).map(m=>m.foods));return `<div class="train-place${fv>=FV_MIN?" ok":""}" style="margin-top:12px"><span>${fv>=FV_MIN?TICK+" ":""}Fruit &amp; veg eaten today: <b class="num">${fv}</b> of ${FV_MIN} minimum${fv<FV_MIN?` · ${FV_MIN-fv} to go`:""}${pl>fv?` <span class="muted">(${pl-fv} more in the meals still to come)</span>`:""}</span></div>`})()}
@@ -2076,11 +2076,11 @@ function gaugeBar(log,wk){
 }
 function checkinHtml(slot,log,wk,afterTrain,last){
   const t=log["chk"+slot];
-  if(t==="skip")return `<div class="checkin done"><span class="pb-num">–</span><div><b>Numbers skipped</b><small>Update them any time from the bar at the bottom.</small></div><button class="link" data-chkundo="${slot}">Update now</button></div>`;
-  if(t)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Numbers updated ${esc(t)}</b><small>${[log.steps&&Number(log.steps).toLocaleString("en-GB")+" steps",log.protein&&log.protein+"g protein",log.water&&log.water+"L water"].filter(Boolean).join(" · ")}</small></div><button class="link" data-chkundo="${slot}">Redo</button></div>`;
-  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Update your numbers<span class="optional">Optional</span></span><h3 class="sec-title" style="font-size:22px">Meal ${slot} done. Where are you at?</h3><p class="muted" style="font-size:13px">Your overall totals for today so far: steps on your phone, protein eaten and water drunk. Then tap <b>Numbers updated</b>, or skip it and carry on.</p></div>
-    <div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"c"+slot+"-"},log,wk,false)).join("")}</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-chk="${slot}">Numbers updated</button><button class="btn" data-chkskip="${slot}">Skip</button></div></div>`;
+  if(t==="skip")return `<div class="checkin done"><span class="pb-num">–</span><div><b>Steps skipped</b><small>Update them any time from the bar at the bottom.</small></div><button class="link" data-chkundo="${slot}">Update now</button></div>`;
+  if(t)return `<div class="checkin done"><span class="pb-num">${TICK}</span><div><b>Steps updated ${esc(t)}</b><small>${log.steps?Number(log.steps).toLocaleString("en-GB")+" steps so far":""}</small></div><button class="link" data-chkundo="${slot}">Redo</button></div>`;
+  return `<div class="checkin" id="chk-${slot}"><div><span class="eyebrow">Walk done<span class="optional">Optional</span></span><h3 class="sec-title" style="font-size:22px">How many steps so far today?</h3><p class="muted" style="font-size:13px">Your total from your phone, then tap <b>Update steps</b>. Or skip it and carry on.</p></div>
+    <div class="nums">${NUM_ASKS.filter(a=>a.k==="steps").map(a=>askHtml({...a,type:"number",idp:"c"+slot+"-"},log,wk,false)).join("")}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-chk="${slot}">Update steps</button><button class="btn" data-chkskip="${slot}">Skip</button></div></div>`;
 }
 // "How much protein was in it?" after each meal: the grams go straight onto the day's protein total (and the gauge)
 const PROT_OPTS=[10,20,30,40,50,60];
@@ -2386,7 +2386,7 @@ function programmeView(){
     "#Morning shift: stimulation & arousal",
     "Step 1: log your wake up time against what you set, tick off your morning walk (compulsory, heart rate over 100 BPM) and anything extra you planned (cold therapy, sauna or a workout), then 500ml water, outside within 30 minutes and lights bright. Step 2: your low arousal task, then eat Meal 1. Step 3, review & open the day (prefrontal cortex): your numbers so far, sun light, lights bright & phone away, Meal 1 within 90 minutes, showered & presentable, and rate your current state.",
     "#Day: keep energy stable",
-    "Your planned meals, each with a walk block after it. Update your numbers after Meals 2 and 3. On training days your session sits between your pre and post-workout meals.",
+    "Your planned meals, each with a walk block after it. Add your step count after each walk. On training days your session sits between your pre and post-workout meals.",
     "#Points",
     "1 point for every step, meal, walk block, training session and Yes check box."
   ];
@@ -2760,7 +2760,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mtick){const k=b.dataset.mtick,l=curCtx().log;edit(k,l[k]?"":nowHHMM());
     if(MID_STEPS.every(([q])=>curCtx().log[q])&&!curCtx().log.train_wo){const t=nowHHMM();edit("train_wo",t);if(!curCtx().log.train_start)edit("train_start",t);toast("Workout done. Now close it out.")}
     return render()}
-  if(b.dataset.chk){const sl=b.dataset.chk,ins=[...root.querySelectorAll(`[id^="a-c${sl}-"]`)];ins.forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Numbers updated");return render()}
+  if(b.dataset.chk){const sl=b.dataset.chk,ins=[...root.querySelectorAll(`[id^="a-c${sl}-"]`)];ins.forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Steps updated");return render()}
   if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
   if(b.dataset.pickopen){const k=b.dataset.pickopen;S.openPick=S.openPick===k?null:k;S.dd=S.openPick?k:null;return render()}
