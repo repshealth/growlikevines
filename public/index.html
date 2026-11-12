@@ -1388,8 +1388,8 @@ const ONB=[
     {k:"weight_lb",label:"Bodyweight (lbs)",type:"number",req:1,min:70,max:600,step:0.1},
     {k:"height",label:"Height",type:"height",req:1},
     {k:"waist",label:"Waist measurement (inches)",type:"number",req:1,min:15,max:80,step:0.25,hint:"Around your belly button, standing relaxed."}]],
-  ["Photos","Only Ellis and the coaching team see these. Good light, plain background, same spot you'll use next time.",[
-    {k:"ph_clothed",label:"Clothed",type:"photo",kind:"clothed",req:1},
+  ["Photos","Optional, but they make your Day 21 comparison much clearer. Only Ellis and the coaching team see these. Good light, plain background, same spot you'll use next time.",[
+    {k:"ph_clothed",label:"Clothed",type:"photo",kind:"clothed",opt:1},
     {k:"ph_front",label:"Front, in underwear",type:"photo",kind:"front",opt:1},
     {k:"ph_side",label:"Side",type:"photo",kind:"side",opt:1},
     {k:"ph_back",label:"Back",type:"photo",kind:"back",opt:1}]],
@@ -1582,8 +1582,8 @@ function waitingView(p){
       <div class="wait-steps"><div class="done"><span class="pb-num">${TICK}</span>Onboarding sent</div><div class="now"><span class="pb-num">2</span>Ellis sets your targets</div><div><span class="pb-num">3</span>Watch 3 intro videos</div><div><span class="pb-num">4</span>Day 0, your setup day</div></div>
     </section>
     ${missing.length?`<section class="card onb-sec"><h2 class="sec-title" style="font-size:20px">${have.has("clothed")?"Add the rest of your photos":"Add your starting photos"}</h2>
-      <p class="muted" style="font-size:13px">${have.has("clothed")?"These are optional, but they make your Day 21 comparison much clearer.":"Your clothed photo didn't come through. Add it here so Ellis has your starting point."}</p>
-      ${missing.map(k=>`<div class="photo-row"><span style="flex:1;font-weight:600;font-size:14px">${esc(PHOTO_KINDS[k])}${k==="clothed"?' <span class="req">*</span>':""}</span><label class="chip upload" for="wp-${k}">Add photo<input type="file" id="wp-${k}" data-photonow="${k}" data-slot="start" accept="image/*"></label></div>`).join("")}</section>`:""}
+      <p class="muted" style="font-size:13px">These are optional, but they make your Day 21 comparison much clearer.</p>
+      ${missing.map(k=>`<div class="photo-row"><span style="flex:1;font-weight:600;font-size:14px">${esc(PHOTO_KINDS[k])}</span><label class="chip upload" for="wp-${k}">Add photo<input type="file" id="wp-${k}" data-photonow="${k}" data-slot="start" accept="image/*"></label></div>`).join("")}</section>`:""}
     <button class="btn" data-act="refresh" style="align-self:flex-start">Check again</button>
   </div>`;
 }
