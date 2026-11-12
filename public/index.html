@@ -832,7 +832,7 @@ const PHASES=[
 // Morning brain targets (from Ellis's Loom: the morning action should hit all of these)
 const BRAIN=[["motor","Motor cortex"],["brainstem","Brainstem arousal"],["basal","Basal ganglia"],["circadian","Circadian rhythm"]];
 const ACTIONS=[["Morning walk",["motor","brainstem","basal","circadian"]],["Walk or cardio (over 100 BPM)",["motor","brainstem","basal","circadian"]],["Cardio (over 100 BPM)",["motor","brainstem","basal","circadian"]],["Cold therapy",["brainstem"]],["Sauna",["brainstem"]],["Workout",["motor","brainstem","basal"]],["Breath work",["brainstem"]]];
-const WALK=ACTIONS[0][0]; // the morning walk is compulsory and ticked on its own
+const WALK=ACTIONS[0][0]; // older logs only: the morning walk used to be ticked on its own
 // Tomorrow's action options, from Ellis's Process doc (pick at least one)
 const MOVE=["Walk or cardio (over 100 BPM)","Cold therapy","Sauna","Workout","Breath work"];
 const SOON="Ellis's guide (PDF or video) for this is coming soon.";
@@ -949,15 +949,16 @@ const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 const WORKOUTS=[["Your workout",["My own workout"]]];
 // The Process (from Ellis). Morning shift: wake & move, low arousal task, review & open the day.
 const MORNING=[
-  {id:"m1",title:"Wake up & move",cue:["up","Action: do the thing."],text:["Log the time you got out of bed","Do your morning walk: a must, every day","Your action, set last night","Your check boxes: do these on waking, before or during your action"],
-   asks:[{k:"woke_at",type:"time",label:"What time did you wake up and get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"am_walk",type:"choice",yn:true,label:"Morning walk done (heart rate over 100 BPM)",options:[["yes","Yes"],["no","No"]],req:l=>!!l.am_walk,reqMsg:"Tick off your morning walk"},{k:"steps",type:"number",label:"Steps after your walk (total from your phone)",target:"steps",remaining:true,when:l=>l.am_walk==="yes"},{k:"m_action",type:"pick",multi:true,label:"Action: do the thing",options:MOVE,req:l=>(l.m_action||[]).length>0,reqMsg:"Pick your action"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_wakeh",type:"numhead",title:"On waking, before or during your action",text:"Do these as soon as you're up, before you start your action or while you're doing it."},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},{k:"am_ff",type:"choice",yn:true,label:"Physical fight or flight mode on (body temp up, heavy breathing, adrenaline spiked)",options:[["yes","Yes"],["no","No"]]}]},
+  {id:"m1",title:"Wake up & move",cue:["up","Action: do the thing."],text:["Log the time you got out of bed","Do the action you set last night, then tick it off","Your check boxes: do these on waking, before or during your action"],
+   asks:[{k:"woke_at",type:"time",label:"What time did you wake up and get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_actplan",type:"actplan"},{k:"m_action_done",type:"pick",multi:true,label:"Action: tick what you've done",options:MOVE,req:l=>(l.m_action_done||[]).length>0,reqMsg:"Tick off your action: at least one"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action_done||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_wakeh",type:"numhead",title:"On waking, before or during your action",text:"Do these as soon as you're up, before you start your action or while you're doing it."},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},{k:"am_ff",type:"choice",yn:true,label:"Physical fight or flight mode on (body temp up, heavy breathing, adrenaline spiked)",options:[["yes","Yes"],["no","No"]]}]},
   {id:"m2",title:"Bring it down",cue:["down","Release: recover."],text:["Do your low arousal task: it was set last night, change it if you need to","Tick off your check boxes","Then eat Meal 1"],
    asks:[{k:"m_lower",type:"pick",multi:true,label:"Release: recover. Your low arousal task",options:LOWER,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"am_rehydrate",type:"choice",yn:true,label:"Rehydrate",options:[["yes","Yes"],["no","No"]]},{k:"am_pns",type:"choice",yn:true,label:"Physical parasympathetic switch mode on (body temp down, controlled breathing)",options:[["yes","Yes"],["no","No"]]}]},
   {id:"m3",title:"Review & open the day",region:"Prefrontal cortex",text:["Review your to-do list for today","Tick off your check boxes","Rate how you feel"],
    asks:[{k:"todos",type:"todolist",label:"Review your plan for today: your to-do list",text:"Set last night. Add, change or remove anything now, then tick them off in your Day."},{k:"am_sun",type:"choice",yn:true,label:"Outside sun light exposure",options:[["yes","Yes"],["no","No"]]},{k:"am_phone",type:"choice",yn:true,label:"Lights bright & phone away",options:[["yes","Yes"],["no","No"]]},{k:"am_meal1",type:"choice",yn:true,label:"Meal 1 eaten or ready to be eaten within 90 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_shower",type:"choice",yn:true,label:"Showered & presentable for the day",options:[["yes","Yes"],["no","No"]]},{k:"am_journal",type:"choice",yn:true,label:"Journaled",options:[["yes","Yes"],["no","No"]]},{k:"m_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"am_state",type:"rating",arousal:true,aim:"centred",label:"Rate your current state: your arousal level, 1 to 10"}]}
 ];
 const ML=3;
-const brainHit=log=>{const b=new Set();if(log.m1)[...(log.am_walk==="yes"?[WALK]:[]),...(Array.isArray(log.m_action)?log.m_action:[])].forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
+const actDone=log=>Array.isArray(log.m_action_done)?log.m_action_done:[...(log.am_walk==="yes"?[WALK]:[]),...(Array.isArray(log.m_action)?log.m_action:[])];
+const brainHit=log=>{const b=new Set();if(log.m1)actDone(log).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 // Evening shift: review & close the day, then check points.
 const EVENING=[
   {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",cue:["set","Close the day. Set tomorrow."],text:["Did you stick to the rules today?","Your numbers so far","Set up tomorrow: training, meals, your morning, a summary of today, your intentions and your alarm"],
@@ -1078,7 +1079,7 @@ function scoreOf(log){
   const ans=pairs.filter(x=>x.done&&x.water!==undefined&&x.water!==null),fuYes=ans.filter(x=>x.water===true).length;
   const pd=pairs.filter(x=>x.done).length;
   const sn=new Set();
-  if(log.m1&&(log.am_walk==="yes"||(Array.isArray(log.m_action)?log.m_action:[]).length))["sight","sound","smell"].forEach(x=>sn.add(x));
+  if(log.m1&&actDone(log).length)["sight","sound","smell"].forEach(x=>sn.add(x));
   if(log.m2&&log.m_lower&&log.m_lower.length)["smell","touch"].forEach(x=>sn.add(x));
   if(pd)["taste","smell"].forEach(x=>sn.add(x));
   if(wk)["sight","sound","touch"].forEach(x=>sn.add(x));
@@ -1798,7 +1799,7 @@ function readyCard(x){
 }
 function blockSummary(id,log){
   const sc=scoreOf(log);
-  if(id==="morning")return [(log.woke_at||log.m1)&&`Woke ${log.woke_at||log.m1}`,(log.m_action||[]).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.mm&&`Meal 1 ${log.mm}`,log.am_state&&`State: ${zoneTxt(log.am_state)}`].filter(Boolean).join(" · ");
+  if(id==="morning")return [(log.woke_at||log.m1)&&`Woke ${log.woke_at||log.m1}`,actDone(log).join(", "),Array.isArray(log.m_lower)?log.m_lower.join(", "):log.m_lower,log.mm&&`Meal 1 ${log.mm}`,log.am_state&&`State: ${zoneTxt(log.am_state)}`].filter(Boolean).join(" · ");
   if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,log.train==="yes"?(log.train_done?`Trained ${log.train_done}`:"Training not ticked"):"",`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   {const ev=eveningSteps(log),last=log[ev[ev.length-1].id];return [last&&`Done ${last}`,(log.pm_tool||[]).length&&(Array.isArray(log.pm_tool)?log.pm_tool.join(", "):log.pm_tool),log.pm_state&&`State: ${zoneTxt(log.pm_state)}`,`${mealPlanOf(log).length} ${mealPlanOf(log).length===1?"meal":"meals"} planned for tomorrow`,log.tmr_wake&&`Wake up ${log.tmr_wake}`].filter(Boolean).join(" · ")}
 }
@@ -1909,7 +1910,8 @@ function askHtml(a,log,wk,locked){
         <div><button class="btn primary" data-finallog="${f.key}" ${locked?"disabled":""}>Log Meal ${f.slot}</button><span class="muted" style="font-size:12px;margin-left:8px">Not eaten yet? Carry on, you can log it later tonight.</span></div></div>`}
     case"infonote":return `<div class="ask-h infonote"><b>${esc(a.title)}</b>${infoBtn(a.info,a.title)}</div>${infoBox(a.info)}`;
     case"confirm":return `<button class="confirm${v?" on":""}" data-ask="${a.k}" data-val="${v?"":"yes"}" ${dis} aria-pressed="${!!v}"><span class="tick">${TICK}</span><span>${esc(a.label)}</span></button>`;
-    case"walknote":return `<div class="numhead"><b>Tomorrow morning: action, then release</b><span>Your morning walk is a must every day and is already in. Your action is your switch up: pick at least one. Then pick how you'll bring it back down.</span></div>`;
+    case"actplan":{const pl=(Array.isArray(log.m_action)?log.m_action:[]).filter(a=>MOVE.includes(a));return `<div class="numhead"><b>Your action this morning</b><span>${pl.length?`Planned last night: <b>${esc(pl.join(", "))}</b>. Do at least one, then tick what you've done below. Did something else instead? Tick that.`:"You didn't plan one last night. Do at least one of these, then tick what you've done."}</span></div>`}
+    case"walknote":return `<div class="numhead"><b>Tomorrow morning: action, then release</b><span>Your action is your switch up: pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
@@ -2399,7 +2401,7 @@ function workoutView(){
     ${gcard("1 · Pre-workout steps",steps(PRE_STEPS),"g-pre")}
     ${gcard("2 · During the workout",steps(MID_STEPS))}
     ${gcard("3 · Close the workout",steps(CLOSE_STEPS),"g-close")}
-    ${gcard("Your morning action",`<p>Your morning walk is a must every day. On top of it you can plan a morning action the night before:</p><ul class="g-list">${MOVE.map(m=>`<li><b>${esc(m)}:</b> ${esc(INFO[m]||"")}</li>`).join("")}</ul>`)}
+    ${gcard("Your morning action",`<p>Plan at least one morning action the night before, then tick off what you did in the morning. Each is your switch up:</p><ul class="g-list">${MOVE.map(m=>`<li><b>${esc(m)}:</b> ${esc(INFO[m]||"")}</li>`).join("")}</ul>`)}
     ${gcard("The Reset, step by step",`<p>Ellis's nervous system regulator. One of your low arousal options, morning or evening.</p><ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></li>`).join("")}</ol><p class="muted">You must eat and drink either before or after this.</p>`,"g-reset")}
     ${PILLARS.filter(P=>P.id==="evolve"||P.id==="steps").map(pillarHtml).join("")}
   </div>`;
@@ -2410,7 +2412,7 @@ function programmeView(){
     "#Evening shift: reduce arousal",
     "Step 1, review & close the day (prefrontal cortex): log your water, steps and protein, set tomorrow's meal plan, set tomorrow's morning tasks and whether you train and when, summarise your day, set your intentions and your wake up time. Step 2, check points (amygdala, insula, locus coeruleus, hypothalamus): your low arousal task, then moonlight, lights dimmed & phone away, final meal, showered, and rate your current state.",
     "#Morning shift: stimulation & arousal",
-    "Step 1: log your wake up time against what you set, tick off your morning walk (compulsory, heart rate over 100 BPM) and anything extra you planned (cold therapy, sauna or a workout), then 500ml water, outside within 30 minutes and lights bright. Step 2: your low arousal task, then eat Meal 1. Step 3, review & open the day (prefrontal cortex): your numbers so far, sun light, lights bright & phone away, Meal 1 within 90 minutes, showered & presentable, and rate your current state.",
+    "Step 1: log your wake up time against what you set, tick off the action you planned last night (at least one: walk or cardio over 100 BPM, cold therapy, sauna, a workout or breath work), then 500ml water, outside within 30 minutes and lights bright. Step 2: your low arousal task, then eat Meal 1. Step 3, review & open the day (prefrontal cortex): your to-do list, sun light, lights bright & phone away, Meal 1 within 90 minutes, showered & presentable, and rate your current state.",
     "#Day: keep energy stable",
     "Your planned meals, each with a walk block after it. Add your step count after each walk. On training days your session sits between your pre and post-workout meals.",
     "#Points",
