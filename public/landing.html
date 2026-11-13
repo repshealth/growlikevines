@@ -200,14 +200,26 @@ p{margin:0 0 14px}
 .video .head p{max-width:30em;color:var(--soft);margin:0}
 
 /* philosophy */
-.creed{background:var(--lime);padding:90px 0}
+.creed{position:relative;overflow:hidden;background:#000;color:#fff;padding:140px 0;min-height:860px;display:flex;align-items:center}
+.creed .wrap{width:100%}
+.creed-bg{position:absolute;top:0;right:0;width:62%;height:100%;object-fit:cover;object-position:60% 30%;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 52%);mask-image:linear-gradient(90deg,transparent 0,#000 52%)}
+.creed::before{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(90deg,rgba(0,0,0,.6) 0%,rgba(0,0,0,.45) 45%,rgba(0,0,0,0) 66%)}
+.creed .wrap{position:relative;z-index:2}
+.creed .d{color:#fff}
+.creed .three h3{color:var(--lime)}
+.creed p{color:#e3e8de}
 .creed .d{font-size:clamp(44px,7.4vw,104px);max-width:13ch}
 .creed p{font-size:clamp(17px,1.5vw,20px);max-width:36em;margin-top:28px;font-weight:500}
-.creed-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:56px;align-items:center}
+.creed-grid{max-width:600px}
 .creed-img{margin:0;border-radius:30px;overflow:hidden;border:3px solid var(--ink);box-shadow:12px 12px 0 var(--ink);aspect-ratio:4/5}
 .creed-img img{width:100%;height:100%;object-fit:cover;object-position:60% 40%}
-@media (max-width:860px){.creed-grid{grid-template-columns:1fr}.creed-img{max-width:420px;aspect-ratio:1}}
-.creed .three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:54px;border-top:2px solid var(--ink);padding-top:26px}
+@media (max-width:860px){
+  .creed{padding:0 0 70px;min-height:0;display:block}
+  .creed-bg{position:relative;width:100%;height:420px;object-position:80% 45%;-webkit-mask-image:none;mask-image:none}
+  .creed::before{background:linear-gradient(180deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 260px,#000 420px,#000 100%)}
+  .creed .wrap{margin-top:-80px}
+}
+.creed .three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:54px;border-top:2px solid var(--lime);padding-top:26px}
 .creed .three h3{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;font-size:30px;line-height:1}
 .creed .three p{font-size:16px;margin:8px 0 0;font-weight:500}
 @media (max-width:1100px){.creed .three{grid-template-columns:1fr;gap:18px}}
@@ -481,6 +493,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
   </section>
 
   <section class="creed" aria-labelledby="creed">
+    <img class="creed-bg" src="/home/ellis-beach.webp" alt="" loading="lazy" width="1320" height="2015">
     <div class="wrap">
       <div class="creed-grid"><div>
       <h2 class="d" id="creed">It's not just what you do.</h2>
@@ -491,7 +504,6 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         <div><h3>Nervous system</h3><p>Improve your ability to handle stress, return to calm and recover properly.</p></div>
       </div>
       </div>
-      <figure class="creed-img"><img src="/home/ellis-beach.webp" alt="Ellis on the beach at first light, mid morning action" loading="lazy" width="900" height="1374"></figure>
       </div>
     </div>
   </section>
