@@ -771,6 +771,19 @@ select.input{appearance:auto}
   .demo-row{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.zero-split{display:flex;flex-direction:column;gap:12px;margin:14px 0 6px}
+.zs-done{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--pale);border:1.5px solid var(--lime)}
+.zs-done .tick{flex:none;width:26px;height:26px;border-radius:50%;background:var(--lime);display:grid;place-items:center}
+.zs-done .tick svg{width:15px;height:15px;opacity:1;stroke:#000;color:#000}
+.zs-done b{display:block}
+.zs-done span{font-size:14px;color:var(--muted)}
+.zs-now{padding:18px 18px 16px;border-radius:18px;background:var(--fg);color:#fff}
+.zs-now .eyebrow{color:var(--lime)}
+.zs-now h3{margin:2px 0 6px;font-size:40px;color:#fff}
+.zs-now p{margin:0;font-size:14.5px;color:#d6dcd1}
+.zs-now.later{background:transparent;color:inherit;border:1.5px dashed var(--line)}
+.zs-now.later h3{color:inherit}
+.zs-now.later p{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -972,9 +985,9 @@ const EVENING=[
 const ZERO=[
   {id:"e1",title:"Your targets",text:["These are your daily targets, set by Ellis","They come before everything else, every single day"],
    asks:[{k:"_targets",type:"targets"},{k:"_tinfo",type:"infonote",info:"targets",title:"Why these three matter"},{k:"targets_ok",type:"confirm",label:"I understand: hitting my steps, protein and water every day matters more than anything else.",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Set up Day 1",region:"Prefrontal cortex",cue:["set","Set tomorrow tonight."],text:["Training tomorrow, and when","Your meals","Your morning: your action and how you'll bring it down","Your intentions","Your alarm"],
+  {id:"e2",title:"Plan Day 1 (tomorrow)",region:"Prefrontal cortex",cue:["set","Set tomorrow tonight."],text:["Training tomorrow, and when","Your meals","Your morning: your action and how you'll bring it down","Your intentions","Your alarm"],
    asks:[{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: your low arousal task",options:LOWER,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"_iint",type:"infonote",info:"intentions",title:"Intention: your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; this is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
-  {id:"e3",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Do these now. Rest, recover and wind down for sleep."],text:["Do your low arousal task now","Tick off what you've done","Rate how you feel"],
+  {id:"e3",title:"Tonight: wind down",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Rest, recover and wind down for sleep."],text:["Do your low arousal task now","Tick things off as you do them tonight","Rate how you feel before bed"],
    asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: at least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: your arousal level, 1 to 10"}]}
 ];
 const STEPS_OF={morning:MORNING,evening:EVENING};
@@ -1871,7 +1884,7 @@ function todayView(){
     ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
     ${pblock("day",2,st.day,dayView(x),log)}
     ${(()=>{const nx=AS_SLOTS.find(([sl,lb,d])=>d===dn+1&&d>0);return dn===today&&nx&&!assessOf(c.id)[nx[0]]&&st.evening!=="done"?`<div class="ck-heads"><span class="eyebrow">Heads up</span><b>Tomorrow is check-in day</b><span>It's your Week ${nx[2]/7} check-in: your steps and screen time, 20 quick questions and three in your own words. About 5 minutes, any time tomorrow. Have your step count and screen time handy.</span></div>`:""})()}
-    ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x,dn>0?["e2"]:null),log,dn===0?{name:"Setup day",goal:"Get ready for Day 1",intro:"Three steps today and your first day is planned."}:null)}
+    ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x,dn>0?["e2"]:null),log,dn===0?{name:"Setup day",goal:"Get ready for Day 1",intro:"Confirm your targets, plan tomorrow, then wind down tonight. Three steps."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
       :allDone?`${laterCard(x)}<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
     ${dn>0?gaugeBar(log,wk)+`<div class="gauge-space" aria-hidden="true"></div>`:""}
@@ -2004,6 +2017,18 @@ function meal1Cue(log){
     ${protQ("stage:meal1_prot",log.meal1_prot,`How much protein is in it?<span class="optional">Optional</span>`)}
     <div><button class="btn primary" data-meal1log="1">Log Meal 1</button></div></div>`;
 }
+function zeroSplit(log){
+  const planned=!!log.e2,meals=(log.meals_tmr||[]).length||planFoodsOf(log).filter(f=>foodsCount(f)).length;
+  const bits=[log.tmr_train==="yes"?`Training${log.tmr_train_time?" at "+esc(log.tmr_train_time):""}`:log.tmr_train==="no"?"Rest day":"",
+    meals?`${meals} meals planned`:"",
+    (log.tmr_action||[]).length?`Morning: ${esc((log.tmr_action||[]).join(", "))}`:"",
+    log.tmr_wake?`Alarm ${esc(log.tmr_wake)}`:""].filter(Boolean);
+  return `<div class="zero-split">
+    ${planned?`<div class="zs-done"><span class="tick">${TICK}</span><div><b>Day 1 is planned.</b><span>${bits.length?bits.join(" · ")+". ":""}That's tomorrow sorted, there's nothing more to set.</span></div></div>`:""}
+    <div class="zs-now${planned?"":" later"}"><span class="eyebrow">${planned?"Now":"After that"}</span><h3 class="display">Tonight</h3>
+      <p>${planned?"Everything from here is about this evening, as it happens. Wind down, tick things off as you do them, and rate how you feel before bed.":"Once Day 1 is planned, the last step is about this evening, right now: winding down for sleep."}</p></div>
+  </div>`;
+}
 function stepsView(ph,x,only){
   const {log,wk,prev}=x,steps=ph==="evening"?eveningSteps(log):MORNING;
   const firstOpen=steps.findIndex(s=>!log[s.id]);
@@ -2013,6 +2038,8 @@ function stepsView(ph,x,only){
   steps.forEach((s,i)=>{
     if(only&&!only.includes(s.id))return;
     const num=only?only.indexOf(s.id)+1:i+1;
+    // Day 0: a clear break between planning tomorrow and tonight
+    if(log.zero&&s.id==="e3")html+=zeroSplit(log);
     const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
     let extra="";
