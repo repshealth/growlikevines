@@ -15,5 +15,11 @@
       "database_id": "4a397150-56d5-4d6c-ae20-cefb863e3516"
     }
   ],
+  // Not secret, so they live here (dashboard plain-text variables are replaced on every deploy).
+  // RESEND_API_KEY, STRIPE_WEBHOOK_SECRET and STRIPE_PAYMENT_LINK are Secrets set in the Cloudflare dashboard.
+  "vars": {
+    "EMAIL_FROM": "Project Reset <hello@projectresetglv.co.uk>",
+    "NOTIFY_EMAIL": "ellis@growlikevines.com"
+  },
   "observability": { "enabled": true }
 }
