@@ -79,8 +79,30 @@ p{margin:0 0 14px}
 @media (max-width:420px){.nav .acts .go{display:none}}
 
 /* hero */
-.hero{padding:56px 0 40px;overflow:hidden}
-.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center}
+.hero{position:relative;background:#000;color:#fff;min-height:min(88vh,860px);display:flex;align-items:center;overflow:hidden}
+.hero .wrap{position:relative;z-index:1;width:100%;padding-top:80px;padding-bottom:80px}
+.hero-copy{max-width:610px}
+.hero-img{position:absolute;right:0;top:0;width:66%;height:100%;object-fit:cover;object-position:50% 28%;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 34%);mask-image:linear-gradient(90deg,transparent 0,#000 34%)}
+.hero::after{content:"";position:absolute;inset:auto 0 0 0;height:30%;background:linear-gradient(0deg,rgba(0,0,0,.55),transparent);pointer-events:none}
+.hero h1{color:#fff}
+.hero h1 .slab{color:#000}
+.hero .lede{color:#d3dacd}
+.hero .btn:not(.go){background:transparent;color:#fff;border-color:#fff}
+.hero .btn:not(.go):hover{background:#fff;color:#000}
+.hero .facts{color:#d3dacd}
+@media (max-width:860px){
+  .hero{flex-direction:column;align-items:stretch;min-height:0}
+  .hero-img{position:relative;width:100%;height:min(66vh,560px);object-position:62% 22%;-webkit-mask-image:linear-gradient(180deg,#000 62%,transparent);mask-image:linear-gradient(180deg,#000 62%,transparent)}
+  .hero .wrap{margin-top:-120px;padding-top:0;padding-bottom:56px}
+  .hero::after{display:none}
+}
+
+/* the board: your day in the app */
+.boardsec{padding:100px 0 30px;overflow:hidden}
+.boardsec .wrap{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:40px;align-items:center}
+.board-copy .d{font-size:clamp(46px,6.4vw,88px)}
+.board-copy .lede{margin-top:20px}
+@media (max-width:980px){.boardsec .wrap{grid-template-columns:1fr}.boardsec{padding-top:70px}}
 .hero h1{font-size:clamp(62px,8.2vw,124px)}
 .hero h1 .line{display:block}
 .hero h1 .slab{display:inline-block;background:var(--lime);padding:0 .14em .02em .06em;margin-left:-.06em;transform:skewX(-6deg)}
@@ -90,7 +112,6 @@ p{margin:0 0 14px}
 .hero .facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:28px;font-size:14px;font-weight:600;color:var(--soft);list-style:none;padding:0}
 .hero .facts li{display:flex;align-items:center;gap:8px}
 .hero .facts li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 3px #a9e80c33}
-@media (max-width:980px){.hero .wrap{grid-template-columns:1fr}.hero{padding-top:32px}}
 
 /* process board: the three phones */
 .board{position:relative;display:flex;flex-direction:column;align-items:center}
@@ -182,10 +203,14 @@ p{margin:0 0 14px}
 .creed{background:var(--lime);padding:90px 0}
 .creed .d{font-size:clamp(44px,7.4vw,104px);max-width:13ch}
 .creed p{font-size:clamp(17px,1.5vw,20px);max-width:36em;margin-top:28px;font-weight:500}
+.creed-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:56px;align-items:center}
+.creed-img{margin:0;border-radius:30px;overflow:hidden;border:3px solid var(--ink);box-shadow:12px 12px 0 var(--ink);aspect-ratio:4/5}
+.creed-img img{width:100%;height:100%;object-fit:cover;object-position:60% 40%}
+@media (max-width:860px){.creed-grid{grid-template-columns:1fr}.creed-img{max-width:420px;aspect-ratio:1}}
 .creed .three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:54px;border-top:2px solid var(--ink);padding-top:26px}
 .creed .three h3{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;font-size:30px;line-height:1}
 .creed .three p{font-size:16px;margin:8px 0 0;font-weight:500}
-@media (max-width:760px){.creed .three{grid-template-columns:1fr}}
+@media (max-width:1100px){.creed .three{grid-template-columns:1fr;gap:18px}}
 
 /* sections */
 section.blk{padding:110px 0}
@@ -213,7 +238,8 @@ section.blk{padding:110px 0}
 
 /* a day, three shifts (a real sequence) */
 .shifts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-.shift{display:flex;flex-direction:column;gap:18px}
+.shift{display:flex;flex-direction:column;gap:14px;padding:28px;border-radius:26px;background:var(--mist)}
+.shift .brain{background:var(--paper)}
 .shift .shot{position:relative;border-radius:26px;overflow:hidden;background:var(--mist);aspect-ratio:4/5;border:1.5px solid var(--line)}
 .shift .shot .mk{--w:min(64%,250px);position:absolute;left:50%;top:26px;transform:translateX(-50%)}
 .shift .tag{display:flex;align-items:center;gap:10px;font-family:var(--display);font-style:italic;font-weight:900;font-size:46px;text-transform:uppercase;line-height:.9}
@@ -245,7 +271,9 @@ section.blk{padding:110px 0}
 
 /* who it's for */
 .who{background:var(--mist)}
-.fit{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}
+.fit{display:grid;grid-template-columns:.8fr 1.3fr 1fr;gap:24px}
+.fit-img{margin:0;border-radius:28px;overflow:hidden;min-height:100%}
+.fit-img img{width:100%;height:100%;object-fit:cover;object-position:40% 30%}
 .fit .col{background:var(--paper);border-radius:28px;padding:34px}
 .fit .col.no{background:transparent;border:2px dashed #c9d3c1}
 .fit ul{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:16px}
@@ -253,7 +281,8 @@ section.blk{padding:110px 0}
 .fit li .m{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--lime);font-weight:800;font-size:15px}
 .fit .no li .m{background:transparent;border:2px solid #b6c1ad;color:var(--soft)}
 .fit h3{font-family:var(--display);font-style:italic;font-weight:900;font-size:38px;text-transform:uppercase;line-height:.95}
-@media (max-width:860px){.fit{grid-template-columns:1fr}}
+@media (max-width:1000px){.fit{grid-template-columns:1fr 1fr}.fit-img{grid-column:1/-1;height:360px}}
+@media (max-width:700px){.fit{grid-template-columns:1fr}}
 
 /* what you get */
 .gets{display:grid;grid-template-columns:repeat(12,1fr);gap:22px}
@@ -364,8 +393,9 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
 
 <main id="main">
   <section class="hero" aria-labelledby="h1">
+    <img class="hero-img" src="/home/ellis-hero.webp" alt="Ellis Vine in the gym, checking his day in the Project Reset app" width="1400" height="1630" fetchpriority="high">
     <div class="wrap">
-      <div>
+      <div class="hero-copy">
         <h1 class="d" id="h1"><span class="line">Change what's</span><span class="line">below the</span><span class="line"><span class="slab"><span>surface.</span></span></span></h1>
         <p class="lede">Project Reset is a 21 day, step by step guided process from Ellis Vine. Your nervous system, food, training and sleep, set out as one simple routine on your phone, so you can change how you think, look and feel.</p>
         <div class="ctas">
@@ -379,6 +409,15 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         </ul>
       </div>
 
+    </div>
+  </section>
+
+  <section class="boardsec" aria-labelledby="boardh">
+    <div class="wrap">
+      <div class="board-copy">
+        <h2 class="d" id="boardh">Your day,<br>in the app</h2>
+        <p class="lede">Every day runs on the same three shifts. Switch on in the Morning, stay centred through the Day, wind down in the Evening. Tap through to see each one.</p>
+      </div>
       <div class="board" id="board">
         <div class="stage" id="stage">
           <div class="phone left" aria-hidden="true"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/plans.webp" alt=""></div></div></div>
@@ -443,12 +482,16 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
 
   <section class="creed" aria-labelledby="creed">
     <div class="wrap">
+      <div class="creed-grid"><div>
       <h2 class="d" id="creed">It's not just what you do.</h2>
       <p>It's how you do it, when you do it and why you do it. Nutrition, training, sleep and your daily routine aren't separate pieces of the puzzle. They influence each other. Project Reset brings them together into one approach, working towards the same outcome.</p>
       <div class="three">
         <div><h3>Neurological</h3><p>Change how your brain thinks, learns, responds and drives your behaviour.</p></div>
         <div><h3>Physiological</h3><p>Change how your body functions, responds, recovers and adapts.</p></div>
         <div><h3>Nervous system</h3><p>Improve your ability to handle stress, return to calm and recover properly.</p></div>
+      </div>
+      </div>
+      <figure class="creed-img"><img src="/home/ellis-beach.webp" alt="Ellis on the beach at first light, mid morning action" loading="lazy" width="900" height="1374"></figure>
       </div>
     </div>
   </section>
@@ -482,21 +525,18 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
       </div>
       <div class="shifts">
         <article class="shift">
-          <div class="shot"><div class="mk" data-src="step1" data-alt="Morning in the app: wake up and move"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↑</span>Morning</div>
           <p class="why">Switch on, bring it back down, open the day.</p>
           <ul><li>Your action, planned the night before, with your heart rate over 100 BPM</li><li>On waking: 500ml water, outside within 30 minutes, bright lights</li><li>Your low arousal task to bring it back down, then Meal 1 within 90 minutes of waking</li></ul>
           <div class="brain"><b>Brain focus</b><dl><dt>Brainstem</dt><dd>the switch from sleep to wake</dd><dt>Hypothalamus (SCN)</dt><dd>shifting to daytime through light and your circadian rhythm</dd><dt>Motor cortex</dt><dd>coordination and physical readiness</dd><dt>Basal ganglia</dt><dd>starting actions and building habits</dd><dt>Locus coeruleus</dt><dd>noradrenaline-driven alertness</dd></dl></div>
         </article>
         <article class="shift">
-          <div class="shot"><div class="mk" data-src="day" data-alt="The Day in the app: meals and walk blocks"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">→</span>Day</div>
           <p class="why">Eat, move, train. Stay centred.</p>
           <ul><li>Calm before each meal, then a walk block straight after it</li><li>Your training session, with steps before, during and after</li><li>Close the day and set up tomorrow, once you've trained</li></ul>
           <div class="brain"><b>Brain focus</b><dl><dt>Prefrontal cortex</dt><dd>planning, problem solving and closing the day</dd><dt>Insula</dt><dd>body awareness: hunger, fullness, tension and calm</dd><dt>Motor cortex and basal ganglia</dt><dd>movement, intent and habit in your training</dd></dl></div>
         </article>
         <article class="shift">
-          <div class="shot"><div class="mk" data-src="calm" data-alt="The Evening in the app: rating your state, aiming for calm"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↓</span>Evening</div>
           <p class="why">Wind down. Recover for tomorrow.</p>
           <ul><li>Your evening meal: being fed tells your body it's safe to rest</li><li>Low arousal tasks, moonlight, lights dimmed, phone away</li><li>Rate where your nervous system is, aiming for calm</li></ul>
@@ -560,6 +600,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         <p class="lede">You don't need more information. You need a structure you can follow every day that works with your body, not against it.</p>
       </div>
       <div class="fit">
+        <figure class="fit-img"><img src="/home/ellis-gym.webp" alt="Ellis Vine training" loading="lazy" width="900" height="1351"></figure>
         <div class="col">
           <h3>This is for you if</h3>
           <ul>
@@ -759,8 +800,7 @@ document.documentElement.classList.add("js");
   function start(){if(!reduce&&!timer)timer=setInterval(()=>go(cur+1),4200)}
   function stop(){clearInterval(timer);timer=null}
   tabs.forEach((t,k)=>{t.addEventListener("click",()=>go(k,true));t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();const n=(k+(e.key==="ArrowRight"?1:-1)+3)%3;go(n,true);tabs[n].focus()}})});
-  requestAnimationFrame(()=>setTimeout(()=>board.classList.add("in"),80));
-  new IntersectionObserver(es=>{es[0].isIntersecting?start():stop()}).observe(board);
+  new IntersectionObserver(es=>{if(es[0].isIntersecting){board.classList.add("in");start()}else stop()},{threshold:.25}).observe(board);
 
   // a little depth: phones lean towards the pointer
   if(!reduce&&matchMedia("(pointer:fine)").matches){
