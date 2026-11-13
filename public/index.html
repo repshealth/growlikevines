@@ -856,9 +856,9 @@ const INFO={
   "Cold therapy":"A cold shower or a plunge. Start with 30 seconds and build up. Breathe slow through the nose.",
   "Sauna":"10 to 20 minutes. Drink water before and after.",
   "Workout":"Pick the workout from the library, or log your own.",
-  "Breath work":"A guided breathing session. As your action it switches you up; as your release it brings you back down.",
-  "The Reset":"Ellis's nervous system regulator: journalling, breathing and glute bridges in one guided routine of around 10 minutes. The full step by step is on the Workout page. Eat and drink either before or after it.",
-  arousal:"Arousal is how switched on your nervous system is. Calm (1 to 3): rest & digest, parasympathetic. Centred (4 to 6): balanced, alert but calm. Wired (7 to 10): fight or flight, sympathetic. There is no wrong answer: noticing it honestly is what teaches you to shift it.",
+  "Breath work":"A guided breathing session. As your action it switches you up; As your release it brings you back down.",
+  "The Reset":"Ellis's nervous system regulator: Journalling, breathing and glute bridges in one guided routine of around 10 minutes. The full step by step is on the Workout page. Eat and drink either before or after it.",
+  arousal:"Arousal is how switched on your nervous system is. Calm (1 to 3): Rest & digest, parasympathetic. Centred (4 to 6): Balanced, alert but calm. Wired (7 to 10): Fight or flight, sympathetic. There is no wrong answer: Noticing it honestly is what teaches you to shift it.",
   senses:"The more sensory signals you use through the day, the more self-regulating your nervous system will be. Tap the i next to each sense for examples.",
   "Meditation":"Sit still, eyes closed, and follow your breath for 10 minutes.",
   "Yoga / Pilates":"A slow session, focused on breath and control, not effort.",
@@ -871,7 +871,7 @@ const INFO={
   intentions:"Make the promise from you, to you. Every promise kept sets the signal for change.",
   wake:"Now tomorrow is set, confirm a logistically true wake up time to align.",
   "Cardio (over 100 BPM)":"A run, bike, row or brisk cardio that gets your heart rate over 100 BPM.",
-  targets:"Ellis's full explainer is coming. The short version: these three are all you have to stick to, over everything else. Your steps will feel high, your protein higher than you expect, and your water higher than you expect (yes, you'll pee more). There's a reason for each one. You can eat what you want and do what you want around them, but you hit these three every day.",
+  targets:"Ellis's full explainer is coming. The short version: These three are all you have to stick to, over everything else. Your steps will feel high, your protein higher than you expect, and your water higher than you expect (yes, you'll pee more). There's a reason for each one. You can eat what you want and do what you want around them, but you hit these three every day.",
   day_summary:"A few words or lines for no one but you to see. Externalising the day helps your brain to process & organise in full, leading to more availability to signal full rest & recovery ahead of tomorrow.",
   am_walk:"Your morning walk is a must, every day. Get outside and walk briskly enough to get your heart rate over 100 BPM. It wakes your body up, sets your body clock and gets your steps started.",
   am_water500:"Drink 500ml of water as soon as you're up. You've gone all night without any, and rehydrating first thing lifts your energy and focus.",
@@ -881,9 +881,9 @@ const INFO={
   am_phone:"Keep the lights bright and your phone out of reach for the first part of your day, so you start it on your terms, not on notifications.",
   am_meal1:"Meal 1 eaten, or ready to eat, within 90 minutes of waking. Eating early keeps your energy steady through the morning.",
   am_shower:"Showered, dressed and ready, so your body and brain know the day has started.",
-  am_ff:"Your body should feel switched on: temperature up, breathing heavy, adrenaline spiked. That's your action doing its job.",
+  am_ff:"Your body should feel switched on: Temperature up, breathing heavy, adrenaline spiked. That's your action doing its job.",
   am_rehydrate:"Drink water as you bring it down. Your action used it up.",
-  am_pns:"Feel the switch back down: body temperature dropping and your breathing slow and controlled.",
+  am_pns:"Feel the switch back down: Body temperature dropping and your breathing slow and controlled.",
   am_journal:"A few lines on paper before the day takes over.",
   rules:"Your targets, your meals built the Project Reset way, your walk blocks and your training. Be honest, it's only for you.",
   para:"Eating when you're calm (parasympathetic) means you digest properly. If you're wired or rushed, take a few minutes to bring it down first.",
@@ -894,10 +894,10 @@ const INFO={
   pm_dim:"Dim the lights and put your phone away for the last part of your evening. Bright light and screens at night keep your brain switched on and push back sleep.",
   pm_meal:"Your final meal eaten, or prepped and ready. Being fed and watered is one of the biggest signals to your nervous system that it's safe to rest.",
   pm_shower:"Shower and change into comfortable clothes to mark the end of your day.",
-  meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs only go in two meals: pre-workout carbs in the meal before you train, and evening carbs in your evening meal. Plan as many meals as you need, up to 5. Your last meal of the day is your evening meal: being fed is one of the biggest signals that calms your nervous system before sleep.",
+  meal_plan:"Build each meal around a protein, then add fruit or veg and a fat. Carbs only go in two meals: Pre-workout carbs in the meal before you train, and evening carbs in your evening meal. Plan as many meals as you need, up to 5. Your last meal of the day is your evening meal: Being fed is one of the biggest signals that calms your nervous system before sleep.",
   pre:"Your pre-workout meal (protein and carbs, at least an hour before) and a 5 to 10 minute warm up. Tick this once both are done.",
   workout:"Follow your session from the workout library, or your own workout.",
-  base:"Bring yourself back down after training before your post-workout meal: release tension, walk and breathe, cool down, then reverse your set up. Tick the four steps as you go."
+  base:"Bring yourself back down after training before your post-workout meal: Release tension, walk and breathe, cool down, then reverse your set up. Tick the four steps as you go."
 };
 const infoBtn=(id,label)=>(INFO[id]||SENSE_LABELS.includes(id))?`<button class="info-btn${S.info===id?" on":""}" data-info="${esc(id)}" aria-expanded="${S.info===id}" aria-label="About ${esc(label||id)}">i</button>`:"";
 const infoBox=id=>{if(S.info!==id)return"";const sd=SENSE_DOC.find(x=>x[1]===id);if(sd)return `<div class="info-box"><p><b>${esc(sd[2])}.</b> ${esc(sd[3])}</p><ul class="g-list">${sd[4].map(e=>`<li>${esc(e)}</li>`).join("")}</ul></div>`;if(!INFO[id])return"";return `<div class="info-box"><p>${esc(INFO[id])}</p>${/^(am|pm)_/.test(id)||NO_SOON.includes(id)?"":`<span class="info-soon">${SOON}</span>`}</div>`};
@@ -915,7 +915,7 @@ const RELEASE=[...LOWER,"Cold therapy","Sauna"];
 const NEXT=[["neurosim","Brain training (NeuroSim)"],["beach","Beach or nature walk"],["eat","Eat, I'm hungry now"],["work","Straight to work"]];
 const FEELS=["Wired","Flat","Settled","Connected","Emotional","Hungry","Clear head","Weakness creeping in"];
 // Approved foods (Ellis's table) and his meal rules:
-// fruit and veg in every meal, with fruit or a light appetizer (soup / fruit) first;
+// fruit and veg in every meal, with fruit or a light appetiser (soup / fruit) first;
 // carbs only in the evening, pre-workout and post-workout meals, and pre-workout carbs are their own list for the pre-workout meal;
 // carbs and fats never in the same meal.
 const FOOD_CATS=[
@@ -953,8 +953,8 @@ function foodPicker(key,slot,foods,dis,ctx){
     ${cats.filter(c=>c.k===cur).map(c=>`<div class="opts fopts">${c.items.filter(it=>!isExcluded(c.k,it)||(f[c.k]||[]).includes(it)).map(it=>`<button class="chip" data-food="${key}" data-fc="${c.k}" data-val="${esc(it)}" aria-pressed="${(f[c.k]||[]).includes(it)}" ${dis?"disabled":""}>${esc(it)}</button>`).join("")}</div>`).join("")}
     ${guideLink("nutrition","View the Nutrition Guide")}
     <ul class="meal-rules">
-      <li>Fruit &amp; veg at least ${FV_MIN} times a day, no max. Start meals with fruit or a light appetizer like soup.</li>
-      ${ctx.pre?`<li>Pre-workout meal: carbs from the pre-workout list, to fuel your session and promote glycogen use.</li>`:ctx.post?`<li>Post-workout meal: carbs allowed, to restore your glycogen.</li>`:ctx.eve?`<li>Evening meal: carbs allowed.</li>`:`<li>No carbs in this meal. Carbs are only for your evening, pre-workout and post-workout meals.</li>`}
+      <li>Fruit &amp; veg at least ${FV_MIN} times a day, no max. Start meals with fruit or a light appetiser like soup.</li>
+      ${ctx.pre?`<li>Pre-workout meal: Carbs from the pre-workout list, to fuel your session and promote glycogen use.</li>`:ctx.post?`<li>Post-workout meal: Carbs allowed, to restore your glycogen.</li>`:ctx.eve?`<li>Evening meal: Carbs allowed.</li>`:`<li>No carbs in this meal. Carbs are only for your evening, pre-workout and post-workout meals.</li>`}
       ${ctx.pre||ctx.eve||ctx.post?`<li>Carbs or fats, never both in the same meal.</li>`:""}
     </ul>
   </div>`;
@@ -966,31 +966,31 @@ const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 const WORKOUTS=[["Your workout",["My own workout"]]];
 // The Process (from Ellis). Morning shift: wake & move, low arousal task, review & open the day.
 const MORNING=[
-  {id:"m1",title:"Wake up & move",cue:["up","Action: do the thing."],text:["Log the time you got out of bed","Do the action you set last night, then tick it off","Your check boxes: do these on waking, before or during your action"],
-   asks:[{k:"woke_at",type:"time",label:"What time did you wake up and get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_actplan",type:"actplan"},{k:"m_action_done",type:"pick",multi:true,label:"Action: tick what you've done",options:MOVE,req:l=>(l.m_action_done||[]).length>0,reqMsg:"Tick off your action: at least one"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action_done||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_wakeh",type:"numhead",title:"On waking, before or during your action",text:"Do these as soon as you're up, before you start your action or while you're doing it."},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},{k:"am_ff",type:"choice",yn:true,label:"Physical fight or flight mode on (body temp up, heavy breathing, adrenaline spiked)",options:[["yes","Yes"],["no","No"]]}]},
-  {id:"m2",title:"Bring it down",cue:["down","Release: recover."],text:["Do your low arousal task: it was set last night, change it if you need to","Tick off your check boxes","Then eat Meal 1"],
-   asks:[{k:"m_lower",type:"pick",multi:true,label:"Release: recover. Your low arousal task",options:RELEASE,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"am_rehydrate",type:"choice",yn:true,label:"Rehydrate",options:[["yes","Yes"],["no","No"]]},{k:"am_pns",type:"choice",yn:true,label:"Physical parasympathetic switch mode on (body temp down, controlled breathing)",options:[["yes","Yes"],["no","No"]]}]},
+  {id:"m1",title:"Wake up & move",cue:["up","Action: Do the thing."],text:["Log the time you got out of bed","Do the action you set last night, then tick it off","Your check boxes: Do these on waking, before or during your action"],
+   asks:[{k:"woke_at",type:"time",label:"What time did you wake up and get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_actplan",type:"actplan"},{k:"m_action_done",type:"pick",multi:true,label:"Action: Tick what you've done",options:MOVE,req:l=>(l.m_action_done||[]).length>0,reqMsg:"Tick off your action: At least one"},{k:"am_workout",type:"select",label:"Which workout?",when:l=>(l.m_action_done||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_wakeh",type:"numhead",title:"On waking, before or during your action",text:"Do these as soon as you're up, before you start your action or while you're doing it."},{k:"am_water500",type:"choice",yn:true,label:"Drink 500ml water",options:[["yes","Yes"],["no","No"]]},{k:"am_outside",type:"choice",yn:true,label:"Outside within 30 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_lights",type:"choice",yn:true,label:"Lights bright",options:[["yes","Yes"],["no","No"]]},{k:"am_ff",type:"choice",yn:true,label:"Physical fight or flight mode on (body temp up, heavy breathing, adrenaline spiked)",options:[["yes","Yes"],["no","No"]]}]},
+  {id:"m2",title:"Bring it down",cue:["down","Release: Recover."],text:["Do your low arousal task: It was set last night, change it if you need to","Tick off your check boxes","Then eat Meal 1"],
+   asks:[{k:"m_lower",type:"pick",multi:true,label:"Release: Recover. Your low arousal task",options:RELEASE,req:l=>(l.m_lower||[]).length>0,reqMsg:"Pick your low arousal task"},{k:"am_rehydrate",type:"choice",yn:true,label:"Rehydrate",options:[["yes","Yes"],["no","No"]]},{k:"am_pns",type:"choice",yn:true,label:"Physical parasympathetic switch mode on (body temp down, controlled breathing)",options:[["yes","Yes"],["no","No"]]}]},
   {id:"m3",title:"Review & open the day",region:"Prefrontal cortex",text:["Review your to-do list for today","Tick off your check boxes","Rate how you feel"],
-   asks:[{k:"todos",type:"todolist",label:"Review your plan for today: your to-do list",text:"Set last night. Add, change or remove anything now, then tick them off in your Day."},{k:"am_sun",type:"choice",yn:true,label:"Outside sun light exposure",options:[["yes","Yes"],["no","No"]]},{k:"am_phone",type:"choice",yn:true,label:"Lights bright & phone away",options:[["yes","Yes"],["no","No"]]},{k:"am_meal1",type:"choice",yn:true,label:"Meal 1 eaten or ready to be eaten within 90 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_shower",type:"choice",yn:true,label:"Showered & presentable for the day",options:[["yes","Yes"],["no","No"]]},{k:"am_journal",type:"choice",yn:true,label:"Journaled",options:[["yes","Yes"],["no","No"]]},{k:"m_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"am_state",type:"rating",arousal:true,aim:"centred",label:"Rate your current state: your arousal level, 1 to 10"}]}
+   asks:[{k:"todos",type:"todolist",label:"Review your plan for today: Your to-do list",text:"Set last night. Add, change or remove anything now, then tick them off in your Day."},{k:"am_sun",type:"choice",yn:true,label:"Outside sun light exposure",options:[["yes","Yes"],["no","No"]]},{k:"am_phone",type:"choice",yn:true,label:"Lights bright & phone away",options:[["yes","Yes"],["no","No"]]},{k:"am_meal1",type:"choice",yn:true,label:"Meal 1 eaten or ready to be eaten within 90 mins of waking",options:[["yes","Yes"],["no","No"]]},{k:"am_shower",type:"choice",yn:true,label:"Showered & presentable for the day",options:[["yes","Yes"],["no","No"]]},{k:"am_journal",type:"choice",yn:true,label:"Journaled",options:[["yes","Yes"],["no","No"]]},{k:"m_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"am_state",type:"rating",arousal:true,aim:"centred",label:"Rate your current state: Your arousal level, 1 to 10"}]}
 ];
 const ML=3;
 const actDone=log=>Array.isArray(log.m_action_done)?log.m_action_done:[...(log.am_walk==="yes"?[WALK]:[]),...(Array.isArray(log.m_action)?log.m_action:[])];
 const brainHit=log=>{const b=new Set();if(log.m1)actDone(log).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
 // Evening shift: review & close the day, then check points.
 const EVENING=[
-  {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",cue:["set","Close the day. Set tomorrow."],text:["Did you stick to the rules today?","Your numbers so far","Set up tomorrow: training, meals, your morning, a summary of today, your intentions and your alarm"],
-   asks:[{k:"rules",type:"choice",yn:true,label:"Did you stick to the rules of the project today?",options:[["yes","Yes"],["no","No"]]},{k:"d_state",type:"rating",arousal:true,label:"Rate your current state: your arousal level, 1 to 10"},{k:"d_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"_nh",type:"numhead",title:"What you've done so far today (optional)",text:"Your totals so far: what you've actually done, not your target. Still got steps or water to go tonight? Put in what you've done so far and update it later from the bar at the bottom."},{k:"steps",type:"number",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"day_summary",type:"textarea",label:"A. Summarise your day",info:"day_summary"},{k:"_iint",type:"infonote",info:"intentions",title:"B. Intention: your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; this is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+  {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",cue:["set","Close the day. Set tomorrow."],text:["Did you stick to the rules today?","Your numbers so far","Set up tomorrow: Training, meals, your morning, a summary of today, your intentions and your alarm"],
+   asks:[{k:"rules",type:"choice",yn:true,label:"Did you stick to the rules of the project today?",options:[["yes","Yes"],["no","No"]]},{k:"d_state",type:"rating",arousal:true,label:"Rate your current state: Your arousal level, 1 to 10"},{k:"d_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"_nh",type:"numhead",title:"What you've done so far today (optional)",text:"Your totals so far: What you've actually done, not your target. Still got steps or water to go tonight? Put in what you've done so far and update it later from the bar at the bottom."},{k:"steps",type:"number",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: Do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: Pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: Recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: Your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"day_summary",type:"textarea",label:"A. Summarise your day",info:"day_summary"},{k:"_iint",type:"infonote",info:"intentions",title:"B. Intention: Your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; This is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e2",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Do these now, tonight. Rest, recover and wind down for sleep."],text:["Log your evening meal and anything left from today","Do your low arousal task now","Tick off what you've done tonight","Rate how you feel"],
-   asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: at least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: your arousal level, 1 to 10"}]}
+   asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: At least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: Your arousal level, 1 to 10"}]}
 ];
 // Day 0: the setup night after a new client signs up.
 const ZERO=[
   {id:"e1",title:"Your targets",text:["These are your daily targets, set by Ellis","They come before everything else, every single day"],
-   asks:[{k:"_targets",type:"targets"},{k:"_tinfo",type:"infonote",info:"targets",title:"Why these three matter"},{k:"targets_ok",type:"confirm",label:"I understand: hitting my steps, protein and water every day matters more than anything else.",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Plan Day 1 (tomorrow)",region:"Prefrontal cortex",cue:["set","Set tomorrow tonight."],text:["Training tomorrow, and when","Your meals","Your morning: your action and how you'll bring it down","Your intentions","Your alarm"],
-   asks:[{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"_iint",type:"infonote",info:"intentions",title:"Intention: your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; this is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
-  {id:"e3",title:"Tonight: wind down",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Rest, recover and wind down for sleep."],text:["Do your low arousal task now","Tick things off as you do them tonight","Rate how you feel before bed"],
-   asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: at least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: your arousal level, 1 to 10"}]}
+   asks:[{k:"_targets",type:"targets"},{k:"_tinfo",type:"infonote",info:"targets",title:"Why these three matter"},{k:"targets_ok",type:"confirm",label:"I understand: Hitting my steps, protein and water every day matters more than anything else.",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
+  {id:"e2",title:"Plan Day 1 (tomorrow)",region:"Prefrontal cortex",cue:["set","Set tomorrow tonight."],text:["Training tomorrow, and when","Your meals","Your morning: Your action and how you'll bring it down","Your intentions","Your alarm"],
+   asks:[{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: Do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: Pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: Recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: Your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"_iint",type:"infonote",info:"intentions",title:"Intention: Your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; This is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+  {id:"e3",title:"Tonight: Wind down",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Rest, recover and wind down for sleep."],text:["Do your low arousal task now","Tick things off as you do them tonight","Rate how you feel before bed"],
+   asks:[{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: At least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: Your arousal level, 1 to 10"}]}
 ];
 const STEPS_OF={morning:MORNING,evening:EVENING};
 const eveningSteps=log=>log.zero?ZERO:EVENING;
@@ -1013,7 +1013,7 @@ const planCtx=(log,slot)=>{const ta=planTrainAfter(log),ev=planEveSlot(log);retu
 // what's wrong with a planned meal under Ellis's rules ("" if nothing)
 function planIssue(f,ctx){
   if(!foodsCount(f))return "";
-  if(hasCarbs(f)&&hasFats(f))return "Carbs and fats in the same meal: remove one";
+  if(hasCarbs(f)&&hasFats(f))return "Carbs and fats in the same meal: Remove one";
   if((f.pcarbs||[]).length&&!ctx.pre)return "Pre-workout carbs only go in your pre-workout meal";
   if((f.ecarbs||[]).length&&!(ctx.eve||ctx.post))return "Carbs only go in your evening and post-workout meals";
   return "";
@@ -1026,7 +1026,7 @@ function planProblems(log){
   if(!plan.some(f=>foodsCount(f)))return["Plan your meals for tomorrow"];
   plan.forEach((f,i)=>{const p=planIssue(f,planCtx(log,i+1));if(p)out.push("Meal "+(i+1)+": "+p.charAt(0).toLowerCase()+p.slice(1))});
   const fv=planFvN(log);if(fv<FV_MIN)out.push(`Fruit & veg: ${fv} of ${FV_MIN} a day so far, add ${FV_MIN-fv} more`);
-  if(!hasEveningMeal(log))out.push("Plan at least 2 meals: your last one is your evening meal");
+  if(!hasEveningMeal(log))out.push("Plan at least 2 meals: Your last one is your evening meal");
   return out;
 }
 // today's meals, to copy into tomorrow's plan
@@ -1038,7 +1038,7 @@ const MEAL_EXAMPLES=["Eggs, spinach, berries","Greek yoghurt, berries, honey","C
 /* ---------- day list options + follow-up (process order) questions ---------- */
 const KINDS={
   meal:{name:"Meals",q:"Did you move & breathe before eating, then chew it slowly?",senses:["taste","smell","sight"],
-    opts:["Meal: protein + fruit / veg","Meal: protein + fats","Pre workout meal: protein + carbs","Post workout meal: protein + carbs","Snack: fruit + protein"]},
+    opts:["Meal: Protein + fruit / veg","Meal: Protein + fats","Pre workout meal: Protein + carbs","Post workout meal: Protein + carbs","Snack: Fruit + protein"]},
   walk:{name:"Steps",q:"Nose breathing, no podcast or music?",senses:["sight","sound","smell"],
     opts:["Steps block after a meal","Nasal walk outside","Walk before Meal 1"]},
   reset:{name:"Regulation tools",q:"Did you slow your breathing right down through it?",senses:null,opts:RESET_TOOLS.map(r=>r[0])},
@@ -1050,8 +1050,8 @@ const itemSenses=it=>it.kind==="reset"?resetSenses(it.label):(KINDS[it.kind]||KI
 function direction(log){
   const e=log.energy,t=log.train==="yes";
   const base0={low:"Energy's low. Lead with a Reset & a walk before your first big task, and keep meals on time so you're not running on the CNS.",
-    steady:"Energy's steady. Protect it: spread your steps around meals and Reset every 90 minutes.",
-    wired:"You're wired. Bring it down before you build: breathwork before tasks, nasal walks, no caffeine after 1pm."}[e];const base="Eat, then walk. Spread your steps around your meals and Reset every 90 minutes.";
+    steady:"Energy's steady. Protect it: Spread your steps around meals and Reset every 90 minutes.",
+    wired:"You're wired. Bring it down before you build: Breathwork before tasks, nasal walks, no caffeine after 1pm."}[e];const base="Eat, then walk. Spread your steps around your meals and Reset every 90 minutes.";
   return base+(t?` Training today${log.train_time?" at "+log.train_time:""}: your pre-workout meal goes before it, your post-workout meal after.`:"");
 }
 function suggestions(log){
@@ -1205,7 +1205,7 @@ const CONTENT=[
     ["It's an energy surplus, fat burning promoting method","It's a challenge that promotes every part of you to raise your limits"],
     "Because this is the building of your foundation that will not crack under the pressure of your goals. Your goals now become not just possible, but quicker & easier.",
     "A one size fits all approach to restore natural working order in all our systems again, by combining brain & body together in synergy.",
-    "This is done through a holistic, physique enhancing, trackable framework built around a guided formula with only 1 objective: to RESET the broken connection between you & your goals.",
+    "This is done through a holistic, physique enhancing, trackable framework built around a guided formula with only 1 objective: To RESET the broken connection between you & your goals.",
     "#The main disconnect we focus on during your Reset",
     ["Your thoughts lead to your actions","Your actions lead to your results"],
     "Body & brain rely on one another to connect your thoughts to your actions & your actions to your results. One thing rules them both though."
@@ -1232,16 +1232,16 @@ const CONTENT=[
     "#The upgraded version",
     "The mission is to restore that nervous system into knowing the difference between stress that would kill us and stress that will build us. Once that is restored, progress becomes possible because your body knows it is safe again, & a relaxed body outside of the gym can spend its energy on dropping fat & building muscle.",
     ">This is the part you've been missing. The foundation that's held back your progress, no matter how many times you've tried before.",
-    "Project Reset connects the systems beneath it all: your energy, mood, mindset & physique. Complete the daily tasks one at a time & unlock the potential to build the body & lifestyle you've always wanted."
+    "Project Reset connects the systems beneath it all: Your energy, mood, mindset & physique. Complete the daily tasks one at a time & unlock the potential to build the body & lifestyle you've always wanted."
   ]},
-  {id:"mission",title:"Mission brief: this is your why",open:true,blocks:[
+  {id:"mission",title:"Mission brief: This is your why",open:true,blocks:[
     ">Optimise before you mobilise.",
     "The step most people never do, then wonder why their body never responds to the work they think is right. You are pulling on levers that aren't connected properly to what they are pulling on. Without the steps in Project Reset, more work causes more problems in the long run.",
     "So your nervous system just tries to survive instead of thrive. It holds body fat, conserves energy or burns it at the wrong time, & even rewires your brain for backwards decisions that feel right.",
     "Pile a big calorie deficit, endless cardio, HYROX & CrossFit classes on a body stuck in survival mode & it holds you back further. Your brain tells you again that you can't do this.",
     "The only way to fix this is to act instead of think, until the change takes effect & your brain stops holding you back, because your nervous system & body are working so efficiently that the evidence your brain once had gets less & less.",
-    "Project Reset fixes the foundation first. 21 days of the fundamentals, done properly, the same every day: sleep, steps, food, recovery & the routines that open & close your day.",
-    "Everything in Project Reset links together, the same way your nervous system links to everything that allows the change you want. It's step by step: one tick at a time, one day at a time, one week at a time.",
+    "Project Reset fixes the foundation first. 21 days of the fundamentals, done properly, the same every day: Sleep, steps, food, recovery & the routines that open & close your day.",
+    "Everything in Project Reset links together, the same way your nervous system links to everything that allows the change you want. It's step by step: One tick at a time, one day at a time, one week at a time.",
     "Do everything that's asked & the results come. Some days it will feel hard, but that's your old brain trying to pull you back. If you can do it when it feels hard, doing it when it feels easy is easy.",
     "No one's going to save you. It's all on you. But this time you have the formula & the coach to hold you to the standard you want to become.",
     ">There's a time to fix it. It's now. Watch what happens."
@@ -1288,7 +1288,7 @@ const NN=[
   {id:"keep_easy",p:"steps",name:"Keep it easy",desc:"Steps aren't a reason to add hard cardio on top. Steps work best for healthy functioning of the body & mind when done in a low stress state, so don't turn a recovery & fat loss tool into a taxing nervous system demand on your system."},
   {id:"screenshot",p:"steps",name:"Screenshot it",desc:"At the end of the day, add a screenshot of your full step count to your tracker. No screenshot means the steps aren't counted for that day."},
   {id:"brain_walk",p:"steps",name:"Give your brain a walk",desc:"Don't distract yourself with podcasts or music. Your brain will become more quiet when you finally let it run out of steam on its own. Use your step target as a reason to balance your stress. Nobody ever came back from a walk more angry than before they left."},
-  {id:"breathe_walk",p:"steps",name:"Breathe & walk",desc:"Oxygen is our life supply. Controlling your breath whilst you hit your steps turns 2 of the most vital aspects of the project into a mega dose of 'Human rocket fuel' into your cells. For the upgrade, do all your breathing with your mouth closed: nasal breathing."},
+  {id:"breathe_walk",p:"steps",name:"Breathe & walk",desc:"Oxygen is our life supply. Controlling your breath whilst you hit your steps turns 2 of the most vital aspects of the project into a mega dose of 'Human rocket fuel' into your cells. For the upgrade, do all your breathing with your mouth closed: Nasal breathing."},
   {id:"weights",p:"evolve",name:"Train with weights 3 to 5 times",desc:"3 to 5 sessions a week."},
   {id:"drills",p:"evolve",name:"Breath focused body movement drills",desc:"x7 days weekly to train your breath to work in sync with your movement."},
   {id:"prep",p:"evolve",name:"Prep your system",desc:"Pre workout movement preps & warm ups are essential for this. 5-10 mins no matter what."},
@@ -1306,13 +1306,13 @@ const PILLARS=[
     "But this is where Project Reset comes in to hold you to a standard of living which you are missing. This standard of living is what leads you to reaching your goals for the future, allowing you to apply this standard to your own bespoke plan.",
     ">Each of the non negotiables WILL link into your daily tracker either directly or indirectly. Understanding each one will lead to higher impact on the task itself & lead to greater result."],
    extra:["#The Reset menu","Add any of these to your Day list from Regulation tools. Use one every 90 minutes, or whenever you need it.",
-    ["Breathwork: slow nasal breathing, exhale longer than the inhale. Ideal in the morning, at the end of the day, when energy is low or after sitting at a desk.","Meditation: 5 to 10 minutes, sat or lying still, with one point of focus: your breath, a word or a count.","Breath movement (Yoga / Pilates / Movement drill): any style, 15 minutes or more. Movement paired with breath, not a workout.","Nasal walk: a walk outside, breathing through the nose only, no headphones.","Heat (Sauna / Steam / Hot bath): 15 to 20 minutes, if you have access.","Massage: any form. Self, partner or booked.","Cold therapy (Sea dip / Cold shower / Cold plunge): start at 3 minutes & add 30 seconds each week.","Time out: 15 minutes of something you enjoy.","Journalling","Grounding: bare feet on grass, sand or earth, 10 minutes or more.","Sun exposure","Brain training"]]},
+    ["Breathwork: Slow nasal breathing, exhale longer than the inhale. Ideal in the morning, at the end of the day, when energy is low or after sitting at a desk.","Meditation: 5 to 10 minutes, sat or lying still, with one point of focus: Your breath, a word or a count.","Breath movement (Yoga / Pilates / Movement drill): Any style, 15 minutes or more. Movement paired with breath, not a workout.","Nasal walk: A walk outside, breathing through the nose only, no headphones.","Heat (Sauna / Steam / Hot bath): 15 to 20 minutes, if you have access.","Massage: Any form. Self, partner or booked.","Cold therapy (Sea dip / Cold shower / Cold plunge): Start at 3 minutes & add 30 seconds each week.","Time out: 15 minutes of something you enjoy.","Journalling","Grounding: Bare feet on grass, sand or earth, 10 minutes or more.","Sun exposure","Brain training"]]},
   {id:"eat",letter:"E",name:"Eat",tag:"Nourishing correctly so your energy systems don't need to rely on the CNS for energy",approach:[
     "The main focus for your food is protein, fruit & veg at the top of the list in high amounts. Carbs & fats next on the priority list. All packed with vital nutrients, vitamins & electrolytes that restore your energy & physique building capability.",
     "Nourishment is the name of the game here. This works to build you into a position where more food leads to more recovery & fat loss, because a central nervous system will stop doing the work that your food should be doing instead of just being used as fat storage.",
     "You will not gain fat eating this way by following the full formula that runs throughout the project. The methodology points below are listed as non negotiables for you to focus on the right process to repair a malfunctioning system. You do not need a specific weighed out meal plan until your body is operating to a level it can know the differences with. That comes next."]},
   {id:"steps",letter:"S",name:"Steps",tag:"Movement to regulate the body & brain",approach:[
-    ">Focus on: easy movement every day, spread through the day.",
+    ">Focus on: Easy movement every day, spread through the day.",
     "All you need to focus on with steps is starting the habit of simply doing them to hit your target. It doesn't even need dressing up. This is a 'do don't think' section.",
     "Make the time & you will win the time back every time, mentally & physically, in every department. This is the main mover for the entire project. Hit your steps & everything else will fall in place & follow suit, working as it should.",
     "The most valuable time to get them in is in the morning around Meal 1 & then evenly split throughout your day after meals. If you hit them within your daily life that's a bonus. If your daily life doesn't fall within the target number, then you build them into it & change your structure to make it work, because adaptation means change."]},
@@ -1507,7 +1507,7 @@ function onboardView(){
   return `<div class="login wrap"><div class="onb-card">
     <div><button class="chip" data-act="onb-back">&lsaquo; Back to log in</button></div>
     <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding</h1>
-    <p class="muted">Two parts: the basics, then a short assessment you'll repeat on Day 7, 14 and 21 so you can see what's changed. Ellis uses your answers to set your daily targets, and then you start on Day 0, your setup night.</p></div>
+    <p class="muted">Two parts: The basics, then a short assessment you'll repeat on Day 7, 14 and 21 so you can see what's changed. Ellis uses your answers to set your daily targets, and then you start on Day 0, your setup night.</p></div>
     <div class="onb-tabs" role="tablist" aria-label="Onboarding parts">
       <button type="button" class="phase-tab" role="tab" id="ot-basics" aria-controls="op-basics" aria-selected="true" data-onbtab="basics"><span>1. Basics</span><small>About you</small></button>
       <button type="button" class="phase-tab" role="tab" id="ot-assess" aria-controls="op-assess" aria-selected="false" data-onbtab="assess"><span>2. Assessment</span><small>20 questions, 1 to 10</small></button>
@@ -1516,11 +1516,11 @@ function onboardView(){
       <div class="stack" id="op-basics" role="tabpanel" aria-labelledby="ot-basics">
         ${ONB.map(([h,intro,fs])=>`<section class="card onb-sec"><h2 class="sec-title" style="font-size:22px">${h}</h2>${intro?`<p class="muted" style="font-size:13px;margin-top:-6px">${esc(intro)}</p>`:""}${fs.map(onbField).join("")}</section>`).join("")}
         <div id="onbErr1" class="onb-err" role="alert"></div>
-        <button type="button" class="btn primary" data-onbnext="1" style="min-height:52px">Next: the assessment</button>
+        <button type="button" class="btn primary" data-onbnext="1" style="min-height:52px">Next: The assessment</button>
       </div>
       <div class="stack" id="op-assess" role="tabpanel" aria-labelledby="ot-assess" hidden>
         <section class="card onb-sec as-intro"><span class="eyebrow">Advanced assessment</span><h2 class="sec-title" style="font-size:22px">How the last 7 days have felt</h2>
-          <p class="muted" style="font-size:13px">Answer based on your overall experience during the previous 7 days. Score each question from 1 to 10. There are no right answers: this is your starting point.</p></section>
+          <p class="muted" style="font-size:13px">Answer based on your overall experience during the previous 7 days. Score each question from 1 to 10. There are no right answers: This is your starting point.</p></section>
         ${assessFields()}
         <section class="card onb-sec"><span class="eyebrow">Your login</span><h2 class="sec-title" style="font-size:22px">Create your password</h2>
           <label class="field" for="onb-pw">Password (8+ characters) <span class="req">*</span><input class="input" id="onb-pw" name="password" type="password" autocomplete="new-password"></label>
@@ -1565,7 +1565,7 @@ function suggestTargets(f){
 const INTRO_VIDEOS=[
   {k:"overview",title:"Project overview",blurb:"What Project Reset is, how the 21 days work, and what Ellis expects from you.",url:""},
   {k:"meals",title:"Meal set up",blurb:"How to plan your meals the night before, the approved foods and the meal rules.",url:""},
-  {k:"workout",title:"Workout set up",blurb:"How your training days work: the pre-workout steps, your session and closing it down.",url:""}
+  {k:"workout",title:"Workout set up",blurb:"How your training days work: The pre-workout steps, your session and closing it down.",url:""}
 ];
 const introDone=c=>INTRO_VIDEOS.every(v=>c.intro&&c.intro[v.k]);
 function videoEmbed(url,title,soon){
@@ -1632,7 +1632,7 @@ function checkinCard(c){
   const late=clientDayNum(c)>due.day;
   return `<section class="pblock open active ck-task" id="blk-checkin">
     <header class="pb-head"><span class="pb-num">!</span><div><span class="eyebrow">Today · Week ${due.week} check-in</span><h2 class="display pb-title">Check-in</h2>
-    <p class="muted" style="font-size:13px">${late?`Your ${due.label} check-in still needs doing.`:`It's ${due.label}.`} Do your Morning as normal, and send Ellis your weekly check-in whenever suits you today: your steps and screen time, the same 20 questions you answered before starting, and three short questions. About 5 minutes.</p></div></header>
+    <p class="muted" style="font-size:13px">${late?`Your ${due.label} check-in still needs doing.`:`It's ${due.label}.`} Do your Morning as normal, and send Ellis your weekly check-in whenever suits you today: Your steps and screen time, the same 20 questions you answered before starting, and three short questions. About 5 minutes.</p></div></header>
     <button class="btn primary" data-act="ck-open" data-slot="${due.slot}" style="min-height:52px">Start your check-in</button></section>`;
 }
 function weeklyView(slot){
@@ -1720,7 +1720,7 @@ function reviewView(){
       <section class="card target-set"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">Account</h2></div>
         <label class="field" for="cpw">Set a new password for them<input class="input" id="cpw" type="text" autocomplete="off" placeholder="8+ characters"></label>
         <button class="btn" data-act="client-pw" data-c="${f.id}">Set password</button>
-        <small class="muted">For when they forget theirs. Send it to them yourself; it logs them out everywhere else.</small>
+        <small class="muted">For when they forget theirs. Send it to them yourself; It logs them out everywhere else.</small>
         <button class="btn danger" data-act="client-del" data-c="${f.id}">${S.delArm===f.id?"Tap again to delete everything for "+esc(f.name.split(" ")[0]):"Remove client"}</button>
       </section>
       </div>
@@ -1750,7 +1750,7 @@ function loginView(){
 function setupView(){
   return `<div class="login wrap"><div class="login-card">
     <div class="login-hero"><img class="logo lg" src="/logo.webp" alt="Project Reset" width="800" height="580">
-    <p>First-time setup: create the coach account.</p></div>
+    <p>First-time setup: Create the coach account.</p></div>
     <form id="setupForm" novalidate>
       <label class="field" for="su-key">Setup key<input class="input" id="su-key" name="key" type="password" autocomplete="off"><small class="muted">The SETUP_KEY you saved in Cloudflare.</small></label>
       <label class="field" for="su-name">Your name<input class="input" id="su-name" name="name" value="Ellis Vine" autocomplete="name"></label>
@@ -1882,10 +1882,10 @@ function todayView(){
     </div>
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
     ${ck?checkinCard(c):""}
-    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Today is Day 0</h2><p>Today you set everything up: see your targets, plan tomorrow's morning, training and meals, and set your alarm. Do it whenever suits you today. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
+    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Today is Day 0</h2><p>Today you set everything up: See your targets, plan tomorrow's morning, training and meals, and set your alarm. Do it whenever suits you today. Day 1 starts tomorrow morning, with all of it waiting for you.</p></div>`:""}
     ${pblock("morning",1,st.morning,stepsView("morning",x)+brainPanel(log),log)}
     ${pblock("day",2,st.day,dayView(x),log)}
-    ${(()=>{const nx=AS_SLOTS.find(([sl,lb,d])=>d===dn+1&&d>0);return dn===today&&nx&&!assessOf(c.id)[nx[0]]&&st.evening!=="done"?`<div class="ck-heads"><span class="eyebrow">Heads up</span><b>Tomorrow is check-in day</b><span>It's your Week ${nx[2]/7} check-in: your steps and screen time, 20 quick questions and three in your own words. About 5 minutes, any time tomorrow. Have your step count and screen time handy.</span></div>`:""})()}
+    ${(()=>{const nx=AS_SLOTS.find(([sl,lb,d])=>d===dn+1&&d>0);return dn===today&&nx&&!assessOf(c.id)[nx[0]]&&st.evening!=="done"?`<div class="ck-heads"><span class="eyebrow">Heads up</span><b>Tomorrow is check-in day</b><span>It's your Week ${nx[2]/7} check-in: Your steps and screen time, 20 quick questions and three in your own words. About 5 minutes, any time tomorrow. Have your step count and screen time handy.</span></div>`:""})()}
     ${pblock("evening",dn===0?0:3,st.evening,stepsView("evening",x,dn>0?["e2"]:null),log,dn===0?{name:"Setup day",goal:"Get ready for Day 1",intro:"Confirm your targets, plan tomorrow, then wind down tonight. Three steps."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
       :allDone?`${laterCard(x)}<div id="blk-score" class="stack">${scoreView(x)}</div>`:""}
@@ -1899,7 +1899,7 @@ function askHtml(a,log,wk,locked){
   switch(a.type){
     case"rating":if(a.arousal){const z=zoneOf(v),aim=ZONES.find(q=>q[0]===a.aim);
       return `<div class="ask"><span class="ask-h">${a.label}${infoBtn("arousal","arousal")}</span>${infoBox("arousal")}
-        ${aim?`<small class="muted" style="font-weight:500">Aim for <b>${aim[1]}</b> ${a.aim==="calm"?"by now: winding down for sleep.":"here: balanced and ready for the day."}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
+        ${aim?`<small class="muted" style="font-weight:500">Aim for <b>${aim[1]}</b> ${a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day."}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
         <div class="rating arousal" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button class="z-${zoneOf(i+1)[0]}" data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div>
         <div class="zones">${ZONES.map(q=>`<div class="zone z-${q[0]}${z&&z[0]===q[0]?" on":""}" style="grid-column:span ${q[3]}"><b>${q[1]}</b><span>${q[2]}</span></div>`).join("")}</div>
         ${z?`<div class="train-place${aim?(z[0]===aim[0]?" ok":""):" ok"}"><span>${aim&&z[0]===aim[0]?TICK+" ":""}You're <b>${z[1]}</b>: ${z[4]}${aim&&z[0]!==aim[0]?` Aim for ${aim[1]}: ${a.aim==="calm"?"try a low arousal task, dim the lights, slow nasal breathing.":z[0]==="wired"?"slow your breathing and take a few calm minutes before you start the day.":"get outside, move and get some bright light."}`:""}</span></div>`:""}</div>`}
@@ -1946,7 +1946,7 @@ function askHtml(a,log,wk,locked){
     case"infonote":return `<div class="ask-h infonote"><b>${esc(a.title)}</b>${infoBtn(a.info,a.title)}</div>${infoBox(a.info)}`;
     case"confirm":return `<button class="confirm${v?" on":""}" data-ask="${a.k}" data-val="${v?"":"yes"}" ${dis} aria-pressed="${!!v}"><span class="tick">${TICK}</span><span>${esc(a.label)}</span></button>`;
     case"actplan":{const pl=(Array.isArray(log.m_action)?log.m_action:[]).filter(a=>MOVE.includes(a));return `<div class="numhead"><b>Your action this morning</b><span>${pl.length?`Planned last night: <b>${esc(pl.join(", "))}</b>. It's ticked below. Untick anything you didn't do, or tick anything else you did instead.`:"You didn't plan one last night. Do at least one of these, then tick what you've done."}</span></div>`}
-    case"walknote":return `<div class="numhead"><b>Tomorrow morning: action, then release</b><span>Your action is your switch up: pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
+    case"walknote":return `<div class="numhead"><b>Tomorrow morning: Action, then release</b><span>Your action is your switch up: Pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
@@ -2028,7 +2028,7 @@ function zeroSplit(log){
   return `<div class="zero-split">
     ${planned?`<div class="zs-done"><span class="tick">${TICK}</span><div><b>Day 1 is planned.</b><span>${bits.length?bits.join(" · ")+". ":""}That's tomorrow sorted, there's nothing more to set.</span></div></div>`:""}
     <div class="zs-now${planned?"":" later"}"><span class="eyebrow">${planned?"Now":"After that"}</span><h3 class="display">Tonight</h3>
-      <p>${planned?"Everything from here is about this evening, as it happens. Wind down, tick things off as you do them, and rate how you feel before bed.":"Once Day 1 is planned, the last step is about this evening, right now: winding down for sleep."}</p></div>
+      <p>${planned?"Everything from here is about this evening, as it happens. Wind down, tick things off as you do them, and rate how you feel before bed.":"Once Day 1 is planned, the last step is about this evening, right now: Winding down for sleep."}</p></div>
   </div>`;
 }
 function stepsView(ph,x,only){
@@ -2056,7 +2056,7 @@ function stepsView(ph,x,only){
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} ${only?"Close your day first, at the end of your Day":"Finish step "+i+" first"}</span>`
-          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":(s.id==="e1"&&!log.zero?"Close my day":"Mark step "+num+" done");return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>${miss.length?`<div class="miss soft" role="status"><b>Not done yet:</b><ul>${miss.map(m=>`<li>${esc(m)}</li>`).join("")}</ul><span>You can still move on. Fill these in when you can: the more you do, the higher your score.</span></div>`:""}`})()}</div>
+          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":(s.id==="e1"&&!log.zero?"Close my day":"Mark step "+num+" done");return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>${miss.length?`<div class="miss soft" role="status"><b>Not done yet:</b><ul>${miss.map(m=>`<li>${esc(m)}</li>`).join("")}</ul><span>You can still move on. Fill these in when you can: The more you do, the higher your score.</span></div>`:""}`})()}</div>
       </div></div>`;
     if(ph==="morning"&&s.id==="m2"&&done)html+=meal1Cue(log);
   });
@@ -2125,9 +2125,9 @@ const PRE_STEPS=[
 const BONUS=[]; // replaced by Ellis's during-workout steps
 // Ellis's during-workout steps, set out like the pre and close steps
 const MID_STEPS=[
-  ["train_m1","Movement prep","Before your core workout. Cover proprioception and body balance, and connect with the body parts you're about to train by shifting load and engagement. 1a Oxidise fat: 5 to 10 mins easy cardio. 1b Set your breath cadence: breathe in at the start of each movement and out at the point of contraction. 1c Proprioception work: anything that needs coordination, balance or bodyweight shifting mid rep. 1d Movement variation game: a standard exercise with a different movement pattern to normal. 1e HR change: do all of this with the intention of driving your heart rate up with controlled focus."],
-  ["train_m2","Start of workout: high stress","Your first movement is the arousal intensifier and glycogen driver. 1. Deep belly breaths in and out, directed into the working body part (visualise it). 2. A powerful, max intensity effort on the first movement to signal stress and demand to the muscle."],
-  ["train_m3","Blood flow during workout","1. Blood flow: wear BFR straps whenever possible and keep every rep under constant tension by never fully opening the joint. 2. Power your breath: during and between sets, use your breath to direct the rep and the muscle activation. 3. Visualisation: every rep done with the muscle you're working at the front of your mind, filling with blood and shaping to your ultimate look. Eyes closed if it's easier."]];
+  ["train_m1","Movement prep","Before your core workout. Cover proprioception and body balance, and connect with the body parts you're about to train by shifting load and engagement. 1a Oxidise fat: 5 to 10 mins easy cardio. 1b Set your breath cadence: Breathe in at the start of each movement and out at the point of contraction. 1c Proprioception work: Anything that needs coordination, balance or bodyweight shifting mid rep. 1d Movement variation game: A standard exercise with a different movement pattern to normal. 1e HR change: Do all of this with the intention of driving your heart rate up with controlled focus."],
+  ["train_m2","Start of workout: High stress","Your first movement is the arousal intensifier and glycogen driver. 1. Deep belly breaths in and out, directed into the working body part (visualise it). 2. A powerful, max intensity effort on the first movement to signal stress and demand to the muscle."],
+  ["train_m3","Blood flow during workout","1. Blood flow: Wear BFR straps whenever possible and keep every rep under constant tension by never fully opening the joint. 2. Power your breath: During and between sets, use your breath to direct the rep and the muscle activation. 3. Visualisation: Every rep done with the muscle you're working at the front of your mind, filling with blood and shaping to your ultimate look. Eyes closed if it's easier."]];
 const TRAIN_VIDEO=""; // Ellis's training walkthrough: paste the link when it's recorded
 const CLOSE_STEPS=[
   ["train_c1","Release tension","Release any remaining held muscle tension with calm decompression movement."],
@@ -2174,9 +2174,9 @@ function applyProt(id,v){
   if(after)toast("+"+after+"g protein");
 }
 // Ellis's cues around every meal
-const PARA_OPTS=["Close your eyes and breathe slowly through your nose for 2 to 5 minutes","Drink a warm non-caffeinated drink","Eat an appetiser (soup or fruit)","Lower your body temperature: splash cold water on your face or stand barefoot on cold ground","Read or journal somewhere calm","Walk"];
+const PARA_OPTS=["Close your eyes and breathe slowly through your nose for 2 to 5 minutes","Drink a warm non-caffeinated drink","Eat an appetiser (soup or fruit)","Lower your body temperature: Splash cold water on your face or stand barefoot on cold ground","Read or journal somewhere calm","Walk"];
 function paraQ(id,v){
-  return `<div class="fu"><span class="ask-h">Before you eat: are you parasympathetic?${infoBtn("para","Parasympathetic")}</span>${infoBox("para")}<div class="opts"><button class="chip" data-para="${id}" data-val="yes" aria-pressed="${v==="yes"}">Yes</button><button class="chip" data-para="${id}" data-val="no" aria-pressed="${v==="no"}">No</button></div>${v==="no"?`<div class="numhead"><b>Get there in under 5 minutes, then eat</b><ol class="para-opts">${PARA_OPTS.map(o=>`<li>${esc(o)}</li>`).join("")}</ol></div>`:""}</div>`;
+  return `<div class="fu"><span class="ask-h">Before you eat: Are you parasympathetic?${infoBtn("para","Parasympathetic")}</span>${infoBox("para")}<div class="opts"><button class="chip" data-para="${id}" data-val="yes" aria-pressed="${v==="yes"}">Yes</button><button class="chip" data-para="${id}" data-val="no" aria-pressed="${v==="no"}">No</button></div>${v==="no"?`<div class="numhead"><b>Get there in under 5 minutes, then eat</b><ol class="para-opts">${PARA_OPTS.map(o=>`<li>${esc(o)}</li>`).join("")}</ol></div>`:""}</div>`;
 }
 function readyQ(id,v){
   return `<div class="fu"><span class="ask-h">Are you ready to move within 30 mins of eating?${infoBtn("ready","Ready to move")}</span>${infoBox("ready")}<div class="opts"><button class="chip" data-ready="${id}" data-val="yes" aria-pressed="${v==="yes"}">Yes</button><button class="chip" data-ready="${id}" data-val="no" aria-pressed="${v==="no"}">No</button></div></div>`;
@@ -2200,9 +2200,9 @@ function pairHtml(p,ta,lockedBy,log,isNext){
         ${foodsCount(p.foods)?`<div class="fsum">${FOOD_CATS.filter(c=>(p.foods[c.k]||[]).length).map(c=>`<span><b>${c.name}</b> ${esc(p.foods[c.k].join(", "))}</span>`).join("")}</div>`:p.text?`<span class="muted" style="font-size:13px">${p.planned&&!p.done?"Planned: ":""}${esc(p.text)}</span>`:""}
         <button class="link mealopen" data-mealopen="${p.key}">${S.openMeal===p.key?"Close foods":foodsCount(p.foods)?"Change":"Choose what's in it"}</button>
         ${!p.done&&!p.fixed&&isNext?paraQ(p.key,p.para):""}
-        ${isPre&&!p.done?`<span class="pre-cue">Pre-workout step 1, clear & set mind: prep and eat this somewhere relaxed, with no thought of the workout yet.</span>`:""}
+        ${isPre&&!p.done?`<span class="pre-cue">Pre-workout step 1, clear & set mind: Prep and eat this somewhere relaxed, with no thought of the workout yet.</span>`:""}
         ${p.done&&(waterQ||protAsk||readyAsk)?`<div class="fu-group">${waterQ?waterQ_(p.key):""}${protAsk?protQ(p.key,p.prot,`How much protein was in it?<span class="optional">Optional</span>`):""}${readyAsk?readyQ(p.key,p.ready):""}</div>`:""}
-        ${p.done&&!p.fixed?(isPre?(log.train_done?"":`<span class="cue">Now train: your session is next ↓</span>`):(!p.walk?`<span class="cue">Now move: your walk block is next ↓</span>`:"")):""}
+        ${p.done&&!p.fixed?(isPre?(log.train_done?"":`<span class="cue">Now train: Your session is next ↓</span>`):(!p.walk?`<span class="cue">Now move: Your walk block is next ↓</span>`:"")):""}
       </div>
       ${!p.done&&!p.fixed?`<button class="x" data-mdel="${p.key}" aria-label="Remove Meal ${p.slot}">×</button>`:""}
     </div>
@@ -2218,7 +2218,7 @@ function mealsCard(log){
   const next=2+meals.length;
   return `<section class="card">
     <div class="sec-head"><h2 class="sec-title">Meals</h2><span class="muted num">${done} logged</span></div>
-    <p class="muted" style="font-size:12px;margin-top:-2px">${log.train==="yes"?"Training day: pre-workout carbs before your session, evening carbs with your evening meal.":"Rest day: carbs only with your evening meal."} Every 3 to 4 hours, protein every time.</p>
+    <p class="muted" style="font-size:12px;margin-top:-2px">${log.train==="yes"?"Training day: Pre-workout carbs before your session, evening carbs with your evening meal.":"Rest day: Carbs only with your evening meal."} Every 3 to 4 hours, protein every time.</p>
     <div class="items">
       <div class="item done meal"><span class="item-tick"><span class="tick">${TICK}</span></span><div class="item-main"><div class="item-title"><span>Meal 1${log.meal1?": "+esc(log.meal1):""}</span>${log.m3?`<span class="stamp">${esc(log.m3)}</span>`:""}</div><span class="kind">Logged in your Morning${(log.meal1_tags||[]).length?" · "+esc(log.meal1_tags.join(", ")):""}</span></div></div>
       ${meals.map(m=>mealHtml(m,opts)).join("")}
@@ -2244,12 +2244,12 @@ function mealHtml(m,opts){
 function nextBar(ph,log){
   const card=(title,sub,btn)=>`<div class="nextbar"><div><b>${title}</b><p>${sub}</p></div>${btn}</div>`;
   if(ph==="morning"){const ok=stepsDone(log,"morning")===ML;
-    return card(ok?"Morning done. Your day is open.":"Next up: your Day",ok?"Build your list and take it on.":"Finish all 3 steps to open your day.",
+    return card(ok?"Morning done. Your day is open.":"Next up: Your Day",ok?"Build your list and take it on.":"Finish all 3 steps to open your day.",
       `<button class="btn primary" data-phase="day" ${ok?"":"disabled"}>Open my day &rsaquo;</button>`)}
   if(ph==="day"){const it=itemsOf(log),d=it.filter(i=>i.done).length;
-    return card("Next up: your Evening",`${d} of ${it.length} done on your list.${it.length>d?" You can still tick the rest later.":""}`,`<button class="btn primary" data-phase="evening">Move to Evening &rsaquo;</button>`)}
+    return card("Next up: Your Evening",`${d} of ${it.length} done on your list.${it.length>d?" You can still tick the rest later.":""}`,`<button class="btn primary" data-phase="evening">Move to Evening &rsaquo;</button>`)}
   const ok=stepsDone(log,"evening")===evLen(log);
-  return card(ok?"Evening done. That's your day.":"Last stop: your score",ok?`Tomorrow's Morning will show your plan of action${log.tmr_wake?` and your ${esc(log.tmr_wake)} wake time`:""}.`:"Finish all 3 steps to see your score for today.",
+  return card(ok?"Evening done. That's your day.":"Last stop: Your score",ok?`Tomorrow's Morning will show your plan of action${log.tmr_wake?` and your ${esc(log.tmr_wake)} wake time`:""}.`:"Finish all 3 steps to see your score for today.",
     `<button class="btn primary" data-phase="score" ${ok?"":"disabled"}>See my score for today &rsaquo;</button>`);
 }
 function scoreView(x){
@@ -2401,29 +2401,29 @@ function nutritionView(){
   const v=INTRO_VIDEOS.find(x=>x.k==="meals"),c=me(),wk=c&&c.status==="active"?tgtFor(c,Math.max(1,clientDayNum(c))):null;
   const cats=FOOD_CATS.filter(x=>!x.legacy),when={pcarbs:"Pre-workout meal only",ecarbs:"Evening and post-workout meals",fat:"Never in the same meal as carbs",fruit:"Every meal",veg:"Every meal"};
   return `<div class="stack">
-    ${guideTop("Nutrition guide","Everything about your meals in one place: how to plan them, the rules, and the foods to build them from.")}
+    ${guideTop("Nutrition guide","Everything about your meals in one place: How to plan them, the rules, and the foods to build them from.")}
     ${gcard("Watch: "+esc(v.title),videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here."))}
     ${wk?gcard("Your daily targets",`<div class="g-targets"><div><span>Protein</span><b class="num">${wk.protein}g</b></div><div><span>Water</span><b class="num">${wk.water}L</b></div><div><span>Steps</span><b class="num">${Number(wk.steps).toLocaleString("en-GB")}</b></div></div><p class="muted" style="font-size:13px">These come before everything else. After every meal you update your totals, and the gauges at the bottom of your day fill up.</p>`):""}
     ${gcard("The meal rules",`<ol class="g-rules">
-      <li><b>Fruit &amp; veg at least 3 times a day,</b> as a minimum, with no max. Start your meals with fruit or a light appetizer like soup.</li>
-      <li><b>Carbs only in three meals:</b> your evening meal, your pre-workout meal (to fuel your session and promote glycogen use) and your post-workout meal (to restore glycogen).</li>
+      <li><b>Fruit &amp; veg at least 3 times a day,</b> as a minimum, with no max. Start your meals with fruit or a light appetiser like soup.</li>
+      <li><b>Carbs only in three meals:</b> Your evening meal, your pre-workout meal (to fuel your session and promote glycogen use) and your post-workout meal (to restore glycogen).</li>
       <li><b>Pre-workout carbs are their own list,</b> for the meal before you train.</li>
       <li><b>Carbs or fats, never both</b> in the same meal.</li>
       <li><b>Your last meal is your evening meal.</b> Being fed is one of the biggest signals to your body that it's safe to rest.</li>
       <li><b>Water with every meal.</b></li></ol>`)}
     ${me()&&me().status==="active"&&DATA.me.role==="client"?foodsView():""}
     ${gcard("How your meals work",`<ul class="g-list">
-      <li><b>The day before:</b> plan tomorrow's meals when you close your day. Pick the foods for each meal, use one of your meal plans, or copy today's meals in one tap.</li>
-      <li><b>Meal 1:</b> eaten and logged in your Morning, within 90 minutes of waking.</li>
-      <li><b>Through the day:</b> tick each meal as you eat it, say if you had water, do your walk block, then update your steps, protein and water.</li>
-      <li><b>Your evening meal:</b> logged in your Evening, as part of winding down.</li>
-      <li><b>Training days:</b> your pre-workout meal sits before your session and your post-workout meal after it. The app moves them if your training time changes.</li></ul>`)}
+      <li><b>The day before:</b> Plan tomorrow's meals when you close your day. Pick the foods for each meal, use one of your meal plans, or copy today's meals in one tap.</li>
+      <li><b>Meal 1:</b> Eaten and logged in your Morning, within 90 minutes of waking.</li>
+      <li><b>Through the day:</b> Tick each meal as you eat it, say if you had water, do your walk block, then update your steps, protein and water.</li>
+      <li><b>Your evening meal:</b> Logged in your Evening, as part of winding down.</li>
+      <li><b>Training days:</b> Your pre-workout meal sits before your session and your post-workout meal after it. The app moves them if your training time changes.</li></ul>`)}
     ${gcard("Approved foods",`<div class="g-foods">${cats.map(x=>`<div class="g-food"><h3>${esc(x.name)}</h3>${when[x.k]?`<small>${when[x.k]}</small>`:""}<p>${x.items.map(esc).join(" · ")}</p></div>`).join("")}</div>`)}
     ${PILLARS.filter(P=>P.id==="eat").map(pillarHtml).join("")}
   </div>`;
 }
 const RESET_STEPS=[
-  ["Dump / Journal","60 secs",["Breathe through your nose and slow it down","Write your current state: anything on your mind"]],
+  ["Dump / Journal","60 secs",["Breathe through your nose and slow it down","Write your current state: Anything on your mind"]],
   ["Rep & Connect","30 secs, 5 reps",["Lie on the ground with your feet flat","Close your eyes","Prep yourself for a glute bridge","Deep breath in as you raise, breathe out as you come down"]],
   ["Arousal breath","60 secs",["Back to lying with your feet still down","In and out into the belly through the mouth","Expand your belly with the in breath and let go with the out"]],
   ["Hold & Bridge","30 secs",["Take a deep breath in","Then move into a glute bridge"]],
@@ -2431,18 +2431,18 @@ const RESET_STEPS=[
   ["Repeat steps 3 to 5","",["Arousal breath (60 secs), Hold & Bridge (30 secs), Release & let go"]],
   ["Rep & Connect","30 secs, 5 reps",["Prep yourself for a glute bridge","Deep breath in as you raise, breathe out as you come down","Then open your eyes"]],
   ["Rep & Connect","30 secs, 5 reps",["Roll over into a snake position","Breathe in as you raise, breathe out as you come down"]],
-  ["Dump / Journal","60 secs",["Write your current state: anything on your mind, for 60 seconds, breathing through your nose","Write your next move"]]];
+  ["Dump / Journal","60 secs",["Write your current state: Anything on your mind, for 60 seconds, breathing through your nose","Write your next move"]]];
 function workoutView(){
   const v=INTRO_VIDEOS.find(x=>x.k==="workout");
   const steps=(list)=>`<ol class="g-rules">${list.map(([k,t,d])=>`<li><b>${esc(t)}.</b> ${esc(d)}</li>`).join("")}</ol>`;
   return `<div class="stack">
     ${guideTop("Workout guide","How your training days work, and the steps either side of your session that make the training count.")}
     ${gcard("Watch: "+esc(v.title),videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here."))}
-    ${TRAIN_VIDEO?gcard("Watch: your training session",videoEmbed(TRAIN_VIDEO,"Training walkthrough")):""}
+    ${TRAIN_VIDEO?gcard("Watch: Your training session",videoEmbed(TRAIN_VIDEO,"Training walkthrough")):""}
     ${gcard("Setting up a training day",`<ul class="g-list">
-      <li><b>The night before:</b> in your Evening, say you're training tomorrow and when. For now you log your own workout, and you can note what you're training.</li>
-      <li><b>On the day:</b> your training session sits in your Day between your pre-workout and post-workout meals. If your time changes, tap "Time changed?" and the meals move with it.</li>
-      <li><b>Your session has three parts:</b> your pre-workout steps, the workout, then closing the workout down. Each has its own steps to tick, and you can skip any of them.</li></ul>`)}
+      <li><b>The night before:</b> In your Evening, say you're training tomorrow and when. For now you log your own workout, and you can note what you're training.</li>
+      <li><b>On the day:</b> Your training session sits in your Day between your pre-workout and post-workout meals. If your time changes, tap "Time changed?" and the meals move with it.</li>
+      <li><b>Your session has three parts:</b> Your pre-workout steps, the workout, then closing the workout down. Each has its own steps to tick, and you can skip any of them.</li></ul>`)}
     ${gcard("1 · Pre-workout steps",steps(PRE_STEPS),"g-pre")}
     ${gcard("2 · During the workout",steps(MID_STEPS))}
     ${gcard("3 · Close the workout",steps(CLOSE_STEPS),"g-close")}
@@ -2453,12 +2453,12 @@ function workoutView(){
 }
 function programmeView(){
   const how=[
-    "Your day runs as a loop: the Evening shift closes today and sets up tomorrow, the Morning shift opens the day, and the Day is yours to tick off. Every day ends with a score.",
-    "#Evening shift: reduce arousal",
-    "Step 1, review & close the day (prefrontal cortex): log your water, steps and protein, set tomorrow's meal plan, set tomorrow's morning tasks and whether you train and when, summarise your day, set your intentions and your wake up time. Step 2, check points (amygdala, insula, locus coeruleus, hypothalamus): your low arousal task, then moonlight, lights dimmed & phone away, final meal, showered, and rate your current state.",
-    "#Morning shift: stimulation & arousal",
-    "Step 1: log your wake up time against what you set, tick off the action you planned last night (at least one: walk or cardio over 100 BPM, cold therapy, sauna, a workout or breath work), then 500ml water, outside within 30 minutes and lights bright. Step 2: your low arousal task, then eat Meal 1. Step 3, review & open the day (prefrontal cortex): your to-do list, sun light, lights bright & phone away, Meal 1 within 90 minutes, showered & presentable, and rate your current state.",
-    "#Day: keep energy stable",
+    "Your day runs as a loop: The Evening shift closes today and sets up tomorrow, the Morning shift opens the day, and the Day is yours to tick off. Every day ends with a score.",
+    "#Evening shift: Reduce arousal",
+    "Step 1, review & close the day (prefrontal cortex): Log your water, steps and protein, set tomorrow's meal plan, set tomorrow's morning tasks and whether you train and when, summarise your day, set your intentions and your wake up time. Step 2, check points (amygdala, insula, locus coeruleus, hypothalamus): Your low arousal task, then moonlight, lights dimmed & phone away, final meal, showered, and rate your current state.",
+    "#Morning shift: Stimulation & arousal",
+    "Step 1: Log your wake up time against what you set, tick off the action you planned last night (at least one: Walk or cardio over 100 BPM, cold therapy, sauna, a workout or breath work), then 500ml water, outside within 30 minutes and lights bright. Step 2: Your low arousal task, then eat Meal 1. Step 3, review & open the day (prefrontal cortex): Your to-do list, sun light, lights bright & phone away, Meal 1 within 90 minutes, showered & presentable, and rate your current state.",
+    "#Day: Keep energy stable",
     "Your planned meals, each with a walk block after it. Add your step count after each walk. On training days your session sits between your pre and post-workout meals.",
     "#Points",
     "1 point for every step, meal, walk block, training session and Yes check box."
@@ -2615,7 +2615,7 @@ function overviewView(){
             <td class="num">${s.steps7?Math.round(s.steps7).toLocaleString("en-GB"):"–"}</td>
             <td>${s.since===0?"Today":s.since===1?"Yesterday":`<span style="color:var(--bad)">${s.since} days ago</span>`}</td></tr>`}).join("")}</tbody>
         </table></div>
-        <p class="muted" style="font-size:12px">1 point per completed step, meal, walk block and non-negotiable. Done 7d is points against everything available. Morning and Evening show how often all 3 steps were done. Water is how often clients had water with their meals. Status: on track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
+        <p class="muted" style="font-size:12px">1 point per completed step, meal, walk block and non-negotiable. Done 7d is points against everything available. Morning and Evening show how often all 3 steps were done. Water is how often clients had water with their meals. Status: On track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
       </div>
       <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Last 7 days</h2></div>
         <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="phases" aria-pressed="${S.hview!=="day"}">Morning & Evening</button><button class="chip" data-hview="day" aria-pressed="${S.hview==="day"}">Meals & walks</button></div>
@@ -2657,7 +2657,7 @@ function detailView(c){
         <div class="log-phase"><h4>Timeline</h4>${timeline(log)}${log.bank?`<p style="font-size:13px;margin-top:8px"><span class="muted">Banked:</span> “${esc(log.bank)}”</p>`:""}</div>
         <details class="raw"><summary>Full answers by section</summary>
         ${phaseLog("Morning",MORNING,log,wk)}
-        <div class="log-phase"><h4>Day: meals & walks</h4>${log.train==="yes"?`<div class="lp-row ${log.train_done?"":"miss"}"><div class="lp-top"><span>${log.train_done?"✓ ":""}Training session${log.train_time?" (planned "+esc(log.train_time)+")":""}</span><span class="num">${log.train_done?esc(log.train_done):"–"}</span></div></div>`:""}${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
+        <div class="log-phase"><h4>Day: Meals & walks</h4>${log.train==="yes"?`<div class="lp-row ${log.train_done?"":"miss"}"><div class="lp-top"><span>${log.train_done?"✓ ":""}Training session${log.train_time?" (planned "+esc(log.train_time)+")":""}</span><span class="num">${log.train_done?esc(log.train_done):"–"}</span></div></div>`:""}${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
           ${dayPairs(log).length?dayPairs(log).map(q=>`<div class="lp-row ${q.done?"":"miss"}"><div class="lp-top"><span>${q.done?"✓ ":""}Meal ${q.slot}${q.text?": "+esc(q.text):""}</span><span class="num">${q.done?esc(q.done):"–"}${q.done?(q.water===true?' <span class="badge ok">Water</span>':q.water===false?' <span class="badge miss">No water</span>':""):""}</span></div></div><div class="lp-row ${q.walk?"":"miss"}"><div class="lp-top"><span>${q.walk?"✓ ":""}Walk after Meal ${q.slot}</span><span class="num">${q.walk?esc(q.walk):"–"}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No meals logged.</p>`}</div>
         ${phaseLog("Evening",eveningSteps(log),log,wk)}</details>
       </section>
@@ -2735,7 +2735,7 @@ root.addEventListener("submit",e=>{
     busy(f,true);err.textContent="";
     api("/signup",{method:"POST",body:{name:a.name,email:a.email,password:pw,consent:true,invite:S.invite,form:a,assessment:{scores:as.scores,ditl:ditlOf(a)}}})
       .then(()=>{err.textContent="Uploading your photos…";return uploadPhotos("start")})
-      .then(failed=>{toast(failed.length?"Sent. "+failed.join(", ")+" didn't upload: add it on the next screen":"Sent to Ellis");return afterLogin()})
+      .then(failed=>{toast(failed.length?"Sent. "+failed.join(", ")+" didn't upload: Add it on the next screen":"Sent to Ellis");return afterLogin()})
       .catch(x=>{err.textContent=x.message;err.scrollIntoView({block:"center"});busy(f,false)});return}
   if(e.target.id==="wkForm"){const f=e.target,slot=f.dataset.slot,a=readOnb(f),fd=new FormData(f),err=root.querySelector("#wkErr"),as=readAssess(f),miss=[];
     const d=ditlOf(a);DITL.forEach(q=>{if(q.req&&!d[q.k])miss.push(q.label.replace(/ \(.*\)/,"").toLowerCase())});
@@ -2775,7 +2775,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.pillar){S.tab=b.dataset.pillar==="eat"?"nutrition":"workout";S.openPillar=b.dataset.pillar;render();return}
   if(b.dataset.foodpref){const fk=b.dataset.foodpref,pr=JSON.parse(JSON.stringify(PREFS())),ex=pr.exclude=pr.exclude||[];pr.exclude=ex.includes(fk)?ex.filter(x=>x!==fk):[...ex,fk];savePrefs(pr);return render()}
   if(b.dataset.shopall){S.shopAll=!S.shopAll;return render()}
-  if(b.dataset.shopcopy){const el=root.querySelector("#shopList"),t=el?[...el.querySelectorAll("li")].map(li=>li.textContent).join("\n"):"";try{navigator.clipboard.writeText("Shopping list\n"+t).then(()=>toast("Shopping list copied"),()=>toast("Couldn't copy: select the list and copy it"))}catch(e){toast("Couldn't copy: select the list and copy it")}return}
+  if(b.dataset.shopcopy){const el=root.querySelector("#shopList"),t=el?[...el.querySelectorAll("li")].map(li=>li.textContent).join("\n"):"";try{navigator.clipboard.writeText("Shopping list\n"+t).then(()=>toast("Shopping list copied"),()=>toast("Couldn't copy: Select the list and copy it"))}catch(e){toast("Couldn't copy: Select the list and copy it")}return}
   if(b.dataset.mpkind){S.mpKind=b.dataset.mpkind;S.mpEdit=false;S.openMeal=null;return render()}
   if(b.dataset.mpstart){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};pr.plans[k]=b.dataset.mpstart==="example"?JSON.parse(JSON.stringify(EXAMPLE_PLANS[k])):emptyPlan();S.mpEdit=true;S.openMeal=b.dataset.mpstart==="blank"?"mp_"+k+"_0":null;savePrefs(pr);return render()}
   if(b.dataset.mpclear){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans)delete pr.plans[k];S.mpEdit=false;S.openMeal=null;savePrefs(pr);toast("Plan cleared");return render()}

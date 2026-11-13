@@ -33,7 +33,7 @@ export function welcomeEmail(origin, { name, link }) {
   const html = layout(origin, {
     heading: "You're now part of the reset.",
     body: `<p style="margin:0 0 14px">Hi ${first(name)},</p>
-<p style="margin:0 0 14px">Your 7 day free trial has started. Your first step is your onboarding form: your basics, your stats and a day in your life.</p>
+<p style="margin:0 0 14px">Your 7 day free trial has started. Your first step is your onboarding form: Your basics, your stats and a day in your life.</p>
 <p style="margin:0 0 14px">Once it's in, I'll go through your answers myself and set your daily targets for steps, protein and water. You'll get an email as soon as they're ready.</p>`,
     button: { href: link, label: "Fill in my onboarding form" },
     foot: `This link is just for you, so please don't share it.<br>Nothing has been charged yet. £75 is taken after your first 7 days. Cancel within 7 days and you won't be charged: <a href="${BILLING_URL}" style="color:#4f7300">manage your trial</a>.`
@@ -48,7 +48,7 @@ export function targetsReadyEmail(origin, { name, targets }) {
     body: `<p style="margin:0 0 14px">Hi ${first(name)},</p>
 <p style="margin:0 0 14px">I've been through your answers and set your daily targets:</p>
 <p style="margin:0 0 14px;font-size:18px;line-height:1.7"><b>${esc(Number(t.steps || 0).toLocaleString("en-GB"))}</b> steps<br><b>${esc(t.protein)}g</b> protein<br><b>${esc(t.water)}L</b> water</p>
-<p style="margin:0 0 14px">Log in, watch the 3 short videos, and that evening is your Day 0: your set-up night, where you plan your first day. Day 1 starts the next morning.</p>`,
+<p style="margin:0 0 14px">Log in, watch the 3 short videos, and that evening is your Day 0: Your set-up night, where you plan your first day. Day 1 starts the next morning.</p>`,
     button: { href: origin + "/app", label: "Log in to Project Reset" }
   });
   return { subject: "Your targets are set. Time to start", html, text: text(html) + `\n\nLog in: ${origin}/app` };
