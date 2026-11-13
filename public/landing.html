@@ -398,7 +398,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </nav>
     <div class="acts">
       <a class="btn sm" href="/app">Log in</a>
-      <a class="btn sm go" href="#checkout">Start free</a>
+      <a class="btn sm go" href="#checkout" data-checkout>Start free</a>
     </div>
   </div>
 </header>
@@ -411,7 +411,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         <h1 class="d" id="h1"><span class="line">Change what's</span><span class="line">below the</span><span class="line"><span class="slab"><span>surface.</span></span></span></h1>
         <p class="lede">Project Reset is a 21 day, step by step guided process from Ellis Vine. Your nervous system, food, training and sleep, set out as one simple routine on your phone, so you can change how you think, look and feel.</p>
         <div class="ctas">
-          <a class="btn go big" href="#checkout">Start free</a>
+          <a class="btn go big" href="#checkout" data-checkout>Start free</a>
           <a class="btn big" href="#video">Watch Ellis explain it</a>
         </div>
         <ul class="facts">
@@ -755,16 +755,16 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
   <div class="wrap">
     <img src="/logo.webp" alt="Project Reset" width="800" height="580">
     <span>Project Reset by Ellis Vine, GrowLikeVines</span>
-    <div class="sp"><a href="/app">Log in</a><a href="#checkout">Start free</a></div>
+    <div class="sp"><a href="/app">Log in</a><a href="#checkout" data-checkout>Start free</a></div>
   </div>
 </footer>
 
-<div class="buybar" id="buybar" aria-hidden="true"><b>7 days free, then £75</b><a class="btn go sm" href="#checkout" tabindex="-1">Start</a></div>
+<div class="buybar" id="buybar" aria-hidden="true"><b>7 days free, then £75</b><a class="btn go sm" href="#checkout" tabindex="-1" data-checkout>Start</a></div>
 
 <script>
 /* ---- Edit these three to go live ---- */
 const CONFIG={
-  stripeLink:"",        // your Stripe Payment Link, e.g. https://buy.stripe.com/xxxx
+  stripeLink:"https://buy.stripe.com/8x2aEZ6EH3VDg97bgP5c42b",        // your Stripe Payment Link, e.g. https://buy.stripe.com/xxxx
   price:"£0",           // shown big in the checkout (what they pay today)
   video:""              // YouTube, Vimeo or Loom link, or an .mp4 URL
 };
