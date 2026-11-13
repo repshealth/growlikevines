@@ -74,15 +74,19 @@ export function coachOnboardedEmail(origin, { name, email }) {
 }
 
 // ---------- sending ----------
+// Clean up whatever got pasted: spaces, line breaks, quotes, a stray "Bearer "
+const resendKey = env => String(env.RESEND_API_KEY || "").replace(/^\s*bearer\s+/i, "").replace(/[\s"'\u200b\u00a0]/g, "");
+// A safe hint of the key the app is using (start, end and length), to compare with Resend's dashboard
+const keyHint = env => { const k = resendKey(env); return k ? `${k.slice(0, 6)}...${k.slice(-3)} (${k.length} characters)` : "none"; };
 export async function sendEmail(env, to, msg) {
   if (!env.RESEND_API_KEY || !env.EMAIL_FROM || !to || (Array.isArray(to) && !to.length)) return { skipped: !env.RESEND_API_KEY ? "no RESEND_API_KEY" : !env.EMAIL_FROM ? "no EMAIL_FROM" : "no recipient" };
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "authorization": `Bearer ${String(env.RESEND_API_KEY).trim().replace(/^["']|["']$/g, "")}`, "content-type": "application/json" },
+      headers: { "authorization": `Bearer ${resendKey(env)}`, "content-type": "application/json" },
       body: JSON.stringify({ from: env.EMAIL_FROM, to: Array.isArray(to) ? to : [to], subject: msg.subject, html: msg.html, text: msg.text })
     });
-    if (!r.ok) { const body = await r.text(); console.log("Resend error", r.status, body); return { ok: false, status: r.status, error: body.slice(0, 300) }; }
+    if (!r.ok) { const body = await r.text(); console.log("Resend error", r.status, body); return { ok: false, status: r.status, error: body.slice(0, 300), key: keyHint(env) }; }
     return { ok: true };
   } catch (e) { console.log("Resend failed", e && e.message); return { ok: false, error: String(e && e.message) }; }
 }
