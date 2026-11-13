@@ -771,6 +771,9 @@ select.input{appearance:auto}
   .demo-row{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.step.folded .step-head h3{font-size:18px}
+.step.folded .fold-sum{margin:2px 0 0;font-size:14px;color:var(--muted)}
+.step.folded .fold-sum b{color:var(--fg)}
 .zero-split{display:flex;flex-direction:column;gap:12px;margin:14px 0 6px}
 .zs-done{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--pale);border:1.5px solid var(--lime)}
 .zs-done .tick{flex:none;width:26px;height:26px;border-radius:50%;background:var(--lime);display:grid;place-items:center}
@@ -2019,17 +2022,18 @@ function meal1Cue(log){
     ${protQ("stage:meal1_prot",log.meal1_prot,`How much protein is in it?<span class="optional">Optional</span>`)}
     <div><button class="btn primary" data-meal1log="1">Log Meal 1</button></div></div>`;
 }
-function zeroSplit(log){
-  const planned=!!log.e2,meals=(log.meals_tmr||[]).length||planFoodsOf(log).filter(f=>foodsCount(f)).length;
+function zeroPlanSummary(log){
+  const meals=(log.meals_tmr||[]).length||planFoodsOf(log).filter(f=>foodsCount(f)).length;
   const bits=[log.tmr_train==="yes"?`Training${log.tmr_train_time?" at "+esc(log.tmr_train_time):""}`:log.tmr_train==="no"?"Rest day":"",
     meals?`${meals} meals planned`:"",
     (log.tmr_action||[]).length?`Morning: ${esc((log.tmr_action||[]).join(", "))}`:"",
     log.tmr_wake?`Alarm ${esc(log.tmr_wake)}`:""].filter(Boolean);
-  return `<div class="zero-split">
-    ${planned?`<div class="zs-done"><span class="tick">${TICK}</span><div><b>Day 1 is planned.</b><span>${bits.length?bits.join(" · ")+". ":""}That's tomorrow sorted, there's nothing more to set.</span></div></div>`:""}
-    <div class="zs-now${planned?"":" later"}"><span class="eyebrow">${planned?"Now":"After that"}</span><h3 class="display">Tonight</h3>
-      <p>${planned?"Everything from here is about this evening, as it happens. Wind down, tick things off as you do them, and rate how you feel before bed.":"Once Day 1 is planned, the last step is about this evening, right now: Winding down for sleep."}</p></div>
-  </div>`;
+  return `<b>Day 1 is planned.</b> ${bits.length?bits.join(" · ")+". ":""}That's tomorrow sorted.`;
+}
+function zeroSplit(log){
+  const planned=!!log.e2;
+  return `<div class="zero-split"><div class="zs-now${planned?"":" later"}"><span class="eyebrow">${planned?"Now":"After that"}</span><h3 class="display">Tonight</h3>
+      <p>${planned?"Tomorrow's done. Everything from here is about this evening, as it happens. Wind down, tick things off as you do them, and rate how you feel before bed.":"Once Day 1 is planned, the last step is about this evening, right now: Winding down for sleep."}</p></div></div>`;
 }
 function stepsView(ph,x,only){
   const {log,wk,prev}=x,steps=ph==="evening"?eveningSteps(log):MORNING;
@@ -2044,6 +2048,15 @@ function stepsView(ph,x,only){
     if(log.zero&&s.id==="e3")html+=zeroSplit(log);
     const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
+    // Day 0: finished set-up steps fold away, so tonight is what's left on screen
+    if(log.zero&&done&&(s.id==="e1"||s.id==="e2")&&!(S.openStep||{})[s.id]){
+      html+=`<div class="step done folded"><div class="step-num">${TICK}</div><div class="step-body">
+        <div class="step-head"><h3>${s.title}</h3></div>
+        <p class="fold-sum">${s.id==="e2"?zeroPlanSummary(log):"Targets confirmed. You know your numbers for every day."}</p>
+        <div class="step-foot"><span class="stamp">Done ${esc(done)}</span><button class="link" data-openstep="${s.id}">View or change</button>${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}</div>
+      </div></div>`;
+      return;
+    }
     let extra="";
     if(s.id==="m1"&&!done&&prev.tmr_wake){extra=`<span class="badge">Alarm set ${esc(prev.tmr_wake)}</span>`}
     if(s.id==="m1"&&done&&prev.tmr_wake){const late=mins(log.woke_at||done)>mins(prev.tmr_wake)+15;extra=`<span class="badge ${late?"miss":"ok"}">${log.woke_at?"Woke "+esc(log.woke_at)+" · ":""}Alarm ${esc(prev.tmr_wake)} · ${late?"late":"on time"}</span>`}
@@ -2054,7 +2067,7 @@ function stepsView(ph,x,only){
         <div class="step-head"><h3>${s.title}</h3></div>
         ${Array.isArray(s.text)?`<ul class="step-list">${s.text.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:`<p>${s.text}</p>`}
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
-        <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
+        <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${log.zero&&(S.openStep||{})[s.id]?`<button class="link" data-openstep="${s.id}">Fold away</button>`:""}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} ${only?"Close your day first, at the end of your Day":"Finish step "+i+" first"}</span>`
           :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":(s.id==="e1"&&!log.zero?"Close my day":"Mark step "+num+" done");return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>${miss.length?`<div class="miss soft" role="status"><b>Not done yet:</b><ul>${miss.map(m=>`<li>${esc(m)}</li>`).join("")}</ul><span>You can still move on. Fill these in when you can: The more you do, the higher your score.</span></div>`:""}`})()}</div>
       </div></div>`;
@@ -2829,6 +2842,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
   if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
   if(b.dataset.todotick||b.dataset.todorm){const [k,id]=(b.dataset.todotick||b.dataset.todorm).split("|"),L=todosOf(curCtx().log,k);edit(k,b.dataset.todorm?L.filter(t=>t.id!==id):L.map(t=>t.id===id?{...t,done:t.done?"":nowHHMM()}:t));return render()}
+  if(b.dataset.openstep){S.openStep=S.openStep||{};S.openStep[b.dataset.openstep]=!S.openStep[b.dataset.openstep];return render()}
   if(b.dataset.chkskip){edit("chk"+b.dataset.chkskip,"skip");return render()}
   if(b.dataset.para||b.dataset.ready){const id=b.dataset.para||b.dataset.ready,f=b.dataset.para?"para":"ready",v=b.dataset.val;setMeals(a=>a.map(m=>m.id===id?{...m,[f]:m[f]===v?null:v}:m));return render()}
   if(b.dataset.trainskip){const l=curCtx().log;edit("train_skip",l.train_skip?"":nowHHMM());return render()}
