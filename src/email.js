@@ -79,7 +79,7 @@ export async function sendEmail(env, to, msg) {
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { "authorization": `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
+      headers: { "authorization": `Bearer ${String(env.RESEND_API_KEY).trim().replace(/^["']|["']$/g, "")}`, "content-type": "application/json" },
       body: JSON.stringify({ from: env.EMAIL_FROM, to: Array.isArray(to) ? to : [to], subject: msg.subject, html: msg.html, text: msg.text })
     });
     if (!r.ok) { const body = await r.text(); console.log("Resend error", r.status, body); return { ok: false, status: r.status, error: body.slice(0, 300) }; }
