@@ -1,5 +1,7 @@
 // Project Reset API, running in the Worker (see worker.js) with a D1 database.
 // Bindings: DB = the D1 database (wrangler.jsonc), SETUP_KEY = secret used once to create Ellis's coach account.
+// Emails and Stripe: see email.js. STRIPE_WEBHOOK_SECRET turns on invite-only onboarding (the link in the welcome email).
+import { welcomeEmail, targetsReadyEmail, coachNewSignupEmail, coachOnboardedEmail, sendEmail, coachEmails, verifyStripe } from "./email.js";
 
 const SCHEMA = [
   `CREATE TABLE IF NOT EXISTS users (
@@ -56,6 +58,17 @@ const SCHEMA = [
     PRIMARY KEY (user_id, slot)
   )`
 ];
+// Invites: one per Stripe checkout. The welcome email links to /start?invite=TOKEN.
+SCHEMA.push(`CREATE TABLE IF NOT EXISTS invites (
+    token TEXT PRIMARY KEY,
+    session_id TEXT UNIQUE,
+    email TEXT NOT NULL,
+    name TEXT,
+    customer TEXT,
+    created_at TEXT NOT NULL,
+    used_at TEXT,
+    user_id TEXT
+  )`);
 const SLOTS = ["start", "d7", "d14", "d21"];
 const PHOTO_KINDS = ["clothed", "front", "side", "back", "steps", "screentime"];
 
@@ -171,7 +184,10 @@ async function logsFor(db, userId) {
 }
 
 export async function onRequest(context) {
-  const { request, env, params } = context;
+  const { request, env, params, ctx } = context;
+  // Send emails after the response, so nobody waits on them
+  const later = p => { if (ctx && ctx.waitUntil) ctx.waitUntil(p); else p.catch(() => {}); };
+  const origin = new URL(request.url).origin;
   if (!env.DB) return err(500, "The D1 database isn't bound. Check the d1_databases entry in wrangler.jsonc.");
   const db = env.DB;
   await ensureSchema(db);
@@ -188,7 +204,7 @@ export async function onRequest(context) {
     // ---------- public ----------
     if (path === "/status" && method === "GET") {
       const coach = await db.prepare("SELECT id FROM users WHERE role = 'coach' LIMIT 1").first();
-      return json({ needsSetup: !coach });
+      return json({ needsSetup: !coach, inviteOnly: !!env.STRIPE_WEBHOOK_SECRET });
     }
 
     if (path === "/setup" && method === "POST") {
@@ -207,8 +223,50 @@ export async function onRequest(context) {
       return json({ ok: true }, 200, { "set-cookie": await startSession(db, id, request) });
     }
 
+    // Stripe: a free trial has started. Make an invite, email the client their onboarding link and tell Ellis.
+    if (path === "/stripe/webhook" && method === "POST") {
+      if (!env.STRIPE_WEBHOOK_SECRET) return err(500, "STRIPE_WEBHOOK_SECRET isn't set");
+      const raw = await request.text();
+      if (!(await verifyStripe(raw, request.headers.get("stripe-signature"), env.STRIPE_WEBHOOK_SECRET))) return err(400, "Bad signature");
+      const ev = JSON.parse(raw);
+      if (ev.type === "checkout.session.completed") {
+        const ses = ev.data.object || {}, cd = ses.customer_details || {};
+        const email = cleanEmail(cd.email || ses.customer_email), name = String(cd.name || "").trim().slice(0, 80);
+        if (validEmail(email)) {
+          const token = randomId(24);
+          const ins = await db.prepare("INSERT OR IGNORE INTO invites (token, session_id, email, name, customer, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+            .bind(token, String(ses.id || token), email, name, String(ses.customer || ""), new Date().toISOString()).run();
+          if (ins.meta && ins.meta.changes) {
+            const to = await coachEmails(env, db);
+            later(Promise.all([
+              sendEmail(env, email, welcomeEmail(origin, { name, link: `${origin}/start?invite=${token}` })),
+              sendEmail(env, to, coachNewSignupEmail(origin, { name, email }))
+            ]));
+          }
+        }
+      }
+      return json({ received: true });
+    }
+
+    // The onboarding form checks its invite link
+    if (path === "/invite" && method === "GET") {
+      const t = new URL(request.url).searchParams.get("token") || "";
+      const inv = /^[a-f0-9]{48}$/.test(t) ? await db.prepare("SELECT email, name, used_at FROM invites WHERE token = ?").bind(t).first() : null;
+      if (!inv) return err(404, "That link isn't right. Use the link in your welcome email.");
+      if (inv.used_at) return err(409, "This link has already been used. Log in instead.");
+      return json({ email: inv.email, name: inv.name || "" });
+    }
+
     if (path === "/signup" && method === "POST") {
       const b = await readBody(request);
+      // Once Stripe is connected, only people with an invite (from the welcome email) can sign up
+      let invite = null;
+      if (env.STRIPE_WEBHOOK_SECRET) {
+        const t = String(b.invite || "");
+        invite = /^[a-f0-9]{48}$/.test(t) ? await db.prepare("SELECT * FROM invites WHERE token = ?").bind(t).first() : null;
+        if (!invite) return err(403, "Start your free trial first, then use the link in your welcome email.");
+        if (invite.used_at) return err(409, "This link has already been used. Log in instead.");
+      }
       const email = cleanEmail(b.email);
       const name = String(b.name || "").trim().slice(0, 80);
       if (!name) return err(400, "Enter your name.");
@@ -223,6 +281,8 @@ export async function onRequest(context) {
       await db.prepare("INSERT INTO users (id, email, name, role, pw_hash, pw_salt, status, form, created_at) VALUES (?, ?, ?, 'client', ?, ?, 'pending', ?, ?)")
         .bind(id, email, name, hash, salt, JSON.stringify(form).slice(0, 100000), new Date().toISOString()).run();
       if (b.assessment && typeof b.assessment === "object") await saveAssessment(db, id, "start", b.assessment);
+      if (invite) await db.prepare("UPDATE invites SET used_at = ?, user_id = ? WHERE token = ?").bind(new Date().toISOString(), id, invite.token).run();
+      later(coachEmails(env, db).then(to => sendEmail(env, to, coachOnboardedEmail(origin, { name, email }))));
       return json({ ok: true }, 200, { "set-cookie": await startSession(db, id, request) });
     }
 
@@ -389,6 +449,7 @@ export async function onRequest(context) {
         if (client.status === "pending") {
           await db.prepare("UPDATE users SET targets = ?, status = 'active', start_date = ?, assigned_at = ? WHERE id = ?")
             .bind(JSON.stringify(t), londonToday(), new Date().toISOString(), client.id).run();
+          if (!client.test) later(sendEmail(env, client.email, targetsReadyEmail(origin, { name: client.name, targets: t })));
         } else {
           await db.prepare("UPDATE users SET targets = ? WHERE id = ?").bind(JSON.stringify(t), client.id).run();
         }

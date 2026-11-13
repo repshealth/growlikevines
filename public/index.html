@@ -1319,6 +1319,8 @@ const S={
 };
 // After paying on the landing page, Stripe sends people to /start: open the onboarding form
 if(location.pathname==="/start")S.onboard=true;
+// The welcome email links to /start?invite=TOKEN: the form checks it and fills in their name and email
+S.invite=new URLSearchParams(location.search).get("invite")||null;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("root");
 const me=()=>DATA?toClient(DATA.me):null;
@@ -1477,10 +1479,16 @@ function onbField(f){
   if(f.type==="height")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="pair-in"><label class="field" for="onb-hft">Feet<input class="input" id="onb-hft" name="height_ft" type="number" min="3" max="8" inputmode="numeric"></label><label class="field" for="onb-hin">Inches<input class="input" id="onb-hin" name="height_in" type="number" min="0" max="11.5" step="0.5" inputmode="decimal"></label></div></fieldset>`;
   if(f.type==="radio"||f.type==="checks")return `<fieldset class="field onb-set"><legend>${lab}</legend><div class="opts">${f.opts.map(o=>`<label class="chip onb-chip"><input type="${f.type==="radio"?"radio":"checkbox"}" name="${f.k}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("")}</div></fieldset>`;
   if(f.type==="textarea")return `<label class="field" for="${id}">${lab}${hint}<textarea class="input" id="${id}" name="${f.k}" rows="3"></textarea></label>`;
-  return `<label class="field" for="${id}">${lab}${hint}<input class="input" id="${id}" name="${f.k}" type="${f.type}" ${f.min!=null?`min="${f.min}"`:""} ${f.max!=null?`max="${f.max}"`:""} ${f.step?`step="${f.step}"`:""} ${f.ac?`autocomplete="${f.ac}"`:""} ${f.type==="number"?'inputmode="decimal"':""}></label>`;
+  return `<label class="field" for="${id}">${lab}${hint}<input class="input" id="${id}" name="${f.k}" type="${f.type}" ${S.inviteData&&(f.k==="name"||f.k==="email")&&S.inviteData[f.k]?`value="${esc(S.inviteData[f.k])}"`:""} ${f.min!=null?`min="${f.min}"`:""} ${f.max!=null?`max="${f.max}"`:""} ${f.step?`step="${f.step}"`:""} ${f.ac?`autocomplete="${f.ac}"`:""} ${f.type==="number"?'inputmode="decimal"':""}></label>`;
 }
 function onboardView(){
   PHOTO_BUF={};
+  if(S.inviteOnly&&!S.inviteData)return `<div class="login wrap"><div class="onb-card">
+    <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding</h1>
+    <p>${esc(S.inviteErr||"Your onboarding form opens from the link in your welcome email. Start your free trial and it'll be in your inbox within a minute or two.")}</p>
+    <p class="muted">Can't find it? Check your spam folder for an email from Project Reset.</p></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn primary" href="/#checkout" style="text-decoration:none">Start Free Trial</a><button class="btn" data-act="onb-back">Log in</button></div>
+  </div></div>`;
   return `<div class="login wrap"><div class="onb-card">
     <div><button class="chip" data-act="onb-back">&lsaquo; Back to log in</button></div>
     <div><span class="eyebrow">Welcome to Project Reset</span><h1 class="display" style="font-size:clamp(40px,9vw,60px)">Your onboarding</h1>
@@ -2671,12 +2679,13 @@ async function boot(){
     WEEKS=(d.settings&&d.settings.weeks?d.settings.weeks:DEFAULT_WEEKS).map(w=>({...DEFAULT_WEEKS[0],...w}));
   }catch(e){
     DATA=null;
-    if(e.status===401){try{S.needsSetup=(await api("/status")).needsSetup}catch(_){}}
+    if(e.status===401){try{const st=await api("/status");S.needsSetup=st.needsSetup;S.inviteOnly=!!st.inviteOnly}catch(_){}
+      if(S.onboard&&S.invite&&!S.inviteData){try{S.inviteData=await api("/invite?token="+encodeURIComponent(S.invite))}catch(x){S.inviteErr=x.message}}}
     else S.bootError=e.message;
   }
   S.booting=false;render();
 }
-function afterLogin(){S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;S.checkin=null;return boot().then(()=>window.scrollTo(0,0))}
+function afterLogin(){if(location.search||location.pathname==="/start")history.replaceState(null,"","/app");S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;S.checkin=null;return boot().then(()=>window.scrollTo(0,0))}
 const busy=(form,on)=>{const b=form&&form.querySelector("button[type=submit]");if(b){b.disabled=on;b.classList.toggle("busy",on)}};
 
 root.addEventListener("submit",e=>{
@@ -2695,7 +2704,7 @@ root.addEventListener("submit",e=>{
     if(!fd.get("consent"))miss.push("the consent box");
     if(miss.length){err.textContent="Please fill in: "+miss.join(", ")+".";err.scrollIntoView({block:"center"});return}
     busy(f,true);err.textContent="";
-    api("/signup",{method:"POST",body:{name:a.name,email:a.email,password:pw,consent:true,form:a,assessment:{scores:as.scores,ditl:ditlOf(a)}}})
+    api("/signup",{method:"POST",body:{name:a.name,email:a.email,password:pw,consent:true,invite:S.invite,form:a,assessment:{scores:as.scores,ditl:ditlOf(a)}}})
       .then(()=>{err.textContent="Uploading your photos…";return uploadPhotos("start")})
       .then(failed=>{toast(failed.length?"Sent. "+failed.join(", ")+" didn't upload: add it on the next screen":"Sent to Ellis");return afterLogin()})
       .catch(x=>{err.textContent=x.message;err.scrollIntoView({block:"center"});busy(f,false)});return}
