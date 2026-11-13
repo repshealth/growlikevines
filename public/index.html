@@ -1576,6 +1576,9 @@ function introView(c){
     <div class="stack">${blocks}</div>`;
 }
 
+// Stripe customer portal: manage the card, or cancel within the 7 day free trial
+const BILLING_URL="https://billing.stripe.com/p/login/14keXXarc4nV49i6oo";
+const billingNote=()=>`<p class="muted" style="font-size:13px">Your payment: <a href="${BILLING_URL}" target="_blank" rel="noopener">manage your card or cancel your trial</a>. Cancel within your first 7 days and you won't be charged.</p>`;
 function waitingView(p){
   const have=new Set(photosOf(p.id,"start").map(x=>x.kind)),missing=BODY_SHOTS.filter(k=>!have.has(k));
   return `<div class="stack">
@@ -1589,6 +1592,7 @@ function waitingView(p){
       <p class="muted" style="font-size:13px">These are optional, but they make your Day 21 comparison much clearer.</p>
       ${missing.map(k=>`<div class="photo-row"><span style="flex:1;font-weight:600;font-size:14px">${esc(PHOTO_KINDS[k])}</span><label class="chip upload" for="wp-${k}">Add photo<input type="file" id="wp-${k}" data-photonow="${k}" data-slot="start" accept="image/*"></label></div>`).join("")}</section>`:""}
     <button class="btn" data-act="refresh" style="align-self:flex-start">Check again</button>
+    ${billingNote()}
   </div>`;
 }
 
@@ -2496,6 +2500,7 @@ function progressView(c){
     </div>
     <section class="card">${heatmap(st)}</section>
     ${trendCharts(st)}
+    ${billingNote()}
   </div>`;
 }
 
