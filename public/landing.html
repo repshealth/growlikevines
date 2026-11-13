@@ -62,6 +62,10 @@ p{margin:0 0 14px}
 .btn.sm{min-height:42px;padding:0 18px;font-size:14px}
 .btn.big{min-height:62px;padding:0 34px;font-size:18px}
 
+/* black friday strip */
+.bf{display:block;background:var(--ink);color:#fff;text-align:center;padding:10px 16px;font-size:14px;font-weight:600;text-decoration:none}
+.bf b{display:inline-block;background:var(--lime);color:var(--ink);border-radius:999px;padding:2px 10px;margin-right:8px;font-weight:800}
+
 /* nav */
 .nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
 .nav.scrolled{border-bottom-color:var(--line)}
@@ -93,9 +97,14 @@ p{margin:0 0 14px}
 .stage{position:relative;width:100%;height:clamp(500px,58vw,640px);perspective:1400px}
 .phone{position:absolute;left:50%;top:50%;width:var(--w);aspect-ratio:390/844;border-radius:calc(var(--w)*.15);background:var(--ink);padding:calc(var(--w)*.032);box-shadow:0 30px 60px -20px rgba(30,45,0,.35),0 0 0 1px #000;transform:translate(-50%,-50%) translate(var(--x),var(--y)) rotate(var(--r)) translate(var(--px,0px),var(--py,0px));transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s;will-change:transform}
 .phone .scr{position:relative;width:100%;height:100%;border-radius:calc(var(--w)*.12);overflow:hidden;background:#fff}
-.phone .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .5s ease}
-.phone .scr img.on{opacity:1}
-.phone .notch{position:absolute;top:calc(var(--w)*.05);left:50%;transform:translateX(-50%);width:30%;height:calc(var(--w)*.075);background:#000;border-radius:999px;z-index:2}
+.phone .sb,.mk .sb{position:absolute;top:0;left:0;right:0;height:calc(var(--w)*.135);display:flex;align-items:center;justify-content:space-between;padding:calc(var(--w)*.02) calc(var(--w)*.1) 0;font:700 calc(var(--w)*.045)/1 var(--body);color:#000;background:#fff;z-index:1}
+.sb i{display:flex;gap:calc(var(--w)*.015);align-items:center}
+.sb svg{height:calc(var(--w)*.04);width:auto}
+.phone .view,.mk .view{position:absolute;left:0;right:0;bottom:0;top:calc(var(--w)*.135);overflow:hidden}
+.phone .view img,.mk .view img{position:absolute;inset:0;width:100%;height:auto;min-height:100%;object-fit:cover;object-position:top}
+.phone .view img{opacity:0;transition:opacity .5s ease}
+.phone .view img.on{opacity:1}
+.phone .notch,.mk .notch{position:absolute;top:calc(var(--w)*.058);left:50%;transform:translateX(-50%);width:30%;height:calc(var(--w)*.075);background:#000;border-radius:999px;z-index:2}
 .phone.main{--w:clamp(250px,25vw,300px);--x:0px;--y:-14px;--r:0deg;z-index:3}
 .phone.left{--w:clamp(190px,19vw,232px);--x:-62%;--y:28px;--r:-7deg;z-index:2}
 .phone.right{--w:clamp(190px,19vw,232px);--x:62%;--y:34px;--r:7deg;z-index:2}
@@ -116,6 +125,22 @@ p{margin:0 0 14px}
 .shift-cap{margin-top:14px;min-height:3.2em;max-width:34em;text-align:center;font-size:15px;color:var(--soft)}
 .shift-cap b{color:var(--ink)}
 @media (max-width:420px){.shift-tabs button{padding:0 12px;font-size:14px}}
+
+/* phone mockups used through the page */
+.mk{--w:240px;position:relative;width:var(--w);flex:none;aspect-ratio:390/844;border-radius:calc(var(--w)*.15);background:#000;padding:calc(var(--w)*.032);box-shadow:0 26px 50px -24px rgba(30,45,0,.45),0 0 0 1px #000}
+.mk .scr{position:relative;width:100%;height:100%;border-radius:calc(var(--w)*.12);overflow:hidden;background:#fff}
+
+/* inside the app: a strip of real screens you can scroll through */
+.screens{padding:20px 0 100px}
+.screens .head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.rail{--edge:max(24px,calc((100vw - var(--wrap))/2 + 24px));display:flex;gap:26px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--edge);padding:10px var(--edge) 30px;scrollbar-width:thin}
+.rail figure{margin:0;scroll-snap-align:start;display:flex;flex-direction:column;gap:14px;width:240px;flex:none}
+.rail figcaption{font-size:15px;line-height:1.4;color:var(--soft)}
+.rail figcaption b{display:block;color:var(--ink);font-size:16px}
+.rail-nav{display:flex;gap:8px}
+.rail-nav button{width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-size:20px;cursor:pointer}
+.rail-nav button:hover{background:var(--lime);border-color:var(--lime)}
+@media (max-width:600px){.rail figure{width:210px}.rail figure .mk{--w:210px}}
 
 /* video */
 .video{padding:40px 0 80px}
@@ -148,7 +173,7 @@ section.blk{padding:110px 0}
 .shifts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .shift{display:flex;flex-direction:column;gap:18px}
 .shift .shot{position:relative;border-radius:26px;overflow:hidden;background:var(--mist);aspect-ratio:4/5;border:1.5px solid var(--line)}
-.shift .shot img{position:absolute;left:50%;top:22px;width:74%;transform:translateX(-50%);border-radius:22px;box-shadow:0 20px 40px -18px rgba(0,0,0,.35);border:6px solid #000}
+.shift .shot .mk{--w:min(64%,250px);position:absolute;left:50%;top:26px;transform:translateX(-50%)}
 .shift .tag{display:flex;align-items:center;gap:10px;font-family:var(--display);font-style:italic;font-weight:900;font-size:46px;text-transform:uppercase;line-height:.9}
 .shift .tag .arr{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--ink);color:var(--lime);font-family:var(--body);font-style:normal;font-size:22px}
 .shift ul{margin:0;padding-left:18px;color:var(--soft)}
@@ -173,12 +198,11 @@ section.blk{padding:110px 0}
 .get{grid-column:span 4;border:1.5px solid var(--line);border-radius:26px;padding:28px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
 .get.wide{grid-column:span 8;display:grid;grid-template-columns:1fr 210px;gap:24px;align-items:center;background:var(--ink);color:#fff;border-color:var(--ink)}
 .get.wide p{color:#c8d1c2}
-.get.wide .mini{align-self:end;margin-bottom:-28px}
 .get.wide.strip{grid-column:span 12;grid-template-columns:1fr 210px;background:var(--mist);color:var(--ink);border-color:var(--line)}
 .get.wide.strip p{color:var(--soft);max-width:38em}
 .get p{margin:0;color:var(--soft);font-size:16px}
-.get .mini{border-radius:20px 20px 0 0;overflow:hidden;border:6px solid #000;border-bottom:0;height:260px}
-.get .mini img{width:100%}
+.get .mini{height:250px;overflow:hidden;align-self:end;margin-bottom:-28px}
+.get .mini .mk{--w:200px;margin:0 auto}
 .get .ico{width:46px;height:46px;border-radius:14px;background:var(--lime);display:grid;place-items:center}
 .get .ico svg{width:24px;height:24px}
 @media (max-width:980px){.get,.get.wide{grid-column:span 6}.get.wide.strip{grid-column:span 12}.get.wide{grid-template-columns:1fr}.get.wide .mini{display:none}}
@@ -195,12 +219,24 @@ section.blk{padding:110px 0}
 @media (max-width:980px){.steps{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:520px){.steps{grid-template-columns:1fr}}
 
+/* coffee */
+.coffee{padding:100px 0 0}
+.coffee .wrap{display:grid;grid-template-columns:200px 1fr;gap:44px;align-items:center}
+.coffee .cup{width:200px;height:200px;border-radius:50%;background:var(--mist);display:grid;place-items:center}
+.coffee .cup svg{width:120px;height:120px}
+.coffee .d{font-size:clamp(46px,7vw,96px)}
+.coffee p{max-width:36em;color:var(--soft);font-size:18px}
+.coffee p.big{font-size:clamp(20px,2.2vw,26px);color:var(--ink);font-weight:600;margin:18px 0 10px}
+.coffee p.big b{background:var(--lime);padding:0 6px;border-radius:6px}
+@media (max-width:760px){.coffee .wrap{grid-template-columns:1fr;gap:24px}.coffee .cup{width:130px;height:130px}.coffee .cup svg{width:80px;height:80px}}
+
 /* checkout */
 .checkout .card{display:grid;grid-template-columns:1.1fr 1fr;border-radius:34px;overflow:hidden;border:2px solid var(--ink);box-shadow:14px 14px 0 var(--lime)}
 .checkout .l{padding:46px}
 .checkout .r{padding:46px;background:var(--mist);display:flex;flex-direction:column;gap:18px;justify-content:center}
 .checkout .price{font-family:var(--display);font-style:italic;font-weight:900;font-size:clamp(78px,9vw,120px);line-height:.85}
 .checkout .price small{font-family:var(--body);font-style:normal;font-weight:600;font-size:16px;color:var(--soft);margin-left:6px;letter-spacing:0}
+.checkout .deal{display:inline-block;background:var(--ink);color:var(--lime);font-weight:800;font-size:14px;border-radius:999px;padding:6px 14px;margin-bottom:16px}
 .checkout ul{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px}
 .checkout li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-weight:500}
 .checkout li svg{width:22px;height:22px;margin-top:2px}
@@ -246,6 +282,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
 <body>
 <a class="skip" href="#main">Skip to content</a>
 
+<a class="bf" href="#checkout"><b>Black Friday</b> Project Reset is £75 for all 21 days. That's £3.57 a day.</a>
 <header class="nav" id="top">
   <div class="wrap">
     <a class="logo" href="/" aria-label="Project Reset home"><img src="/logo.webp" alt="Project Reset" width="800" height="580"></a>
@@ -257,7 +294,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </nav>
     <div class="acts">
       <a class="btn sm" href="/app">Log in</a>
-      <a class="btn sm go" href="#checkout">Start the reset</a>
+      <a class="btn sm go" href="#checkout">Start for £75</a>
     </div>
   </div>
 </header>
@@ -269,11 +306,11 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         <h1 class="d" id="h1"><span class="line">Change what's</span><span class="line">below the</span><span class="line"><span class="slab"><span>surface.</span></span></span></h1>
         <p class="lede">Project Reset is a 21 day, step by step guided process from Ellis Vine. Your nervous system, food, training and sleep, set out as one simple routine on your phone, so you can change how you think, look and feel.</p>
         <div class="ctas">
-          <a class="btn go big" href="#checkout">Start Project Reset</a>
+          <a class="btn go big" href="#checkout">Start for £75</a>
           <a class="btn big" href="#video">Watch Ellis explain it</a>
         </div>
         <ul class="facts">
-          <li>21 days, guided every step</li>
+          <li>Black Friday: £75 for all 21 days</li>
           <li>Targets set for you by Ellis</li>
           <li>Works on any phone</li>
         </ul>
@@ -281,13 +318,13 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
 
       <div class="board" id="board">
         <div class="stage" id="stage">
-          <div class="phone left" aria-hidden="true"><div class="notch"></div><div class="scr"><img class="on" src="/home/plans.webp" alt="" loading="eager"></div></div>
-          <div class="phone right" aria-hidden="true"><div class="notch"></div><div class="scr"><img class="on" src="/home/train.webp" alt="" loading="eager"></div></div>
-          <div class="phone main"><div class="notch"></div><div class="scr" id="mainScr">
-            <img class="on" src="/home/morning.webp" alt="The Morning shift in the app: wake up and move, with your intentions and plan from the night before" data-shift="0">
-            <img src="/home/day.webp" alt="The Day shift: each meal ticked, then a walk block straight after" data-shift="1">
-            <img src="/home/evening2.webp" alt="The Evening shift: check points and rating your state, aiming for calm" data-shift="2">
-          </div></div>
+          <div class="phone left" aria-hidden="true"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/plans.webp" alt=""></div></div></div>
+          <div class="phone right" aria-hidden="true"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/train.webp" alt=""></div></div></div>
+          <div class="phone main"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view" id="mainScr">
+            <img class="on" src="/home/today.webp" alt="Today in the app: Day 1 of 21, with your intentions and plan from the night before" data-shift="0">
+            <img src="/home/day.webp" alt="The Day: each meal ticked, then a walk block straight after" data-shift="1">
+            <img src="/home/evening.webp" alt="The Evening: your evening meal, then check points to wind down" data-shift="2">
+          </div></div></div>
         </div>
         <div class="shift-tabs" role="tablist" aria-label="See each part of the day">
           <button role="tab" aria-selected="true" aria-controls="mainScr" data-go="0"><span class="arr" aria-hidden="true">↑</span>Morning</button>
@@ -317,6 +354,27 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </div>
   </section>
 
+  <section class="screens" aria-labelledby="scrh">
+    <div class="wrap head">
+      <h2 class="d" id="scrh" style="font-size:clamp(40px,5.6vw,72px)">Inside the app</h2>
+      <div class="rail-nav"><button type="button" data-rail="-1" aria-label="Previous screens">←</button><button type="button" data-rail="1" aria-label="Next screens">→</button></div>
+    </div>
+    <div class="rail" id="rail" tabindex="0" aria-label="Screens from the Project Reset app">
+      <figure><div class="mk" data-src="today" data-alt="Your day, set the night before"></div><figcaption><b>Your day, set the night before</b>Intentions, training time and meals, ready when you wake.</figcaption></figure>
+      <figure><div class="mk" data-src="step1" data-alt="Wake up and move"></div><figcaption><b>Wake up and move</b>Your action and the check boxes to do on waking.</figcaption></figure>
+      <figure><div class="mk" data-src="meal1para" data-alt="Calm before you eat"></div><figcaption><b>Calm before you eat</b>Not calm yet? Quick ways to get there in under 5 minutes.</figcaption></figure>
+      <figure><div class="mk" data-src="arousal" data-alt="Rate your state"></div><figcaption><b>Rate your state</b>Calm, centred or wired, and where to aim.</figcaption></figure>
+      <figure><div class="mk" data-src="day" data-alt="Meals and walk blocks"></div><figcaption><b>Meals and walk blocks</b>Tick each meal, then a walk straight after.</figcaption></figure>
+      <figure><div class="mk" data-src="train" data-alt="Training with intent"></div><figcaption><b>Training with intent</b>Set-up steps, cues during and a close-out after.</figcaption></figure>
+      <figure><div class="mk" data-src="close" data-alt="Close the day"></div><figcaption><b>Close the day</b>Check the rules, then set up tomorrow.</figcaption></figure>
+      <figure><div class="mk" data-src="evening" data-alt="Wind down"></div><figcaption><b>Wind down</b>Your evening meal, then check points before bed.</figcaption></figure>
+      <figure><div class="mk" data-src="score" data-alt="Your daily score"></div><figcaption><b>Your daily score</b>Every completed task earns points.</figcaption></figure>
+      <figure><div class="mk" data-src="plans" data-alt="Meal plans"></div><figcaption><b>Meal plans</b>Training day and rest day plans, checked against the rules.</figcaption></figure>
+      <figure><div class="mk" data-src="foods" data-alt="Your shopping list"></div><figcaption><b>Your shopping list</b>Built from your plans, minus anything you'd never eat.</figcaption></figure>
+      <figure><div class="mk" data-src="progress" data-alt="Log any time"></div><figcaption><b>Log any time</b>Steps, protein and water, whenever suits you.</figcaption></figure>
+    </div>
+  </section>
+
   <section class="creed" aria-labelledby="creed">
     <div class="wrap">
       <h2 class="d" id="creed">It's not just what you do.</h2>
@@ -337,19 +395,19 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
       </div>
       <div class="shifts">
         <article class="shift">
-          <div class="shot"><img src="/home/morning.webp" alt="Morning in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="shot"><div class="mk" data-src="step1" data-alt="Morning in the app: wake up and move"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↑</span>Morning</div>
           <p class="why">Switch on, bring it back down, open the day.</p>
           <ul><li>Your action, planned the night before: cold therapy, sauna, cardio, a workout or breath work</li><li>Your low arousal task to bring it back down</li><li>Meal 1 within 90 minutes of waking</li></ul>
         </article>
         <article class="shift">
-          <div class="shot"><img src="/home/day.webp" alt="The Day in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="shot"><div class="mk" data-src="day" data-alt="The Day in the app: meals and walk blocks"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">→</span>Day</div>
           <p class="why">Eat, move, train. Stay centred.</p>
           <ul><li>Each meal built the Project Reset way, then a walk block straight after</li><li>Your training session, with steps before, during and after</li><li>Close the day and set up tomorrow</li></ul>
         </article>
         <article class="shift">
-          <div class="shot"><img src="/home/evening.webp" alt="The Evening in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="shot"><div class="mk" data-src="calm" data-alt="The Evening in the app: rating your state, aiming for calm"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↓</span>Evening</div>
           <p class="why">Wind down. Recover for tomorrow.</p>
           <ul><li>Your evening meal</li><li>Low arousal tasks, lights dimmed, phone away</li><li>Rate where your nervous system is, aiming for calm</li></ul>
@@ -400,7 +458,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
             <h3 style="margin-top:14px">The daily process board</h3>
             <p>Morning, Day and Evening, one step at a time. You're always shown what's next, with an info button on every task explaining why it matters. Skip a step if you need to: you'll be prompted, never blocked.</p>
           </div>
-          <div class="mini"><img src="/home/morning.webp" alt="" loading="lazy"></div>
+          <div class="mini"><div class="mk" data-src="today" data-alt=""></div></div>
         </article>
         <article class="get">
           <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
@@ -428,7 +486,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
             <h3 style="margin-top:14px">Your score and check-ins</h3>
             <p>A daily score for everything you complete, your progress across all 21 days, plus check-ins on Day 7, 14 and 21 so you and Ellis can see what's changing.</p>
           </div>
-          <div class="mini"><img src="/home/progress.webp" alt="" loading="lazy"></div>
+          <div class="mini"><div class="mk" data-src="score" data-alt=""></div></div>
         </article>
       </div>
     </div>
@@ -450,10 +508,22 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </div>
   </section>
 
+  <section class="coffee" aria-labelledby="coffeeh">
+    <div class="wrap">
+      <div class="cup" aria-hidden="true"><svg viewBox="0 0 120 120" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 44h62v26a28 28 0 01-28 28h-6a28 28 0 01-28-28z" fill="#a9e80c"/><path d="M84 52h6a12 12 0 010 24h-7"/><path d="M40 16c-4 6 4 10 0 16M56 12c-4 6 4 10 0 16M72 16c-4 6 4 10 0 16"/></svg></div>
+      <div>
+        <h2 class="d" id="coffeeh">The price of a coffee.</h2>
+        <p class="big">£75 for all 21 days works out at <b>£3.57 a day</b>.</p>
+        <p>That's the same as the coffee you're relying on to get through the day, the one that's keeping your nervous system wired and making it worse. Put that money into this instead.</p>
+      </div>
+    </div>
+  </section>
+
   <section class="blk checkout" id="checkout" aria-labelledby="checkh">
     <div class="wrap">
       <div class="card">
         <div class="l">
+          <span class="deal">Black Friday price</span>
           <h2 class="d" id="checkh" style="font-size:clamp(48px,6vw,80px)">Project Reset</h2>
           <p class="lede" style="margin-top:14px">21 days, guided step by step by Ellis Vine.</p>
           <ul>
@@ -466,8 +536,8 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         </div>
         <div class="r">
           <div class="price" id="price">21 days<small>guided</small></div>
-          <p class="note" id="priceNote">One payment for the full 21 days.</p>
-          <a class="btn go big" id="payBtn" href="/start" data-checkout>Pay and start Project Reset</a>
+          <p class="note" id="priceNote">One payment for all 21 days. That's £3.57 a day.</p>
+          <a class="btn go big" id="payBtn" href="/start" data-checkout>Pay £75 and start</a>
           <p class="secure"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Secure checkout with Stripe. You'll go straight to your onboarding form.</p>
           <p class="note">Already started? <a href="/app">Log in here</a>.</p>
         </div>
@@ -494,22 +564,23 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
   <div class="wrap">
     <img src="/logo.webp" alt="Project Reset" width="800" height="580">
     <span>Project Reset by Ellis Vine, GrowLikeVines</span>
-    <div class="sp"><a href="/app">Log in</a><a href="#checkout">Start the reset</a></div>
+    <div class="sp"><a href="/app">Log in</a><a href="#checkout">Start for £75</a></div>
   </div>
 </footer>
 
-<div class="buybar" id="buybar" aria-hidden="true"><b>Project Reset, 21 days</b><a class="btn go sm" href="#checkout" tabindex="-1">Start</a></div>
+<div class="buybar" id="buybar" aria-hidden="true"><b>Black Friday: £75 for 21 days</b><a class="btn go sm" href="#checkout" tabindex="-1">Start</a></div>
 
 <script>
 /* ---- Edit these three to go live ---- */
 const CONFIG={
   stripeLink:"",        // your Stripe Payment Link, e.g. https://buy.stripe.com/xxxx
-  price:"",             // e.g. "£97" (left blank, the price line is hidden)
+  price:"£75",          // shown big in the checkout
   video:""              // YouTube, Vimeo or Loom link, or an .mp4 URL
 };
 /* ------------------------------------- */
 document.documentElement.classList.add("js");
 (function(){
+  const reduce0=matchMedia("(prefers-reduced-motion: reduce)").matches;
   // checkout
   if(CONFIG.stripeLink)document.querySelectorAll("[data-checkout]").forEach(a=>a.href=CONFIG.stripeLink);
   if(CONFIG.price){document.getElementById("price").innerHTML=CONFIG.price.replace(/[<>&]/g,"")+"<small>one payment</small>"}
@@ -524,6 +595,12 @@ document.documentElement.classList.add("js");
     if(src)fr.innerHTML=`<iframe src="${src}" title="Ellis explains Project Reset" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
     else if(/\.mp4(\?|$)/.test(v))fr.innerHTML=`<video src="${v}" controls playsinline preload="metadata" title="Ellis explains Project Reset"></video>`;
   }
+
+  // phone mockups from real app screens
+  const SB='<div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div>';
+  document.querySelectorAll(".mk[data-src]").forEach(el=>{el.innerHTML=`<div class="notch"></div><div class="scr">${SB}<div class="view"><img src="/home/${el.dataset.src}.webp" alt="${el.dataset.alt||""}" loading="lazy" width="585" height="1266"></div></div>`;if(!el.dataset.alt)el.setAttribute("aria-hidden","true")});
+  const rail=document.getElementById("rail");
+  document.querySelectorAll("[data-rail]").forEach(b=>b.addEventListener("click",()=>rail.scrollBy({left:Number(b.dataset.rail)*Math.min(rail.clientWidth*.8,800),behavior:reduce0?"auto":"smooth"})));
 
   // nav border + mobile buy bar
   const nav=document.querySelector(".nav"),bar=document.getElementById("buybar"),co=document.getElementById("checkout");
