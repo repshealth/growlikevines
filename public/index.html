@@ -771,7 +771,13 @@ select.input{appearance:auto}
   .demo-row{grid-template-columns:1fr}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-.step.folded .step-head h3{font-size:18px}
+.step.folded{display:flex!important;flex-direction:row!important;gap:12px;align-items:flex-start;padding:14px 16px!important}
+.step.folded .step-num{flex:none;width:32px!important;height:32px!important;font-size:14px;margin:0!important}
+.step.folded .step-num svg{width:14px;height:14px}
+.step.folded .step-body{flex:1;min-width:0}
+.step.folded .step-head{margin:0}
+.step.folded .step-head h3{font-size:17px;margin:4px 0 2px}
+.step.folded .step-foot{margin-top:6px;padding-top:0;border:0}
 .step.folded .fold-sum{margin:2px 0 0;font-size:14px;color:var(--muted)}
 .step.folded .fold-sum b{color:var(--fg)}
 .zero-split{display:flex;flex-direction:column;gap:12px;margin:14px 0 6px}
@@ -2022,13 +2028,29 @@ function meal1Cue(log){
     ${protQ("stage:meal1_prot",log.meal1_prot,`How much protein is in it?<span class="optional">Optional</span>`)}
     <div><button class="btn primary" data-meal1log="1">Log Meal 1</button></div></div>`;
 }
-function zeroPlanSummary(log){
+// The one-line summary a finished step folds down to
+function stepSummary(s,log){
+  if(log.zero&&s.id==="e1")return "Targets confirmed. You know your numbers for every day.";
+  if(log.zero&&s.id==="e2")return zeroPlanSummary(log);
+  const asks=s.asks.filter(a=>!a.when||a.when(log)),bits=[];
+  if(!log.zero&&s.id==="e1"){if(log.rules)bits.push(log.rules==="yes"?"Stuck to the rules":"Rules not kept today");return [...bits,zeroPlanSummary(log,"Tomorrow is planned.")].join(". ")}
+  asks.forEach(a=>{const v=log[a.k];
+    if(a.type==="time"&&v)bits.push(`Woke ${esc(v)}`);
+    if(a.type==="pick"&&Array.isArray(v)&&v.length&&a.k!=="m_senses"&&a.k!=="e_senses"&&a.k!=="d_senses")bits.push(esc(v.slice(0,3).join(", ")));
+    if(a.type==="checks"){const n=(a.options||[]).filter(([k])=>log[k]).length;if(n)bits.push(`${n} ticked`)}
+    if(a.type==="todolist"&&todosOf(log,a.k).length)bits.push(`${todosOf(log,a.k).length} on your to-do list`)});
+  const yn=asks.filter(a=>a.yn);if(yn.length)bits.push(`${yn.filter(a=>log[a.k]==="yes").length} of ${yn.length} check boxes`);
+  const sn=asks.find(a=>/_senses$/.test(a.k));if(sn&&(log[sn.k]||[]).length)bits.push(`${log[sn.k].length} sense${log[sn.k].length>1?"s":""}`);
+  const r=asks.find(a=>a.type==="rating"&&a.arousal);if(r&&log[r.k])bits.push(`Feeling ${zoneTxt(log[r.k])}`);
+  return bits.length?bits.join(" · "):"Done.";
+}
+function zeroPlanSummary(log,lead){
   const meals=(log.meals_tmr||[]).length||planFoodsOf(log).filter(f=>foodsCount(f)).length;
   const bits=[log.tmr_train==="yes"?`Training${log.tmr_train_time?" at "+esc(log.tmr_train_time):""}`:log.tmr_train==="no"?"Rest day":"",
     meals?`${meals} meals planned`:"",
     (log.tmr_action||[]).length?`Morning: ${esc((log.tmr_action||[]).join(", "))}`:"",
     log.tmr_wake?`Alarm ${esc(log.tmr_wake)}`:""].filter(Boolean);
-  return `<b>Day 1 is planned.</b> ${bits.length?bits.join(" · ")+". ":""}That's tomorrow sorted.`;
+  return `<b>${lead||"Day 1 is planned."}</b> ${bits.length?bits.join(" · ")+". ":""}${lead?"":"That's tomorrow sorted."}`;
 }
 function zeroSplit(log){
   const planned=!!log.e2;
@@ -2049,10 +2071,10 @@ function stepsView(ph,x,only){
     const done=log[s.id],locked=!done&&firstOpen!==-1&&i>firstOpen,current=i===firstOpen;
     const lastDone=done&&(i===steps.length-1||!log[steps[i+1].id]);
     // Day 0: finished set-up steps fold away, so tonight is what's left on screen
-    if(log.zero&&done&&(s.id==="e1"||s.id==="e2")&&!(S.openStep||{})[s.id]){
+    if(done&&!(S.openStep||{})[s.id]){
       html+=`<div class="step done folded"><div class="step-num">${TICK}</div><div class="step-body">
         <div class="step-head"><h3>${s.title}</h3></div>
-        <p class="fold-sum">${s.id==="e2"?zeroPlanSummary(log):"Targets confirmed. You know your numbers for every day."}</p>
+        <p class="fold-sum">${stepSummary(s,log)}</p>
         <div class="step-foot"><span class="stamp">Done ${esc(done)}</span><button class="link" data-openstep="${s.id}">View or change</button>${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}</div>
       </div></div>`;
       return;
@@ -2067,7 +2089,7 @@ function stepsView(ph,x,only){
         <div class="step-head"><h3>${s.title}</h3></div>
         ${Array.isArray(s.text)?`<ul class="step-list">${s.text.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:`<p>${s.text}</p>`}
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
-        <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${log.zero&&(S.openStep||{})[s.id]?`<button class="link" data-openstep="${s.id}">Fold away</button>`:""}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
+        <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${(S.openStep||{})[s.id]?`<button class="link" data-openstep="${s.id}">Fold away</button>`:""}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} ${only?"Close your day first, at the end of your Day":"Finish step "+i+" first"}</span>`
           :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":(s.id==="e1"&&!log.zero?"Close my day":"Mark step "+num+" done");return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}<span class="muted" style="font-size:12px">Logs the time automatically</span>${miss.length?`<div class="miss soft" role="status"><b>Not done yet:</b><ul>${miss.map(m=>`<li>${esc(m)}</li>`).join("")}</ul><span>You can still move on. Fill these in when you can: The more you do, the higher your score.</span></div>`:""}`})()}</div>
       </div></div>`;
@@ -2081,8 +2103,11 @@ function dayView(x){
   const wp=walkPairs(log),total=pairs.length+wp.length+(log.train==="yes"?1:0),doneN=pairs.filter(p=>p.done).length+wp.filter(p=>p.walk).length+(log.train_done?1:0),next=Math.max(0,...mealsOf(log).map(m=>m.slot))+1;
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
   ${prev.intentions?`<section class="card plan-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your intentions for today</h2><span class="muted" style="font-size:12px">From last night</span></div><p>${esc(prev.intentions)}</p></section>`:""}
+  ${doneN>=total&&total>0&&!S.openDay?`<section class="card folded-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${TICK} Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
+    <p class="muted" style="font-size:14px;margin:0">${pairs.filter(p=>p.done).length} meals${wp.length?`, ${wp.filter(p=>p.walk).length} walk blocks`:""}${log.train==="yes"?(log.train_done?", training done":", training skipped"):""}${todosOf(log,"todos").length?` · To-do list ${todosOf(log,"todos").filter(t=>t.done).length} of ${todosOf(log,"todos").length}`:""}. Close your day below.</p>
+    <button class="link" data-openday="1" style="margin-top:6px">View or change</button></section>`:`
   <section class="card">
-    <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span></div>
+    <div class="sec-head"><h2 class="sec-title">Today's non-negotiables</h2><span class="muted num">${doneN} / ${total} done</span>${doneN>=total&&total>0?`<button class="link" data-openday="1">Fold away</button>`:""}</div>
     <p class="muted" style="font-size:13px;margin:-2px 0 6px">Eat, then walk. Tick each meal as you eat it and the walk block straight after. Once you've trained, close the day below. Your evening meal is logged in your Evening.</p>
     <div class="day-guides">${guideLink("nutrition","View the Nutrition Guide")}${log.train==="yes"?guideLink("workout","View the Workout Guide"):""}</div>
     <div class="pairs">${(()=>{const ta=dayTrainAfter(log),nx=pairs.find(q=>!q.done&&!q.fixed);let h="",placed=false;pairs.forEach((q,qi)=>{h+=pairHtml(q,ta,0,log,!!nx&&nx.key===q.key);const tr=ta&&q.slot===ta&&log.train==="yes";if(q.walk)h+=checkinHtml(q.slot,log,x.wk,tr,!pairs[qi+1]);if(tr){h+=trainHtml(log,0);placed=true}});if(ta&&!placed)h+=trainHtml(log,0);return h})()}</div>
@@ -2092,7 +2117,7 @@ function dayView(x){
   </section>
   <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>
     <p class="muted" style="font-size:13px;margin:-2px 0 8px">Your own tasks for today, around your meals and training. Optional, and they don't affect your score.</p>
-    ${todoHtml("todos",log,true,false)}</section>
+    ${todoHtml("todos",log,true,false)}</section>`}
   ${closeDayHtml(x)}`;
 }
 // Ellis: close the day in the Day, not the Evening. They must have trained before this point.
@@ -2842,6 +2867,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
   if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
   if(b.dataset.todotick||b.dataset.todorm){const [k,id]=(b.dataset.todotick||b.dataset.todorm).split("|"),L=todosOf(curCtx().log,k);edit(k,b.dataset.todorm?L.filter(t=>t.id!==id):L.map(t=>t.id===id?{...t,done:t.done?"":nowHHMM()}:t));return render()}
+  if(b.dataset.openday){S.openDay=!S.openDay;return render()}
   if(b.dataset.openstep){S.openStep=S.openStep||{};S.openStep[b.dataset.openstep]=!S.openStep[b.dataset.openstep];return render()}
   if(b.dataset.chkskip){edit("chk"+b.dataset.chkskip,"skip");return render()}
   if(b.dataset.para||b.dataset.ready){const id=b.dataset.para||b.dataset.ready,f=b.dataset.para?"para":"ready",v=b.dataset.val;setMeals(a=>a.map(m=>m.id===id?{...m,[f]:m[f]===v?null:v}:m));return render()}
