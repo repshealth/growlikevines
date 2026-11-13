@@ -784,6 +784,7 @@ select.input{appearance:auto}
 .step.folded .step-foot{margin-top:6px;padding-top:0;border:0}
 .step.folded .fold-sum{margin:2px 0 0;font-size:14px;color:var(--muted)}
 .step.folded .fold-sum b{color:var(--fg)}
+.pblock.ready .start-blk{width:100%;min-height:56px;font-size:17px;margin-top:4px}
 .zero-split{display:flex;flex-direction:column;gap:12px;margin:14px 0 6px}
 .zs-done{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:var(--pale);border:1.5px solid var(--lime)}
 .zs-done .tick{flex:none;width:26px;height:26px;border-radius:50%;background:var(--lime);display:grid;place-items:center}
@@ -1853,9 +1854,18 @@ function blockSummary(id,log){
   if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,log.train==="yes"?(log.train_done?`Trained ${log.train_done}`:"Training not ticked"):"",`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   {const ev=eveningSteps(log),last=log[ev[ev.length-1].id];return [last&&`Done ${last}`,(log.pm_tool||[]).length&&(Array.isArray(log.pm_tool)?log.pm_tool.join(", "):log.pm_tool),log.pm_state&&`State: ${zoneTxt(log.pm_state)}`,`${mealPlanOf(log).length} ${mealPlanOf(log).length===1?"meal":"meals"} planned for tomorrow`,log.tmr_wake&&`Wake up ${log.tmr_wake}`].filter(Boolean).join(" · ")}
 }
+function blockStarted(id,log){
+  if(log[id+"_started"])return true;
+  if(id==="day")return mealsOf(log).some(m=>m.slot>1&&m.done)||!!log.train_done||!!log.e1||todosOf(log,"todos").some(t=>t.done);
+  return !!log.e2||dayPairs(log).some(q=>q.eve&&q.done)||!!log.pm_state;
+}
 function pblock(id,num,state,body,log,ov){
   if(state==="hidden")return"";
   const P={...PHASES.find(p=>p.id===id),...(ov||{})};
+  // The Day and Evening wait for a tap on Start before opening (not on Day 0)
+  if(state==="active"&&(id==="day"||id==="evening")&&!log.zero&&!blockStarted(id,log))return `<section class="pblock open active ready" id="blk-${id}">
+    <header class="pb-head"><span class="pb-num">${num}</span><div><span class="eyebrow">Up next · ${P.goal}</span><h2 class="display pb-title">${P.name}</h2><p class="muted" style="font-size:13px">${P.intro}</p></div></header>
+    <button class="btn primary start-blk" data-startblk="${id}">Start ${P.name}</button></section>`;
   if(state==="active"||(state==="done"&&S.open[id]))return `<section class="pblock open ${state}" id="blk-${id}">
     <header class="pb-head"><span class="pb-num">${state==="done"?TICK:num}</span><div><span class="eyebrow">${state==="done"?"Editing · ":"You're here · "}${P.goal}</span><h2 class="display pb-title">${P.name}</h2><p class="muted" style="font-size:13px">${P.intro}</p></div>${state==="done"?`<button class="btn" data-collapse="${id}">Close</button>`:""}</header>
     ${body}</section>`;
@@ -2876,6 +2886,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
   if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
   if(b.dataset.todotick||b.dataset.todorm){const [k,id]=(b.dataset.todotick||b.dataset.todorm).split("|"),L=todosOf(curCtx().log,k);edit(k,b.dataset.todorm?L.filter(t=>t.id!==id):L.map(t=>t.id===id?{...t,done:t.done?"":nowHHMM()}:t));return render()}
+  if(b.dataset.startblk){const id=b.dataset.startblk;edit(id+"_started",nowHHMM());S.scrollTo=id;return render()}
   if(b.dataset.openday){S.openDay=!S.openDay;return render()}
   if(b.dataset.openstep){S.openStep=S.openStep||{};S.openStep[b.dataset.openstep]=!S.openStep[b.dataset.openstep];return render()}
   if(b.dataset.chkskip){edit("chk"+b.dataset.chkskip,"skip");return render()}
