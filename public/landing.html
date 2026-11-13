@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Reset by Ellis Vine: the 21 day guided reset</title>
+<meta name="description" content="Project Reset is a 21 day, step by step guided process from Ellis Vine. Your nervous system, food, training and sleep in one daily routine on your phone.">
+<meta property="og:title" content="Project Reset by Ellis Vine">
+<meta property="og:description" content="A 21 day, step by step guided process. Change what's below the surface to change what you can achieve above it.">
+<meta property="og:image" content="/logo.webp">
+<meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/home/fonts/barlow-condensed-latin-900-italic.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Barlow Condensed";font-style:italic;font-weight:800;font-display:swap;src:url(/home/fonts/barlow-condensed-latin-800-italic.woff2) format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-style:italic;font-weight:900;font-display:swap;src:url(/home/fonts/barlow-condensed-latin-900-italic.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:400;font-display:swap;src:url(/home/fonts/montserrat-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:500;font-display:swap;src:url(/home/fonts/montserrat-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:600;font-display:swap;src:url(/home/fonts/montserrat-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Montserrat";font-style:normal;font-weight:700;font-display:swap;src:url(/home/fonts/montserrat-latin-700-normal.woff2) format("woff2")}
+</style>
+<style>
+/* Project Reset landing. Brand from the logo: chartreuse on white, black for weight, slanted condensed type.
+   The signature is the hero "process board": three phones, one per shift of the day (up, centre, down). */
+:root{
+  --paper:#ffffff;
+  --mist:#f3f7ec;
+  --line:#e2e8dc;
+  --ink:#000000;
+  --soft:#5d6559;
+  --lime:#a9e80c;
+  --green:#4f7300;
+  --calm:#3d6fd9;
+  --wired:#e0662c;
+  --display:"Barlow Condensed","Arial Narrow",Impact,sans-serif;
+  --body:"Montserrat",system-ui,sans-serif;
+  --wrap:1180px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--green);outline-offset:3px;border-radius:6px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--ink);color:#fff;padding:8px 14px;border-radius:8px;z-index:50}
+.skip:focus{left:8px}
+
+/* type */
+.d{font-family:var(--display);font-style:italic;font-weight:900;text-transform:uppercase;line-height:.86;letter-spacing:-.005em;margin:0}
+h2.d{font-size:clamp(46px,7vw,92px)}
+h3{font-size:20px;line-height:1.25;margin:0 0 6px}
+p{margin:0 0 14px}
+.lede{font-size:clamp(17px,1.6vw,20px);color:var(--soft);max-width:34em}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;font:700 16px/1 var(--body);text-decoration:none;border:2px solid var(--ink);background:var(--paper);color:var(--ink);cursor:pointer;transition:transform .15s ease,background .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn.go{background:var(--lime);border-color:var(--lime)}
+.btn.go:hover{background:#b9f22a}
+.btn.sm{min-height:42px;padding:0 18px;font-size:14px}
+.btn.big{min-height:62px;padding:0 34px;font-size:18px}
+
+/* nav */
+.nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);backdrop-filter:saturate(1.4) blur(10px);border-bottom:1px solid transparent;transition:border-color .2s}
+.nav.scrolled{border-bottom-color:var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:20px;height:72px}
+.nav .logo img{height:44px;width:auto}
+.nav nav{display:flex;gap:26px;margin-left:auto;font-weight:600;font-size:15px}
+.nav nav a{text-decoration:none;color:var(--soft)}
+.nav nav a:hover{color:var(--ink)}
+.nav .acts{display:flex;gap:10px;margin-left:12px}
+@media (max-width:900px){.nav nav{display:none}.nav .acts{margin-left:auto}}
+@media (max-width:420px){.nav .acts .go{display:none}}
+
+/* hero */
+.hero{padding:56px 0 40px;overflow:hidden}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:40px;align-items:center}
+.hero h1{font-size:clamp(62px,8.2vw,124px)}
+.hero h1 .line{display:block}
+.hero h1 .slab{display:inline-block;background:var(--lime);padding:0 .14em .02em .06em;margin-left:-.06em;transform:skewX(-6deg)}
+.hero h1 .slab span{display:inline-block;transform:skewX(6deg)}
+.hero .lede{margin:26px 0 30px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.hero .facts{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:28px;font-size:14px;font-weight:600;color:var(--soft);list-style:none;padding:0}
+.hero .facts li{display:flex;align-items:center;gap:8px}
+.hero .facts li::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 0 3px #a9e80c33}
+@media (max-width:980px){.hero .wrap{grid-template-columns:1fr}.hero{padding-top:32px}}
+
+/* process board: the three phones */
+.board{position:relative;display:flex;flex-direction:column;align-items:center}
+.stage{position:relative;width:100%;height:clamp(500px,58vw,640px);perspective:1400px}
+.phone{position:absolute;left:50%;top:50%;width:var(--w);aspect-ratio:390/844;border-radius:calc(var(--w)*.15);background:var(--ink);padding:calc(var(--w)*.032);box-shadow:0 30px 60px -20px rgba(30,45,0,.35),0 0 0 1px #000;transform:translate(-50%,-50%) translate(var(--x),var(--y)) rotate(var(--r)) translate(var(--px,0px),var(--py,0px));transition:transform .7s cubic-bezier(.2,.8,.2,1),opacity .5s;will-change:transform}
+.phone .scr{position:relative;width:100%;height:100%;border-radius:calc(var(--w)*.12);overflow:hidden;background:#fff}
+.phone .scr img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .5s ease}
+.phone .scr img.on{opacity:1}
+.phone .notch{position:absolute;top:calc(var(--w)*.05);left:50%;transform:translateX(-50%);width:30%;height:calc(var(--w)*.075);background:#000;border-radius:999px;z-index:2}
+.phone.main{--w:clamp(250px,25vw,300px);--x:0px;--y:-14px;--r:0deg;z-index:3}
+.phone.left{--w:clamp(190px,19vw,232px);--x:-62%;--y:28px;--r:-7deg;z-index:2}
+.phone.right{--w:clamp(190px,19vw,232px);--x:62%;--y:34px;--r:7deg;z-index:2}
+.phone.left,.phone.right{filter:saturate(.9)}
+@media (max-width:560px){.phone.left{--x:-52%}.phone.right{--x:52%}.stage{height:500px}}
+/* entrance: the one orchestrated moment */
+.js .phone{opacity:0}
+.js .board.in .phone{opacity:1}
+.js .phone.left{transition-delay:.15s}
+.js .phone.right{transition-delay:.3s}
+.js .board:not(.in) .phone{--y:140px}
+
+.shift-tabs{position:relative;z-index:4;display:flex;gap:6px;padding:6px;margin-top:-6px;background:var(--paper);border:1.5px solid var(--line);border-radius:999px;box-shadow:0 10px 30px -18px rgba(0,0,0,.35)}
+.shift-tabs button{display:flex;align-items:center;gap:8px;min-height:46px;padding:0 18px;border:0;border-radius:999px;background:transparent;font:700 15px/1 var(--body);color:var(--soft);cursor:pointer;transition:background .25s,color .25s}
+.shift-tabs button .arr{font-size:18px;line-height:1}
+.shift-tabs button[aria-selected="true"]{background:var(--ink);color:#fff}
+.shift-tabs button[aria-selected="true"] .arr{color:var(--lime)}
+.shift-cap{margin-top:14px;min-height:3.2em;max-width:34em;text-align:center;font-size:15px;color:var(--soft)}
+.shift-cap b{color:var(--ink)}
+@media (max-width:420px){.shift-tabs button{padding:0 12px;font-size:14px}}
+
+/* video */
+.video{padding:40px 0 80px}
+.video .frame{position:relative;aspect-ratio:16/9;border-radius:28px;overflow:hidden;background:var(--ink);box-shadow:0 40px 80px -40px rgba(30,45,0,.5)}
+.video .frame iframe,.video .frame video{position:absolute;inset:0;width:100%;height:100%;border:0}
+.video .poster{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#fff;padding:24px;background:radial-gradient(120% 90% at 80% 10%,#2b3a07 0%,#000 60%)}
+.video .poster .play{width:92px;height:92px;border-radius:50%;background:var(--lime);display:grid;place-items:center;margin:0 auto 18px}
+.video .poster .play svg{width:34px;height:34px;margin-left:5px}
+.video .poster .d{font-size:clamp(34px,5vw,64px)}
+.video .poster p{color:#c9d2c3;margin-top:10px}
+.video .head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:24px}
+.video .head p{max-width:30em;color:var(--soft);margin:0}
+
+/* philosophy */
+.creed{background:var(--lime);padding:90px 0}
+.creed .d{font-size:clamp(44px,7.4vw,104px);max-width:13ch}
+.creed p{font-size:clamp(17px,1.5vw,20px);max-width:36em;margin-top:28px;font-weight:500}
+.creed .three{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:54px;border-top:2px solid var(--ink);padding-top:26px}
+.creed .three h3{font-family:var(--display);font-style:italic;font-weight:800;text-transform:uppercase;font-size:30px;line-height:1}
+.creed .three p{font-size:16px;margin:8px 0 0;font-weight:500}
+@media (max-width:760px){.creed .three{grid-template-columns:1fr}}
+
+/* sections */
+section.blk{padding:110px 0}
+.sec-intro{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:30px;align-items:end;margin-bottom:56px}
+.sec-intro .lede{margin:0}
+@media (max-width:860px){.sec-intro{grid-template-columns:1fr}}
+
+/* a day, three shifts (a real sequence) */
+.shifts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.shift{display:flex;flex-direction:column;gap:18px}
+.shift .shot{position:relative;border-radius:26px;overflow:hidden;background:var(--mist);aspect-ratio:4/5;border:1.5px solid var(--line)}
+.shift .shot img{position:absolute;left:50%;top:22px;width:74%;transform:translateX(-50%);border-radius:22px;box-shadow:0 20px 40px -18px rgba(0,0,0,.35);border:6px solid #000}
+.shift .tag{display:flex;align-items:center;gap:10px;font-family:var(--display);font-style:italic;font-weight:900;font-size:46px;text-transform:uppercase;line-height:.9}
+.shift .tag .arr{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--ink);color:var(--lime);font-family:var(--body);font-style:normal;font-size:22px}
+.shift ul{margin:0;padding-left:18px;color:var(--soft)}
+.shift li{margin-bottom:4px}
+.shift .why{font-weight:600;margin:0}
+@media (max-width:900px){.shifts{grid-template-columns:1fr;max-width:520px}}
+
+/* who it's for */
+.who{background:var(--mist)}
+.fit{display:grid;grid-template-columns:1.4fr 1fr;gap:28px}
+.fit .col{background:var(--paper);border-radius:28px;padding:34px}
+.fit .col.no{background:transparent;border:2px dashed #c9d3c1}
+.fit ul{list-style:none;margin:16px 0 0;padding:0;display:flex;flex-direction:column;gap:16px}
+.fit li{display:grid;grid-template-columns:30px 1fr;gap:12px;font-size:17px;line-height:1.45}
+.fit li .m{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--lime);font-weight:800;font-size:15px}
+.fit .no li .m{background:transparent;border:2px solid #b6c1ad;color:var(--soft)}
+.fit h3{font-family:var(--display);font-style:italic;font-weight:900;font-size:38px;text-transform:uppercase;line-height:.95}
+@media (max-width:860px){.fit{grid-template-columns:1fr}}
+
+/* what you get */
+.gets{display:grid;grid-template-columns:repeat(12,1fr);gap:22px}
+.get{grid-column:span 4;border:1.5px solid var(--line);border-radius:26px;padding:28px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.get.wide{grid-column:span 8;display:grid;grid-template-columns:1fr 210px;gap:24px;align-items:center;background:var(--ink);color:#fff;border-color:var(--ink)}
+.get.wide p{color:#c8d1c2}
+.get.wide .mini{align-self:end;margin-bottom:-28px}
+.get.wide.strip{grid-column:span 12;grid-template-columns:1fr 210px;background:var(--mist);color:var(--ink);border-color:var(--line)}
+.get.wide.strip p{color:var(--soft);max-width:38em}
+.get p{margin:0;color:var(--soft);font-size:16px}
+.get .mini{border-radius:20px 20px 0 0;overflow:hidden;border:6px solid #000;border-bottom:0;height:260px}
+.get .mini img{width:100%}
+.get .ico{width:46px;height:46px;border-radius:14px;background:var(--lime);display:grid;place-items:center}
+.get .ico svg{width:24px;height:24px}
+@media (max-width:980px){.get,.get.wide{grid-column:span 6}.get.wide.strip{grid-column:span 12}.get.wide{grid-template-columns:1fr}.get.wide .mini{display:none}}
+@media (max-width:640px){.get,.get.wide,.get.wide.strip{grid-column:span 12}}
+
+/* how you start (a real sequence) */
+.start{background:var(--ink);color:#fff}
+.start .lede{color:#b9c3b2}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:16px;counter-reset:s}
+.steps li{position:relative;padding:22px 20px 24px;border-radius:22px;background:#151a10;counter-increment:s}
+.steps li::before{content:counter(s);display:block;font-family:var(--display);font-style:italic;font-weight:900;font-size:64px;line-height:.85;color:var(--lime);margin-bottom:14px}
+.steps li b{display:block;font-size:17px;margin-bottom:6px}
+.steps li span{font-size:14.5px;color:#b9c3b2;line-height:1.5}
+@media (max-width:980px){.steps{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+
+/* checkout */
+.checkout .card{display:grid;grid-template-columns:1.1fr 1fr;border-radius:34px;overflow:hidden;border:2px solid var(--ink);box-shadow:14px 14px 0 var(--lime)}
+.checkout .l{padding:46px}
+.checkout .r{padding:46px;background:var(--mist);display:flex;flex-direction:column;gap:18px;justify-content:center}
+.checkout .price{font-family:var(--display);font-style:italic;font-weight:900;font-size:clamp(78px,9vw,120px);line-height:.85}
+.checkout .price small{font-family:var(--body);font-style:normal;font-weight:600;font-size:16px;color:var(--soft);margin-left:6px;letter-spacing:0}
+.checkout ul{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px}
+.checkout li{display:grid;grid-template-columns:26px 1fr;gap:10px;font-weight:500}
+.checkout li svg{width:22px;height:22px;margin-top:2px}
+.checkout .note{font-size:14px;color:var(--soft);margin:0}
+.checkout .secure{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--soft);font-weight:600}
+@media (max-width:860px){.checkout .card{grid-template-columns:1fr;box-shadow:8px 8px 0 var(--lime)}.checkout .l,.checkout .r{padding:30px}}
+
+/* faq */
+.faq{max-width:820px}
+.faq details{border-bottom:1.5px solid var(--line);padding:6px 0}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;gap:16px;align-items:center;padding:16px 0;font-weight:700;font-size:18px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:26px;font-weight:500;transition:transform .2s}
+.faq details[open] summary::after{transform:rotate(45deg)}
+.faq details p{color:var(--soft);margin:0 0 18px;max-width:42em}
+
+/* footer */
+footer{border-top:1px solid var(--line);padding:40px 0 60px;font-size:14px;color:var(--soft)}
+footer .wrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+footer img{height:40px;width:auto}
+footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
+
+/* sticky mobile buy bar */
+.buybar{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:none;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px 10px 20px;border-radius:999px;background:var(--ink);color:#fff;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);transform:translateY(140%);transition:transform .35s ease}
+.buybar.show{transform:none}
+.buybar b{font-size:15px}
+@media (max-width:760px){.buybar{display:flex}}
+
+@media (max-width:600px){
+  .video .poster .d{font-size:30px}.video .poster p:not(.d){display:none}.video .poster .play{width:64px;height:64px;margin-bottom:10px}
+  .hero .ctas .btn{width:100%}
+  section.blk{padding:76px 0}.creed{padding:70px 0}
+  .get.wide .mini{display:none}.get.wide,.get.wide.strip{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  .js .phone{opacity:1}
+  .js .board:not(.in) .phone{--y:0px}
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="nav" id="top">
+  <div class="wrap">
+    <a class="logo" href="/" aria-label="Project Reset home"><img src="/logo.webp" alt="Project Reset" width="800" height="580"></a>
+    <nav aria-label="Page sections">
+      <a href="#day">How it works</a>
+      <a href="#who">Who it's for</a>
+      <a href="#get">What you get</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <div class="acts">
+      <a class="btn sm" href="/app">Log in</a>
+      <a class="btn sm go" href="#checkout">Start the reset</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="h1">
+    <div class="wrap">
+      <div>
+        <h1 class="d" id="h1"><span class="line">Change what's</span><span class="line">below the</span><span class="line"><span class="slab"><span>surface.</span></span></span></h1>
+        <p class="lede">Project Reset is a 21 day, step by step guided process from Ellis Vine. Your nervous system, food, training and sleep, set out as one simple routine on your phone, so you can change how you think, look and feel.</p>
+        <div class="ctas">
+          <a class="btn go big" href="#checkout">Start Project Reset</a>
+          <a class="btn big" href="#video">Watch Ellis explain it</a>
+        </div>
+        <ul class="facts">
+          <li>21 days, guided every step</li>
+          <li>Targets set for you by Ellis</li>
+          <li>Works on any phone</li>
+        </ul>
+      </div>
+
+      <div class="board" id="board">
+        <div class="stage" id="stage">
+          <div class="phone left" aria-hidden="true"><div class="notch"></div><div class="scr"><img class="on" src="/home/plans.webp" alt="" loading="eager"></div></div>
+          <div class="phone right" aria-hidden="true"><div class="notch"></div><div class="scr"><img class="on" src="/home/train.webp" alt="" loading="eager"></div></div>
+          <div class="phone main"><div class="notch"></div><div class="scr" id="mainScr">
+            <img class="on" src="/home/morning.webp" alt="The Morning shift in the app: wake up and move, with your intentions and plan from the night before" data-shift="0">
+            <img src="/home/day.webp" alt="The Day shift: each meal ticked, then a walk block straight after" data-shift="1">
+            <img src="/home/evening2.webp" alt="The Evening shift: check points and rating your state, aiming for calm" data-shift="2">
+          </div></div>
+        </div>
+        <div class="shift-tabs" role="tablist" aria-label="See each part of the day">
+          <button role="tab" aria-selected="true" aria-controls="mainScr" data-go="0"><span class="arr" aria-hidden="true">↑</span>Morning</button>
+          <button role="tab" aria-selected="false" aria-controls="mainScr" data-go="1"><span class="arr" aria-hidden="true">→</span>Day</button>
+          <button role="tab" aria-selected="false" aria-controls="mainScr" data-go="2"><span class="arr" aria-hidden="true">↓</span>Evening</button>
+        </div>
+        <p class="shift-cap" id="shiftCap" aria-live="polite"><b>Switch on.</b> Your action, your check boxes, then bring it back down and open the day.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="video" id="video" aria-labelledby="vh">
+    <div class="wrap">
+      <div class="head">
+        <h2 class="d" id="vh" style="font-size:clamp(40px,5.6vw,72px)">Hear it from Ellis</h2>
+        <p>What Project Reset is, why it works, and what you'll be able to do by Day 21.</p>
+      </div>
+      <div class="frame" id="videoFrame">
+        <div class="poster">
+          <div>
+            <div class="play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 4l14 8-14 8z" fill="#000"/></svg></div>
+            <p class="d">Ellis's video is on its way</p>
+            <p>Until then, scroll on to see exactly how each day works.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="creed" aria-labelledby="creed">
+    <div class="wrap">
+      <h2 class="d" id="creed">It's not just what you do.</h2>
+      <p>It's how you do it, when you do it and why you do it. Nutrition, training, sleep and your daily routine aren't separate pieces of the puzzle. They influence each other. Project Reset brings them together into one approach, working towards the same outcome.</p>
+      <div class="three">
+        <div><h3>Neurological</h3><p>Change how your brain thinks, learns, responds and drives your behaviour.</p></div>
+        <div><h3>Physiological</h3><p>Change how your body functions, responds, recovers and adapts.</p></div>
+        <div><h3>Nervous system</h3><p>Improve your ability to handle stress, return to calm and recover properly.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="day" aria-labelledby="dayh">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="dayh">One day.<br>Three shifts.</h2>
+        <p class="lede">Every day follows the same rhythm. The Morning and Evening set it, the Day runs on your food and training. You open the app, follow the next step and tick it off. Every tick logs the time for you.</p>
+      </div>
+      <div class="shifts">
+        <article class="shift">
+          <div class="shot"><img src="/home/morning.webp" alt="Morning in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="tag"><span class="arr" aria-hidden="true">↑</span>Morning</div>
+          <p class="why">Switch on, bring it back down, open the day.</p>
+          <ul><li>Your action, planned the night before: cold therapy, sauna, cardio, a workout or breath work</li><li>Your low arousal task to bring it back down</li><li>Meal 1 within 90 minutes of waking</li></ul>
+        </article>
+        <article class="shift">
+          <div class="shot"><img src="/home/day.webp" alt="The Day in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="tag"><span class="arr" aria-hidden="true">→</span>Day</div>
+          <p class="why">Eat, move, train. Stay centred.</p>
+          <ul><li>Each meal built the Project Reset way, then a walk block straight after</li><li>Your training session, with steps before, during and after</li><li>Close the day and set up tomorrow</li></ul>
+        </article>
+        <article class="shift">
+          <div class="shot"><img src="/home/evening.webp" alt="The Evening in the app" loading="lazy" width="585" height="1266"></div>
+          <div class="tag"><span class="arr" aria-hidden="true">↓</span>Evening</div>
+          <p class="why">Wind down. Recover for tomorrow.</p>
+          <ul><li>Your evening meal</li><li>Low arousal tasks, lights dimmed, phone away</li><li>Rate where your nervous system is, aiming for calm</li></ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk who" id="who" aria-labelledby="whoh">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="whoh">Who it's for</h2>
+        <p class="lede">You don't need more information. You need a structure you can follow every day that works with your body, not against it.</p>
+      </div>
+      <div class="fit">
+        <div class="col">
+          <h3>This is for you if</h3>
+          <ul>
+            <li><span class="m" aria-hidden="true">✓</span><span>You train consistently, but your results have stalled.</span></li>
+            <li><span class="m" aria-hidden="true">✓</span><span>You feel wired during the day and flat at night, or never properly switch off.</span></li>
+            <li><span class="m" aria-hidden="true">✓</span><span>Plans have worked for you before, right up until life got busy.</span></li>
+            <li><span class="m" aria-hidden="true">✓</span><span>You want to understand why your body responds the way it does, not just follow orders.</span></li>
+            <li><span class="m" aria-hidden="true">✓</span><span>You're ready to show up for 21 days and be honest with yourself, even on the off days.</span></li>
+          </ul>
+        </div>
+        <div class="col no">
+          <h3>It's not for you if</h3>
+          <ul>
+            <li><span class="m" aria-hidden="true">✕</span><span>You're looking for a quick fix that doesn't touch your routine.</span></li>
+            <li><span class="m" aria-hidden="true">✕</span><span>You don't want to log your day on your phone.</span></li>
+            <li><span class="m" aria-hidden="true">✕</span><span>You want a strict diet sheet handed to you. Here you build your meals from the food lists and rules.</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="get" aria-labelledby="geth">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="geth">What you get</h2>
+        <p class="lede">Everything lives in one app on your phone. Simply stick to the rules set for each day, and complete as much as you can. Every completed task earns points.</p>
+      </div>
+      <div class="gets">
+        <article class="get wide">
+          <div>
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></div>
+            <h3 style="margin-top:14px">The daily process board</h3>
+            <p>Morning, Day and Evening, one step at a time. You're always shown what's next, with an info button on every task explaining why it matters. Skip a step if you need to: you'll be prompted, never blocked.</p>
+          </div>
+          <div class="mini"><img src="/home/morning.webp" alt="" loading="lazy"></div>
+        </article>
+        <article class="get">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3>Targets set by Ellis</h3>
+          <p>Your daily steps, protein and water, set by Ellis from your onboarding form. Track them as you go and see what's left.</p>
+        </article>
+        <article class="get">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v7a3 3 0 006 0V4M8 4v16M17 4c-2 2-2 6 0 8v8"/></svg></div>
+          <h3>Meal plans and a shopping list</h3>
+          <p>Build a training day and a rest day plan from the approved foods, or start from Ellis's example. The app checks every meal against the rules and builds your shopping list.</p>
+        </article>
+        <article class="get">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M3 9v6M7 6v12M17 6v12M21 9v6M7 12h10"/></svg></div>
+          <h3>Training with structure</h3>
+          <p>Set-up steps before you train, cues during your session and a close-out after it, so every workout is driven with intent.</p>
+        </article>
+        <article class="get">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg></div>
+          <h3>Learn to shift your state</h3>
+          <p>Rate your nervous system from calm to wired, and notice the senses you've used. Over 21 days you learn what switches you on and what brings you down.</p>
+        </article>
+        <article class="get wide strip">
+          <div>
+            <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></div>
+            <h3 style="margin-top:14px">Your score and check-ins</h3>
+            <p>A daily score for everything you complete, your progress across all 21 days, plus check-ins on Day 7, 14 and 21 so you and Ellis can see what's changing.</p>
+          </div>
+          <div class="mini"><img src="/home/progress.webp" alt="" loading="lazy"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk start" aria-labelledby="starth">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="starth">How you start</h2>
+        <p class="lede">Ellis looks at your answers himself before setting your targets, so your plan is built around you from Day 0.</p>
+      </div>
+      <ol class="steps">
+        <li><b>Secure your place</b><span>One payment through Stripe.</span></li>
+        <li><b>Fill in your onboarding form</b><span>Your basics, your stats and a day in your life. Photos are optional.</span></li>
+        <li><b>Ellis sets your targets</b><span>Steps, protein and water, set for you. We'll let you know when they're ready.</span></li>
+        <li><b>Watch 3 short videos</b><span>How the project works, how to set up your meals and your training.</span></li>
+        <li><b>Day 0</b><span>Plan your first day that evening. Day 1 starts the next morning.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="blk checkout" id="checkout" aria-labelledby="checkh">
+    <div class="wrap">
+      <div class="card">
+        <div class="l">
+          <h2 class="d" id="checkh" style="font-size:clamp(48px,6vw,80px)">Project Reset</h2>
+          <p class="lede" style="margin-top:14px">21 days, guided step by step by Ellis Vine.</p>
+          <ul>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>The full 21 day process board on your phone</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Daily targets set for you by Ellis</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Meal plans, food rules and your shopping list</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Training structure and the workout guide</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Check-ins on Day 7, 14 and 21</li>
+          </ul>
+        </div>
+        <div class="r">
+          <div class="price" id="price">21 days<small>guided</small></div>
+          <p class="note" id="priceNote">One payment for the full 21 days.</p>
+          <a class="btn go big" id="payBtn" href="/start" data-checkout>Pay and start Project Reset</a>
+          <p class="secure"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg>Secure checkout with Stripe. You'll go straight to your onboarding form.</p>
+          <p class="note">Already started? <a href="/app">Log in here</a>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk" id="faq" aria-labelledby="faqh" style="padding-top:20px">
+    <div class="wrap">
+      <h2 class="d" id="faqh" style="margin-bottom:28px">Questions</h2>
+      <div class="faq">
+        <details><summary>What happens after I pay?</summary><p>You go straight to your onboarding form. Once you've sent it, Ellis reviews your answers and sets your daily targets. When they're ready, you log in, watch 3 short videos and plan your first day that evening.</p></details>
+        <details><summary>Is it an app I download?</summary><p>It runs in your phone's browser, so there's nothing to install. You can add it to your home screen so it opens like any other app.</p></details>
+        <details><summary>Do I have to follow a set diet?</summary><p>No. You build your own meals from the Project Reset food lists, following a few simple rules. You can save a training day and a rest day plan, or start from Ellis's example, and the app fills your meals in for you.</p></details>
+        <details><summary>What if I miss a step or have an off day?</summary><p>Nothing locks you out. The app prompts you through each step, and anything you skip just lowers that day's score. The more you complete, the higher it goes.</p></details>
+        <details><summary>Do I need a gym?</summary><p>You train with your own workout for now, and the app gives you the structure around it: set-up steps before, cues during and a close-out after.</p></details>
+        <details><summary>Who sees my answers and photos?</summary><p>Only Ellis and the coaching team. Photos are optional.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <img src="/logo.webp" alt="Project Reset" width="800" height="580">
+    <span>Project Reset by Ellis Vine, GrowLikeVines</span>
+    <div class="sp"><a href="/app">Log in</a><a href="#checkout">Start the reset</a></div>
+  </div>
+</footer>
+
+<div class="buybar" id="buybar" aria-hidden="true"><b>Project Reset, 21 days</b><a class="btn go sm" href="#checkout" tabindex="-1">Start</a></div>
+
+<script>
+/* ---- Edit these three to go live ---- */
+const CONFIG={
+  stripeLink:"",        // your Stripe Payment Link, e.g. https://buy.stripe.com/xxxx
+  price:"",             // e.g. "£97" (left blank, the price line is hidden)
+  video:""              // YouTube, Vimeo or Loom link, or an .mp4 URL
+};
+/* ------------------------------------- */
+document.documentElement.classList.add("js");
+(function(){
+  // checkout
+  if(CONFIG.stripeLink)document.querySelectorAll("[data-checkout]").forEach(a=>a.href=CONFIG.stripeLink);
+  if(CONFIG.price){document.getElementById("price").innerHTML=CONFIG.price.replace(/[<>&]/g,"")+"<small>one payment</small>"}
+
+  // video
+  const v=CONFIG.video.trim(),fr=document.getElementById("videoFrame");
+  if(v){let src="";
+    const yt=v.match(/(?:youtu\.be\/|v=|embed\/|shorts\/)([\w-]{11})/),vm=v.match(/vimeo\.com\/(?:video\/)?(\d+)/),lm=v.match(/loom\.com\/(?:share|embed)\/([\w]+)/);
+    if(yt)src="https://www.youtube-nocookie.com/embed/"+yt[1]+"?rel=0&modestbranding=1";
+    else if(vm)src="https://player.vimeo.com/video/"+vm[1];
+    else if(lm)src="https://www.loom.com/embed/"+lm[1]+"?hide_owner=true&hide_share=true&hideEmbedTopBar=true";
+    if(src)fr.innerHTML=`<iframe src="${src}" title="Ellis explains Project Reset" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>`;
+    else if(/\.mp4(\?|$)/.test(v))fr.innerHTML=`<video src="${v}" controls playsinline preload="metadata" title="Ellis explains Project Reset"></video>`;
+  }
+
+  // nav border + mobile buy bar
+  const nav=document.querySelector(".nav"),bar=document.getElementById("buybar"),co=document.getElementById("checkout");
+  let coVisible=false;
+  new IntersectionObserver(es=>{coVisible=es[0].isIntersecting;onScroll()}).observe(co);
+  function onScroll(){nav.classList.toggle("scrolled",scrollY>8);bar.classList.toggle("show",scrollY>700&&!coVisible)}
+  addEventListener("scroll",onScroll,{passive:true});onScroll();
+
+  // the process board: three shifts, auto-advancing until someone takes over
+  const board=document.getElementById("board"),imgs=[...document.querySelectorAll("#mainScr img")],tabs=[...document.querySelectorAll("[data-go]")],cap=document.getElementById("shiftCap");
+  const caps=["<b>Switch on.</b> Your action, your check boxes, then bring it back down and open the day.","<b>Stay centred.</b> Each meal, then a walk block. Train, then close the day and set up tomorrow.","<b>Wind down.</b> Your evening meal, low arousal tasks and check points, aiming for calm."];
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let cur=0,timer=null;
+  function go(i,user){cur=(i+3)%3;imgs.forEach((im,k)=>im.classList.toggle("on",k===cur));tabs.forEach((t,k)=>{t.setAttribute("aria-selected",k===cur);t.tabIndex=k===cur?0:-1});cap.innerHTML=caps[cur];if(user)stop()}
+  function start(){if(!reduce&&!timer)timer=setInterval(()=>go(cur+1),4200)}
+  function stop(){clearInterval(timer);timer=null}
+  tabs.forEach((t,k)=>{t.addEventListener("click",()=>go(k,true));t.addEventListener("keydown",e=>{if(e.key==="ArrowRight"||e.key==="ArrowLeft"){e.preventDefault();const n=(k+(e.key==="ArrowRight"?1:-1)+3)%3;go(n,true);tabs[n].focus()}})});
+  requestAnimationFrame(()=>setTimeout(()=>board.classList.add("in"),80));
+  new IntersectionObserver(es=>{es[0].isIntersecting?start():stop()}).observe(board);
+
+  // a little depth: phones lean towards the pointer
+  if(!reduce&&matchMedia("(pointer:fine)").matches){
+    const ph=[...board.querySelectorAll(".phone")];
+    board.addEventListener("pointermove",e=>{const r=board.getBoundingClientRect(),dx=(e.clientX-r.left)/r.width-.5,dy=(e.clientY-r.top)/r.height-.5;ph.forEach((p,i)=>{const d=i===2?10:16;p.style.setProperty("--px",(dx*d)+"px");p.style.setProperty("--py",(dy*d)+"px")})});
+    board.addEventListener("pointerleave",()=>ph.forEach(p=>{p.style.removeProperty("--px");p.style.removeProperty("--py")}));
+  }
+})();
+</script>
+</body>
+</html>

@@ -1317,6 +1317,8 @@ const S={
   tab:"today",viewDay:null,phase:null,cat:"walk",open:{},scrollTo:null,openMeal:null,fcat:{},openPick:null,wopen:false,gopen:false,
   coachTab:"overview",detail:null,detailDay:null,sort:{k:"status",dir:1},filter:"all",hview:"phases"
 };
+// After paying on the landing page, Stripe sends people to /start: open the onboarding form
+if(location.pathname==="/start")S.onboard=true;
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const root=document.getElementById("root");
 const me=()=>DATA?toClient(DATA.me):null;
@@ -1713,7 +1715,7 @@ function loginView(){
     </form>
     <div class="stack" style="gap:10px">
       <span class="eyebrow">New to Project Reset?</span>
-      <button class="btn" data-act="onboard">Start your onboarding form</button>
+      <a class="btn" href="/#checkout" style="text-align:center;text-decoration:none">See how it works and join</a>
       <p class="note">Forgotten your password? Message Ellis and he'll set you a new one.</p>
     </div>
   </div></div>`;
@@ -2370,7 +2372,7 @@ function nutritionView(){
       <li><b>Water with every meal.</b></li></ol>`)}
     ${me()&&me().status==="active"&&DATA.me.role==="client"?foodsView():""}
     ${gcard("How your meals work",`<ul class="g-list">
-      <li><b>The night before:</b> plan tomorrow's meals in your Evening. Pick the foods for each meal and its time, or copy today's meals in one tap.</li>
+      <li><b>The day before:</b> plan tomorrow's meals when you close your day. Pick the foods for each meal, use one of your meal plans, or copy today's meals in one tap.</li>
       <li><b>Meal 1:</b> eaten and logged in your Morning, within 90 minutes of waking.</li>
       <li><b>Through the day:</b> tick each meal as you eat it, say if you had water, do your walk block, then update your steps, protein and water.</li>
       <li><b>Your evening meal:</b> logged in your Evening, as part of winding down.</li>

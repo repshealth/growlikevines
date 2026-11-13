@@ -11,6 +11,15 @@ export default {
       h.set("x-content-type-options", "nosniff");
       return new Response(res.body, { status: res.status, headers: h });
     }
+    // Visitors get the landing page at "/"; signed-in clients go straight to the app.
+    // /app, /login and /start all open the app (/start opens the onboarding form, for after payment).
+    const p = url.pathname;
+    if (p === "/" && !/(?:^|;\s*)pr_session=/.test(request.headers.get("cookie") || "")) {
+      return env.ASSETS.fetch(new Request(new URL("/landing", url), request));
+    }
+    if (p === "/app" || p === "/login" || p === "/start") {
+      return env.ASSETS.fetch(new Request(new URL("/", url), request));
+    }
     return env.ASSETS.fetch(request);
   }
 };
