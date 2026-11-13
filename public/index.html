@@ -874,7 +874,7 @@ const INFO={
   "Workout":"Pick the workout from the library, or log your own.",
   "Breath work":"A guided breathing session. As your action it switches you up; As your release it brings you back down.",
   "The Reset":"Ellis's nervous system regulator: Journalling, breathing and glute bridges in one guided routine of around 10 minutes. The full step by step is on the Workout page. Eat and drink either before or after it.",
-  arousal:"The 1 to 10 scale is simply which zone your nervous system is in. 1 to 3: Within parasympathetic tone (rest & digest). 4 to 6: Centred. 7 to 10: Within sympathetic tone (fight or flight). When you're aiming for one end, the closer you get to 1 or 10, the more points you score.",
+  arousal:"The 1 to 10 scale is simply which zone your nervous system is in. 1 to 3: Within parasympathetic tone (rest & digest). 4 to 6: Centred. 7 to 10: Within sympathetic tone (fight or flight). Each rating shows the zone to aim for. The closer you are to it (right at 1 or 10 when aiming for an end), the more points you score.",
   senses:"The more sensory signals you use through the day, the more self-regulating your nervous system will be. Tap the i next to each sense for examples.",
   "Meditation":"Sit still, eyes closed, and follow your breath for 10 minutes.",
   "Yoga / Pilates":"A slow session, focused on breath and control, not effort.",
@@ -995,7 +995,7 @@ const brainHit=log=>{const b=new Set();if(log.m1)actDone(log).forEach(a=>((ACTIO
 // Evening shift: review & close the day, then check points.
 const EVENING=[
   {id:"e1",title:"Review & close the day",region:"Prefrontal cortex",cue:["set","Close the day. Set tomorrow."],text:["Did you stick to the rules today?","Your numbers so far","Set up tomorrow: Training, meals, your morning, a summary of today, your intentions and your alarm"],
-   asks:[{k:"rules",type:"choice",yn:true,label:"Did you stick to the rules of the project today?",options:[["yes","Yes"],["no","No"]]},{k:"d_state",type:"rating",arousal:true,label:"Rate your current state: Your zone, 1 to 10"},{k:"d_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"_nh",type:"numhead",title:"What you've done so far today (optional)",text:"Your totals so far: What you've actually done, not your target. Still got steps or water to go tonight? Put in what you've done so far and update it later from the bar at the bottom."},{k:"steps",type:"number",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: Do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: Pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: Recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: Your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"day_summary",type:"textarea",label:"A. Summarise your day",info:"day_summary"},{k:"_iint",type:"infonote",info:"intentions",title:"B. Intention: Your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; This is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
+   asks:[{k:"rules",type:"choice",yn:true,label:"Did you stick to the rules of the project today?",options:[["yes","Yes"],["no","No"]]},{k:"d_state",type:"rating",arousal:true,aim:"centred",aimText:"at the end of your day: Steady and balanced.",label:"Rate your current state: Your zone, 1 to 10"},{k:"d_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"_nh",type:"numhead",title:"What you've done so far today (optional)",text:"Your totals so far: What you've actually done, not your target. Still got steps or water to go tonight? Put in what you've done so far and update it later from the bar at the bottom."},{k:"steps",type:"number",label:"Steps I've done so far",target:"steps",remaining:true},{k:"protein",type:"number",label:"Protein I've eaten so far (g)",target:"protein",remaining:true},{k:"water",type:"number",label:"Water I've drunk so far (L)",target:"water",step:0.5,remaining:true},{k:"tmr_train",type:"choice",label:"Are you training tomorrow?",options:[["yes","Yes"],["no","No"]],req:l=>!!l.tmr_train,reqMsg:"Say if you're training tomorrow"},{k:"tmr_train_time",type:"time",label:"What time will you train?",when:l=>l.tmr_train==="yes",req:l=>!!l.tmr_train_time,reqMsg:"Add your training time"},{k:"tmr_workout",type:"select",label:"Which workout?",when:l=>l.tmr_train==="yes"&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"tmr_workout_name",type:"text",label:"Choose from the workouts available or write the name of your own",when:l=>l.tmr_train==="yes",req:l=>!!String(l.tmr_workout_name||"").trim(),reqMsg:"Name your workout"},{k:"meals_tmr",type:"mealplan",label:"Set your meal plan for tomorrow",req:l=>!planProblems(l).length,reqMsg:l=>planProblems(l)},{k:"_walknote",type:"walknote"},{k:"_iact",type:"infonote",info:"action",title:"Action: Do the thing"},{k:"tmr_action",type:"pick",multi:true,label:"Tomorrow's action: Pick at least one",options:MOVE,req:l=>(l.tmr_action||[]).length>0,reqMsg:"Pick tomorrow's action"},{k:"tmr_am_workout",type:"select",label:"Which workout for your morning?",when:l=>(l.tmr_action||[]).includes("Workout")&&WORKOUTS.flatMap(g=>g[1]).length>1,groups:WORKOUTS},{k:"_irel",type:"infonote",info:"release",title:"Release: Recover"},{k:"tmr_lower",type:"pick",multi:true,label:"Then how you'll bring it down: Your low arousal task",options:RELEASE,req:l=>(l.tmr_lower||[]).length>0,reqMsg:"Pick how you'll bring it down tomorrow morning"},{k:"day_summary",type:"textarea",label:"A. Summarise your day",info:"day_summary"},{k:"_iint",type:"infonote",info:"intentions",title:"B. Intention: Your true intentions never lie"},{k:"intentions",type:"textarea",label:"Make the promise from you, to you"},{k:"_iwake",type:"infonote",info:"wake",title:"Set your wake time"},{k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list",text:"Your own tasks for tomorrow, with a time if they have one. Writing it on paper too is a must; This is just to keep it alongside your day."},{k:"tmr_wake",type:"time",label:"Your wake up time for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your wake up time"}]},
   {id:"e2",title:"Check points",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Do these now, tonight. Rest, recover and wind down for sleep."],text:["Log your evening meal and anything left from today","Do your low arousal task now","Tick off what you've done tonight","Rate how you feel"],
    asks:[{k:"_final",type:"finalmeal"},{k:"_catchup",type:"catchup"},{k:"_later",type:"latenote"},{k:"pm_tool",type:"pick",multi:true,label:"Complete your low arousal tasks: At least 2, as many as you like",options:LOWER,req:l=>(l.pm_tool||[]).length>=2,reqMsg:l=>(l.pm_tool||[]).length?"Pick 1 more low arousal task (at least 2)":"Pick at least 2 low arousal tasks"},{k:"_evenote",type:"numhead",title:"Tick these off as the night goes on",text:"No need to do them all at once. Come back and tick each one as you do it, then mark this step done as you head to bed."},{k:"_chk_pm_moon",type:"checks",label:"Tick the ones you've done",items:[["pm_moon","Outside moonlight exposure"],["pm_lights","Lights off or dimmed"],["pm_phone","Phone away"],["pm_meal","Final meal prepped or eaten"],["pm_shower","Showered & clothes changed"]]},{k:"e_senses",type:"pick",multi:true,label:"Evoked any of these senses since starting this section?",options:SENSE_LABELS,info:"senses"},{k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your current state: Your zone, 1 to 10"}]}
 ];
@@ -1103,7 +1103,14 @@ const walkPairs=log=>dayPairs(log).filter(q=>!q.eve&&!isPreSlot(log,q.slot));
 // "Ready to move within 30 mins?" applies from Meal 2 to the second to last meal (not the evening meal)
 const readyApplies=(log,slot)=>slot>=2&&!dayPairs(log).some(q=>q.eve&&q.slot===slot);
 // Nothing blocks: everything can be skipped. The more you log, the higher your score.
-function scoreOf(log){
+// Harder options score 2 points, the rest 1
+const HARD=["Cold therapy","Workout","The Reset","Yoga / Pilates"];
+const effort=t=>HARD.includes(t)?2:1;
+const bestEffort=(list,n)=>(Array.isArray(list)?list:[]).map(effort).sort((a,b)=>b-a).slice(0,n).reduce((a,b)=>a+b,0);
+// Zone ratings: up to 2 points, the closer to where you should be the more you score
+const ZONE_AIM={am_state_act:"wired",am_state_rel:"calm",am_state:"centred",d_state:"centred",pm_state:"calm"};
+const zonePts=(v,aim)=>{v=Number(v);if(!v)return 0;if(aim==="wired")return Math.max(0,2-0.5*(10-v));if(aim==="calm")return Math.max(0,2-0.5*(v-1));return v>=4&&v<=6?2:v===3||v===7?1:0};
+function scoreOf(log,tg){
   const meals=mealsOf(log),pairs=dayPairs(log),yna=ynAsks(log),nn=yna.filter(a=>log[a.k]==="yes").length;
   const steps=[...MORNING,...eveningSteps(log)],full=steps.filter(s=>log[s.id]&&!log[s.id+"_part"]).length;
   const m=stepsDone(log,"morning"),e=stepsDone(log,"evening"),ml=meals.filter(x=>x.done).length,wp=walkPairs(log),wk=wp.filter(x=>x.walk).length;
@@ -1122,11 +1129,15 @@ function scoreOf(log){
   if(td)["touch","sound"].forEach(x=>sn.add(x));
   if(log.e2&&(Array.isArray(log.pm_tool)?log.pm_tool.length:log.pm_tool))["smell","touch"].forEach(x=>sn.add(x));
   const picked=new Set(["m_senses","d_senses","e_senses"].flatMap(k=>Array.isArray(log[k])?log[k]:[]));SENSES.forEach(([k,l])=>{if(picked.has(l))sn.add(k)});
-  // Zone ratings aimed at an end: the closer to 1 (or 10), the more points
-  const ZR=[["am_state_act","wired"],["am_state_rel","calm"],["pm_state","calm"]].filter(([k])=>Number(log[k]));
-  const zp=ZR.reduce((n,[k,a])=>{const v=Number(log[k]);return n+(a==="calm"?(v<=3?(4-v)/3:0):(v>=7?(v-6)/4:0))},0);
-  const P2=pts+picked.size+zp,M2=max+SENSES.length+3;
-  return{pts:Math.round(P2*10)/10,max:M2,pct:M2?Math.min(100,Math.round(P2/M2*100)):0,tr,td,ynN:yna.length,m,e,d:0,n:0,ml,mn:meals.length,pd,pn:pairs.length,wk,wn:wp.length,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
+  // Morning action, morning release and evening low arousal tasks: harder options score 2
+  const act=log.m1?bestEffort(actDone(log),1):0,rel=log.m2?bestEffort(log.m_lower,1):0,eve=bestEffort(log.pm_tool,2);
+  const effPts=act+rel+eve,effMax=2+2+4;
+  // Zone ratings, all five
+  const zp2=Object.entries(ZONE_AIM).reduce((n,[k,a])=>n+zonePts(log[k],a),0),zMax=Object.keys(ZONE_AIM).length*2;
+  // Hitting steps and protein targets: 2 points each (1 for getting three quarters of the way)
+  let tPts=0,tMax=0;if(tg){for(const k of ["steps","protein"]){const t=Number(tg[k]),v=Number(log[k])||0;if(t>0){tMax+=2;tPts+=v>=t?2:v>=t*.75?1:0}}}
+  const P2=pts+picked.size+effPts+zp2+tPts,M2=max+SENSES.length+effMax+zMax+tMax;
+  return{zonePts:zp2,targetPts:tPts,effortPts:effPts,pts:Math.round(P2*10)/10,max:M2,pct:M2?Math.min(100,Math.round(P2/M2*100)):0,tr,td,ynN:yna.length,m,e,d:0,n:0,ml,mn:meals.length,pd,pn:pairs.length,wk,wn:wp.length,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
 }
 const hasAny=log=>log&&Object.keys(log).length>0;
 const nowHHMM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
@@ -1178,7 +1189,7 @@ document.addEventListener("visibilitychange",()=>{
 /* ---------- stats ---------- */
 function statsFor(c){
   const logs=logsFor(c),today=clientDayNum(c),days=[];
-  for(let d=1;d<=Math.max(1,today);d++){const date=ymd(dateOf(c,d)),wk=tgtFor(c,d),log=logs[date]||{},sc=scoreOf(log);days.push({d,date,wk,log,sc,pct:sc.pct,any:hasAny(log)})}
+  for(let d=1;d<=Math.max(1,today);d++){const date=ymd(dateOf(c,d)),wk=tgtFor(c,d),log=logs[date]||{},sc=scoreOf(log,wk);days.push({d,date,wk,log,sc,pct:sc.pct,any:hasAny(log)})}
   const past=days.filter(x=>x.d<today),last7=past.slice(-7),rows=last7.length?last7:days.slice(-1);
   const avg=f=>rows.length?rows.reduce((a,x)=>a+f(x),0)/rows.length:0;
   const avg7=Math.round(avg(x=>x.pct)),pts7=avg(x=>x.sc.pts);
@@ -1895,7 +1906,7 @@ function todayView(){
     saveEdit(x.c.id,x.dk,"meals",pl.map((f,i)=>({id:uid(),slot:i+1,foods:f,text:foodsSummary(f),time:"",planned:true})).filter(m=>foodsCount(m.foods)));
     x=curCtx()}
   if(x.dn>0&&!mealsOf(x.log).some(m=>m.slot===1)){saveEdit(x.c.id,x.dk,"meals",[{id:uid(),slot:1,text:""},...mealsOf(x.log)]);x=curCtx()}
-  const {c,today,dn,date,wk,log}=x,sc=scoreOf(log);
+  const {c,today,dn,date,wk,log}=x,sc=scoreOf(log,wk);
   const note=(DATA.notes||{})[c.id];
   const st=blockStates(log,c,dn),ck=dn===today&&dn>0?dueCheckin(c):null;
   const prog=(id,label,count)=>`<button class="phase-tab ${st[id]}" data-jump="${id}"><span>${st[id]==="upcoming"?LOCK+" ":""}${label}</span><small class="num">${st[id]==="skipped"?"Starts tonight":st[id]==="done"?"Done ✓":count}</small></button>`;
@@ -2122,7 +2133,7 @@ function stepsView(ph,x,only){
   return html;
 }
 function dayView(x){
-  const {log,prev}=x,allP=dayPairs(log),pairs=allP.filter(q=>!q.eve),fin=allP.find(q=>q.eve),sc=scoreOf(log),todo=todoOf(prev);
+  const {log,prev}=x,allP=dayPairs(log),pairs=allP.filter(q=>!q.eve),fin=allP.find(q=>q.eve),sc=scoreOf(log,x.wk),todo=todoOf(prev);
   const wp=walkPairs(log),total=pairs.length+wp.length+(log.train==="yes"?1:0),doneN=pairs.filter(p=>p.done).length+wp.filter(p=>p.walk).length+(log.train_done?1:0),next=Math.max(0,...mealsOf(log).map(m=>m.slot))+1;
   return `<div class="direction"><span class="eyebrow">Your direction today</span><p>${esc(direction(log))}</p></div>
   ${prev.intentions?`<section class="card plan-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your intentions for today</h2><span class="muted" style="font-size:12px">From last night</span></div><p>${esc(prev.intentions)}</p></section>`:""}
@@ -2314,7 +2325,7 @@ function nextBar(ph,log){
     `<button class="btn primary" data-phase="score" ${ok?"":"disabled"}>See my score for today &rsaquo;</button>`);
 }
 function scoreView(x){
-  const {log,wk,prev,dn}=x,sc=scoreOf(log),ps=scoreOf(prev),diff=sc.pts-ps.pts;
+  const {log,wk,prev,dn}=x,sc=scoreOf(log,wk),ps=scoreOf(prev,wk),diff=sc.pts-ps.pts;
   const msg=sc.pct>=80?"Standard set. Do it again tomorrow.":sc.pct>=60?"Solid day. Tomorrow, close the gaps.":"Not your best, and that's information. Settle tonight & go again tomorrow.";
   const num=(k,label,unit)=>{const v=log[k],t=wk[k],has=v!==undefined&&v!=="";const hit=has&&Number(v)>=t;
     return `<div class="sc-num"><span class="muted">${label}</span><b class="num">${has?Number(v).toLocaleString("en-GB")+unit:"–"}</b><small class="num">target ${Number(t).toLocaleString("en-GB")}${unit}</small>${has?`<span class="badge ${hit?"ok":"miss"}">${hit?"Hit":"Under"}</span>`:""}</div>`};
