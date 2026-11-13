@@ -75,16 +75,16 @@ export function coachOnboardedEmail(origin, { name, email }) {
 
 // ---------- sending ----------
 export async function sendEmail(env, to, msg) {
-  if (!env.RESEND_API_KEY || !env.EMAIL_FROM || !to) return { skipped: true };
+  if (!env.RESEND_API_KEY || !env.EMAIL_FROM || !to || (Array.isArray(to) && !to.length)) return { skipped: !env.RESEND_API_KEY ? "no RESEND_API_KEY" : !env.EMAIL_FROM ? "no EMAIL_FROM" : "no recipient" };
   try {
     const r = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "authorization": `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
       body: JSON.stringify({ from: env.EMAIL_FROM, to: Array.isArray(to) ? to : [to], subject: msg.subject, html: msg.html, text: msg.text })
     });
-    if (!r.ok) console.log("Resend error", r.status, await r.text());
-    return { ok: r.ok };
-  } catch (e) { console.log("Resend failed", e && e.message); return { ok: false }; }
+    if (!r.ok) { const body = await r.text(); console.log("Resend error", r.status, body); return { ok: false, status: r.status, error: body.slice(0, 300) }; }
+    return { ok: true };
+  } catch (e) { console.log("Resend failed", e && e.message); return { ok: false, error: String(e && e.message) }; }
 }
 
 // Where Ellis's alerts go

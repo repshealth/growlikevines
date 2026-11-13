@@ -230,25 +230,27 @@ export async function onRequest(context) {
       if (!(await verifyStripe(raw, request.headers.get("stripe-signature"), env.STRIPE_WEBHOOK_SECRET))) return err(400, "Bad signature");
       const ev = JSON.parse(raw);
       // Stripe sends every checkout on the account here, so only act on the Project Reset Payment Link
-      // (STRIPE_PAYMENT_LINK = its plink_... id, from the Payment Link's page in Stripe)
-      const ses0 = (ev.data && ev.data.object) || {};
-      if (ev.type === "checkout.session.completed" && env.STRIPE_PAYMENT_LINK && ses0.payment_link === env.STRIPE_PAYMENT_LINK) {
-        const ses = ses0, cd = ses.customer_details || {};
-        const email = cleanEmail(cd.email || ses.customer_email), name = String(cd.name || "").trim().slice(0, 80);
-        if (validEmail(email)) {
-          const token = randomId(24);
-          const ins = await db.prepare("INSERT OR IGNORE INTO invites (token, session_id, email, name, customer, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-            .bind(token, String(ses.id || token), email, name, String(ses.customer || ""), new Date().toISOString()).run();
-          if (ins.meta && ins.meta.changes) {
-            const to = await coachEmails(env, db);
-            later(Promise.all([
-              sendEmail(env, email, welcomeEmail(origin, { name, link: `${origin}/start?invite=${token}` })),
-              sendEmail(env, to, coachNewSignupEmail(origin, { name, email }))
-            ]));
-          }
-        }
+      // (STRIPE_PAYMENT_LINK = its plink_... id, from the Payment Link's page in Stripe).
+      // The reply says what happened, so it shows in Stripe's webhook log.
+      const ses = (ev.data && ev.data.object) || {}, cd = ses.customer_details || {};
+      if (ev.type !== "checkout.session.completed") return json({ received: true, action: "ignored: event " + ev.type });
+      if (!env.STRIPE_PAYMENT_LINK) return json({ received: true, action: "ignored: STRIPE_PAYMENT_LINK isn't set" });
+      if (ses.payment_link !== String(env.STRIPE_PAYMENT_LINK).trim()) return json({ received: true, action: "ignored: payment link " + (ses.payment_link || "none") + " isn't the Project Reset link" });
+      const email = cleanEmail(cd.email || ses.customer_email), name = String(cd.name || "").trim().slice(0, 80);
+      if (!validEmail(email)) return json({ received: true, action: "ignored: no customer email" });
+      let inv = await db.prepare("SELECT * FROM invites WHERE session_id = ?").bind(String(ses.id)).first(), isNew = false;
+      if (!inv) {
+        const token = randomId(24);
+        await db.prepare("INSERT OR IGNORE INTO invites (token, session_id, email, name, customer, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(token, String(ses.id || token), email, name, String(ses.customer || ""), new Date().toISOString()).run();
+        inv = await db.prepare("SELECT * FROM invites WHERE session_id = ?").bind(String(ses.id || token)).first();
+        isNew = true;
       }
-      return json({ received: true });
+      if (inv.used_at) return json({ received: true, action: "already onboarded" });
+      // A resent event (from Stripe's dashboard) sends the welcome email again, but only alerts Ellis once
+      const welcome = await sendEmail(env, email, welcomeEmail(origin, { name, link: `${origin}/start?invite=${inv.token}` }));
+      const coach = isNew ? await sendEmail(env, await coachEmails(env, db), coachNewSignupEmail(origin, { name, email })) : { skipped: "not new" };
+      return json({ received: true, action: isNew ? "invite created" : "invite resent", welcome, coach });
     }
 
     // The onboarding form checks its invite link
