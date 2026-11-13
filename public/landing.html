@@ -193,6 +193,24 @@ section.blk{padding:110px 0}
 .sec-intro .lede{margin:0}
 @media (max-width:860px){.sec-intro{grid-template-columns:1fr}}
 
+/* the method */
+.method{padding-bottom:40px}
+.w4{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:2px solid var(--ink)}
+.w4>div{padding:24px 24px 0 0}
+.w4>div+div{padding-left:24px;border-left:1.5px solid var(--line)}
+.w4 h3{font-family:var(--display);font-style:italic;font-weight:900;font-size:52px;line-height:.9;text-transform:uppercase;margin-bottom:10px}
+.w4 p{color:var(--soft);font-size:16px}
+.method-mid{font-size:clamp(19px,2vw,24px);font-weight:600;max-width:34em;margin:54px 0 34px}
+.key{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.key .k{display:flex;gap:16px;align-items:flex-start;padding:24px;border-radius:24px;background:var(--mist)}
+.key .arr{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:var(--ink);color:var(--lime);font-size:24px}
+.key .k.up{background:#f0fbd3}
+.key .k.down{background:#eef3ec}
+.key h3{font-size:18px}
+.key p{margin:0;color:var(--soft);font-size:15.5px}
+@media (max-width:900px){.w4{grid-template-columns:1fr 1fr}.w4>div:nth-child(3){padding-left:0;border-left:0}.key{grid-template-columns:1fr}}
+@media (max-width:520px){.w4{grid-template-columns:1fr}.w4>div,.w4>div+div{padding:20px 0 0;border-left:0}}
+
 /* a day, three shifts (a real sequence) */
 .shifts{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
 .shift{display:flex;flex-direction:column;gap:18px}
@@ -203,7 +221,27 @@ section.blk{padding:110px 0}
 .shift ul{margin:0;padding-left:18px;color:var(--soft)}
 .shift li{margin-bottom:4px}
 .shift .why{font-weight:600;margin:0}
+.brain{margin-top:6px;padding:18px 20px;border-radius:18px;border:1.5px solid var(--line)}
+.brain b{display:block;font-size:14px;margin-bottom:8px}
+.brain dl{margin:0;display:grid;gap:6px}
+.brain dt{font-weight:700;font-size:14.5px}
+.brain dd{margin:-4px 0 4px;color:var(--soft);font-size:14.5px;line-height:1.45}
 @media (max-width:900px){.shifts{grid-template-columns:1fr;max-width:520px}}
+
+/* the rules behind it */
+.rules{padding-top:20px}
+.r3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.rc{border:2px solid var(--ink);border-radius:26px;padding:30px}
+.rc h3{font-family:var(--display);font-style:italic;font-weight:900;font-size:46px;line-height:.9;text-transform:uppercase;margin-bottom:12px}
+.rc .sub{color:var(--soft);font-size:15.5px;font-weight:500}
+.rc ul{margin:16px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:12px}
+.rc li{font-size:15.5px;color:var(--soft);padding-left:18px;position:relative;line-height:1.5}
+.rc li::before{content:"";position:absolute;left:0;top:.6em;width:8px;height:8px;border-radius:2px;background:var(--lime)}
+.rc li b{color:var(--ink)}
+.senses{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.senses span{display:flex;flex-direction:column;padding:10px 12px;border-radius:12px;background:var(--mist);font-size:13px;color:var(--soft);line-height:1.35}
+.senses b{color:var(--ink);font-size:14px}
+@media (max-width:980px){.r3{grid-template-columns:1fr}}
 
 /* who it's for */
 .who{background:var(--mist)}
@@ -311,6 +349,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
   <div class="wrap">
     <a class="logo" href="/" aria-label="Project Reset home"><img src="/logo.webp" alt="Project Reset" width="800" height="580"></a>
     <nav aria-label="Page sections">
+      <a href="#method">The method</a>
       <a href="#day">How it works</a>
       <a href="#who">Who it's for</a>
       <a href="#get">What you get</a>
@@ -381,22 +420,22 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
   <section class="features" aria-labelledby="feath">
     <div class="wrap">
       <div class="feat-head"><h2 class="d" id="feath" style="font-size:clamp(40px,5.6vw,72px)">Inside the app</h2>
-        <p class="lede">Tap through to see what each part looks like.</p></div>
+        <p class="lede">Tap through to see each part, and what it does for your brain and body.</p></div>
       <div class="feat-grid">
         <div>
           <ul class="feat-list" role="tablist" aria-label="App features" aria-orientation="vertical">
-          <li><button type="button" role="tab" id="ft-0" aria-controls="featPhone" aria-selected="true" tabindex="0" data-feat="0"><b>Your day, set the night before</b><span>Open the app to your intentions, your training time and your meals, all planned the evening before.</span></button></li>
-          <li><button type="button" role="tab" id="ft-1" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="1"><b>Wake up and move</b><span>Your action for the morning and the check boxes to tick on waking: water, daylight, bright lights.</span></button></li>
-          <li><button type="button" role="tab" id="ft-2" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="2"><b>Calm before you eat</b><span>Before every meal you check in. Not calm yet? Six quick ways to get there in under 5 minutes.</span></button></li>
-          <li><button type="button" role="tab" id="ft-3" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="3"><b>Meals and walk blocks</b><span>Tick each meal as you eat it, log the water and protein, then a walk straight after.</span></button></li>
-          <li><button type="button" role="tab" id="ft-4" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="4"><b>Training with intent</b><span>Set-up steps before your session, cues during it and a close-out after.</span></button></li>
-          <li><button type="button" role="tab" id="ft-5" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="5"><b>Rate your state</b><span>Calm, centred or wired. Learn where you are, and where to aim for that time of day.</span></button></li>
-          <li><button type="button" role="tab" id="ft-6" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="6"><b>Meal plans and shopping list</b><span>Save a training day and a rest day plan, checked against the food rules, with your shopping list built for you.</span></button></li>
-          <li><button type="button" role="tab" id="ft-7" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="7"><b>Your daily score</b><span>Every completed task earns points, so you can see how each day really went.</span></button></li>
+          <li><button type="button" role="tab" id="ft-0" aria-controls="featPhone" aria-selected="true" tabindex="0" data-feat="0"><b>Your day, set the night before</b><span>You plan tomorrow while you close today: training, meals, your morning action and your intentions. You wake up to a day that's already decided, so your prefrontal cortex isn't burning energy on choices before you've even started.</span></button></li>
+          <li><button type="button" role="tab" id="ft-1" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="1"><b>Wake up and move</b><span>Your action is an arousal-inducing task with your heart rate over 100 BPM: cardio, cold therapy, sauna, a workout or breath work. Water, daylight within 30 minutes and bright lights tell your brainstem and circadian clock it's daytime.</span></button></li>
+          <li><button type="button" role="tab" id="ft-2" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="2"><b>Calm before you eat</b><span>You digest properly when you're in rest and digest (parasympathetic). Before every meal you check in, and if you're wired there are six ways to get there in under 5 minutes, from slow nasal breathing to a warm drink.</span></button></li>
+          <li><button type="button" role="tab" id="ft-3" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="3"><b>Meals and walk blocks</b><span>Energy in, energy out, recover, repeat. Each meal is built on the food rules, then a walk straight after so your body uses what you've eaten instead of sitting on it.</span></button></li>
+          <li><button type="button" role="tab" id="ft-4" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="4"><b>Training with intent</b><span>Every rep driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Set-up steps before, a high-stress start and blood flow during, then a close-out that brings you back down.</span></button></li>
+          <li><button type="button" role="tab" id="ft-5" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="5"><b>Rate your state</b><span>Three times a day you rate your arousal: calm, centred or wired. The app shows where to aim for that time of day, so you learn what switches you on and what brings you down.</span></button></li>
+          <li><button type="button" role="tab" id="ft-6" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="6"><b>Meal plans</b><span>Save a training day and a rest day plan from the approved foods. The app checks every meal against the rules, like no carbs and fats together, and can fill tomorrow in for you.</span></button></li>
+          <li><button type="button" role="tab" id="ft-7" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="7"><b>Your daily score</b><span>Every completed task, check box and sense noticed earns points. Nothing locks you out, so you always keep going, but the more you complete, the higher your score.</span></button></li>
           </ul>
         </div>
         <div class="feat-stage">
-          <p class="feat-cap" id="featCap" aria-hidden="true"></p><div class="phone-f" id="featPhone" role="tabpanel"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/today.webp" alt="Your day, set the night before" loading="lazy" width="585" height="1266"><img src="/home/step1.webp" alt="Wake up and move" loading="lazy" width="585" height="1266"><img src="/home/meal1para.webp" alt="Calm before you eat" loading="lazy" width="585" height="1266"><img src="/home/day.webp" alt="Meals and walk blocks" loading="lazy" width="585" height="1266"><img src="/home/train.webp" alt="Training with intent" loading="lazy" width="585" height="1266"><img src="/home/arousal.webp" alt="Rate your state" loading="lazy" width="585" height="1266"><img src="/home/plans.webp" alt="Meal plans and shopping list" loading="lazy" width="585" height="1266"><img src="/home/score.webp" alt="Your daily score" loading="lazy" width="585" height="1266"></div></div></div>
+          <p class="feat-cap" id="featCap" aria-hidden="true"></p><div class="phone-f" id="featPhone" role="tabpanel"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/today.webp" alt="Your day, set the night before" loading="lazy" width="585" height="1266"><img src="/home/step1.webp" alt="Wake up and move" loading="lazy" width="585" height="1266"><img src="/home/meal1para.webp" alt="Calm before you eat" loading="lazy" width="585" height="1266"><img src="/home/day.webp" alt="Meals and walk blocks" loading="lazy" width="585" height="1266"><img src="/home/train.webp" alt="Training with intent" loading="lazy" width="585" height="1266"><img src="/home/arousal.webp" alt="Rate your state" loading="lazy" width="585" height="1266"><img src="/home/plans.webp" alt="Meal plans" loading="lazy" width="585" height="1266"><img src="/home/score.webp" alt="Your daily score" loading="lazy" width="585" height="1266"></div></div></div>
         </div>
       </div>
     </div>
@@ -414,6 +453,27 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </div>
   </section>
 
+  <section class="blk method" id="method" aria-labelledby="methodh">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="methodh">The method</h2>
+        <p class="lede">Most plans give you a list of tasks. On their own, a lot of them look meaningless, and they do little for your neurology. Project Reset is written as rules covering four things, and it's those four that change the result.</p>
+      </div>
+      <div class="w4">
+        <div><h3>What</h3><p>What you're doing. Every task in your day, from your morning action to your evening meal.</p></div>
+        <div><h3>How</h3><p>How to do it. The cues that make it count: eating calm, breathing through your nose, training with intent.</p></div>
+        <div><h3>When</h3><p>When to do it. In the right order and at the right time of day, so each task sets up the next.</p></div>
+        <div><h3>Why</h3><p>Why it matters, and what you're working towards. Every task has an info button explaining what it does in your brain and body.</p></div>
+      </div>
+      <p class="method-mid">Done together, in that order, the tracker and the rules move you out of a fight or flight, stressed state and into a rest and digest, adaptable state. That's where your body can actually change.</p>
+      <div class="key">
+        <div class="k up"><span class="arr" aria-hidden="true">↑</span><div><h3>Arousal inducing</h3><p>To stimulate. Your morning action and the start of a workout switch your nervous system on, on purpose.</p></div></div>
+        <div class="k mid"><span class="arr" aria-hidden="true">→</span><div><h3>Centring</h3><p>To keep balance. Opening the day, your meals and your walks hold your energy steady.</p></div></div>
+        <div class="k down"><span class="arr" aria-hidden="true">↓</span><div><h3>Arousal reducing</h3><p>To calm. Low arousal tasks, closing the day and your evening bring you down so you can recover.</p></div></div>
+      </div>
+    </div>
+  </section>
+
   <section class="blk" id="day" aria-labelledby="dayh">
     <div class="wrap">
       <div class="sec-intro">
@@ -425,20 +485,70 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
           <div class="shot"><div class="mk" data-src="step1" data-alt="Morning in the app: wake up and move"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↑</span>Morning</div>
           <p class="why">Switch on, bring it back down, open the day.</p>
-          <ul><li>Your action, planned the night before: cold therapy, sauna, cardio, a workout or breath work</li><li>Your low arousal task to bring it back down</li><li>Meal 1 within 90 minutes of waking</li></ul>
+          <ul><li>Your action, planned the night before, with your heart rate over 100 BPM</li><li>On waking: 500ml water, outside within 30 minutes, bright lights</li><li>Your low arousal task to bring it back down, then Meal 1 within 90 minutes of waking</li></ul>
+          <div class="brain"><b>Brain focus</b><dl><dt>Brainstem</dt><dd>the switch from sleep to wake</dd><dt>Hypothalamus (SCN)</dt><dd>shifting to daytime through light and your circadian rhythm</dd><dt>Motor cortex</dt><dd>coordination and physical readiness</dd><dt>Basal ganglia</dt><dd>starting actions and building habits</dd><dt>Locus coeruleus</dt><dd>noradrenaline-driven alertness</dd></dl></div>
         </article>
         <article class="shift">
           <div class="shot"><div class="mk" data-src="day" data-alt="The Day in the app: meals and walk blocks"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">→</span>Day</div>
           <p class="why">Eat, move, train. Stay centred.</p>
-          <ul><li>Each meal built the Project Reset way, then a walk block straight after</li><li>Your training session, with steps before, during and after</li><li>Close the day and set up tomorrow</li></ul>
+          <ul><li>Calm before each meal, then a walk block straight after it</li><li>Your training session, with steps before, during and after</li><li>Close the day and set up tomorrow, once you've trained</li></ul>
+          <div class="brain"><b>Brain focus</b><dl><dt>Prefrontal cortex</dt><dd>planning, problem solving and closing the day</dd><dt>Insula</dt><dd>body awareness: hunger, fullness, tension and calm</dd><dt>Motor cortex and basal ganglia</dt><dd>movement, intent and habit in your training</dd></dl></div>
         </article>
         <article class="shift">
           <div class="shot"><div class="mk" data-src="calm" data-alt="The Evening in the app: rating your state, aiming for calm"></div></div>
           <div class="tag"><span class="arr" aria-hidden="true">↓</span>Evening</div>
           <p class="why">Wind down. Recover for tomorrow.</p>
-          <ul><li>Your evening meal</li><li>Low arousal tasks, lights dimmed, phone away</li><li>Rate where your nervous system is, aiming for calm</li></ul>
+          <ul><li>Your evening meal: being fed tells your body it's safe to rest</li><li>Low arousal tasks, moonlight, lights dimmed, phone away</li><li>Rate where your nervous system is, aiming for calm</li></ul>
+          <div class="brain"><b>Brain focus</b><dl><dt>Amygdala</dt><dd>lowering threat in a safe environment to recover</dd><dt>Insula</dt><dd>body awareness that confirms you're calm</dd><dt>Locus coeruleus</dt><dd>calm, low arousal breathing</dd><dt>Hypothalamus (SCN)</dt><dd>shifting to night time through light and your circadian rhythm</dd></dl></div>
         </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="blk rules" aria-labelledby="rulesh">
+    <div class="wrap">
+      <div class="sec-intro">
+        <h2 class="d" id="rulesh">The rules behind it</h2>
+        <p class="lede">Simply stick to the rules set for each day. The app checks what it can for you, and prompts you through the rest.</p>
+      </div>
+      <div class="r3">
+        <div class="rc">
+          <h3>Food</h3>
+          <p class="sub">Energy in, energy out, recover, repeat. No movement, no food.</p>
+          <ul>
+            <li><b>Carbs pair with training, fats pair with recovery.</b> Mixing them up in the wrong place disrupts your nervous system.</li>
+            <li><b>Carbs only before and after training, and in your evening meal.</b> Pre-workout carbs fuel the session, post-workout carbs restore your glycogen, and carbs before bed are always fine.</li>
+            <li><b>Never direct carbs and fats in the same meal.</b></li>
+            <li><b>Fruit and veg at least 3 times a day,</b> with no maximum.</li>
+            <li><b>Calm before you eat, move after.</b> Have carbs and sit at your desk, then have carbs and go for a walk, and notice the difference.</li>
+          </ul>
+        </div>
+        <div class="rc">
+          <h3>Training</h3>
+          <p class="sub">All effort driven by glycogen-fuelled muscle. No energy wasted on your nervous system through poor muscle connection or going beyond failure.</p>
+          <ul>
+            <li><b>Set up:</b> clear and set your mind, write the workout down, then change your clothes, music and environment.</li>
+            <li><b>Start:</b> movement prep for balance and body awareness, then a powerful, max effort first movement to signal demand to the muscle.</li>
+            <li><b>During:</b> blood flow and constant tension, breath directing every rep, and visualising the muscle you're working.</li>
+            <li><b>Close:</b> release tension, a slow walk breathing deep into your stomach, lower your body temperature and change your environment.</li>
+          </ul>
+        </div>
+        <div class="rc">
+          <h3>Senses</h3>
+          <p class="sub">This holds the key. The more sensory signals you use through the day, the more self-regulating your nervous system becomes.</p>
+          <div class="senses">
+            <span><b>Sight</b>sunlight, the horizon, dim light at night</span>
+            <span><b>Sound</b>music, nature, silence</span>
+            <span><b>Smell</b>fresh air, coffee, familiar scents</span>
+            <span><b>Touch</b>a warm shower, cold water, bare feet on grass</span>
+            <span><b>Proprioception</b>resistance training, stretching, carrying</span>
+            <span><b>Vestibular</b>walking, balance, changing position</span>
+            <span><b>Interoception</b>noticing your heartbeat, breath and hunger</span>
+            <span><b>Taste</b>sour, sweet, salty, savouring a meal</span>
+          </div>
+          <p class="sub" style="margin-top:14px">You tick the senses you've used in each part of the day, and they add to your score.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -494,8 +604,8 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
         </article>
         <article class="get">
           <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4v7a3 3 0 006 0V4M8 4v16M17 4c-2 2-2 6 0 8v8"/></svg></div>
-          <h3>Meal plans and a shopping list</h3>
-          <p>Build a training day and a rest day plan from the approved foods, or start from Ellis's example. The app checks every meal against the rules and builds your shopping list.</p>
+          <h3>Meal plans built on the rules</h3>
+          <p>Build a training day and a rest day plan from the approved foods, or start from Ellis's example. The app checks every meal against the food rules and fills tomorrow in for you.</p>
         </article>
         <article class="get">
           <div class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.2" stroke-linecap="round"><path d="M3 9v6M7 6v12M17 6v12M21 9v6M7 12h10"/></svg></div>
@@ -556,7 +666,7 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
           <ul>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>The full 21 day process board on your phone</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Daily targets set for you by Ellis</li>
-            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Meal plans, food rules and your shopping list</li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Meal plans and the Project Reset food rules</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Training structure and the workout guide</li>
             <li><svg viewBox="0 0 24 24" fill="none" stroke="#4f7300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Check-ins on Day 7, 14 and 21</li>
           </ul>
