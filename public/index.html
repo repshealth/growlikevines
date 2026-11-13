@@ -1134,8 +1134,8 @@ function scoreOf(log,tg){
   const effPts=act+rel+eve,effMax=2+2+4;
   // Zone ratings, all five
   const zp2=Object.entries(ZONE_AIM).reduce((n,[k,a])=>n+zonePts(log[k],a),0),zMax=Object.keys(ZONE_AIM).length*2;
-  // Hitting steps and protein targets: 2 points each (1 for getting three quarters of the way)
-  let tPts=0,tMax=0;if(tg){for(const k of ["steps","protein"]){const t=Number(tg[k]),v=Number(log[k])||0;if(t>0){tMax+=2;tPts+=v>=t?2:v>=t*.75?1:0}}}
+  // Hitting steps, protein and water targets: 2 points each (1 for getting three quarters of the way)
+  let tPts=0,tMax=0;if(tg){for(const k of ["steps","protein","water"]){const t=Number(tg[k]),v=Number(log[k])||0;if(t>0){tMax+=2;tPts+=v>=t?2:v>=t*.75?1:0}}}
   const P2=pts+picked.size+effPts+zp2+tPts,M2=max+SENSES.length+effMax+zMax+tMax;
   return{zonePts:zp2,targetPts:tPts,effortPts:effPts,pts:Math.round(P2*10)/10,max:M2,pct:M2?Math.min(100,Math.round(P2/M2*100)):0,tr,td,ynN:yna.length,m,e,d:0,n:0,ml,mn:meals.length,pd,pn:pairs.length,wk,wn:wp.length,nn,fuYes,fuN:ans.length,senses:sn,brain:brainHit(log)};
 }
