@@ -130,17 +130,41 @@ p{margin:0 0 14px}
 .mk{--w:240px;position:relative;width:var(--w);flex:none;aspect-ratio:390/844;border-radius:calc(var(--w)*.15);background:#000;padding:calc(var(--w)*.032);box-shadow:0 26px 50px -24px rgba(30,45,0,.45),0 0 0 1px #000}
 .mk .scr{position:relative;width:100%;height:100%;border-radius:calc(var(--w)*.12);overflow:hidden;background:#fff}
 
-/* inside the app: a strip of real screens you can scroll through */
-.screens{padding:20px 0 100px}
-.screens .head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
-.rail{--edge:max(24px,calc((100vw - var(--wrap))/2 + 24px));display:flex;gap:26px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:var(--edge);padding:10px var(--edge) 30px;scrollbar-width:thin}
-.rail figure{margin:0;scroll-snap-align:start;display:flex;flex-direction:column;gap:14px;width:240px;flex:none}
-.rail figcaption{font-size:15px;line-height:1.4;color:var(--soft)}
-.rail figcaption b{display:block;color:var(--ink);font-size:16px}
-.rail-nav{display:flex;gap:8px}
-.rail-nav button{width:48px;height:48px;border-radius:50%;border:2px solid var(--ink);background:#fff;font-size:20px;cursor:pointer}
-.rail-nav button:hover{background:var(--lime);border-color:var(--lime)}
-@media (max-width:600px){.rail figure{width:210px}.rail figure .mk{--w:210px}}
+/* inside the app: pick a feature, the phone shows it */
+.features{padding:30px 0 110px}
+.feat-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.9fr);gap:56px;align-items:start}
+.feat-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.feat-list button{width:100%;text-align:left;display:flex;flex-direction:column;gap:4px;padding:16px 20px;border:0;border-left:4px solid transparent;border-radius:0 16px 16px 0;background:transparent;font:inherit;color:var(--soft);cursor:pointer;transition:background .2s,border-color .2s,color .2s}
+.feat-list button b{font-size:18px;color:var(--ink);font-weight:700}
+.feat-list button span{display:none;font-size:15.5px;line-height:1.5}
+.feat-list button:hover{background:var(--mist)}
+.feat-list button[aria-selected="true"]{background:var(--mist);border-left-color:var(--lime)}
+.feat-list button[aria-selected="true"] span{display:block}
+.feat-stage{position:sticky;top:100px;display:flex;justify-content:center;padding:10px 0}
+.phone-f{--w:clamp(250px,26vw,310px);position:relative;width:var(--w);aspect-ratio:390/844;border-radius:calc(var(--w)*.15);background:#000;padding:calc(var(--w)*.032);box-shadow:0 34px 70px -28px rgba(30,45,0,.5),0 0 0 1px #000}
+.phone-f .scr{position:relative;width:100%;height:100%;border-radius:calc(var(--w)*.12);overflow:hidden;background:#fff}
+.phone-f .sb{position:absolute;top:0;left:0;right:0;height:calc(var(--w)*.135);display:flex;align-items:center;justify-content:space-between;padding:calc(var(--w)*.02) calc(var(--w)*.1) 0;font:700 calc(var(--w)*.045)/1 var(--body);background:#fff;z-index:1}
+.phone-f .notch{position:absolute;top:calc(var(--w)*.058);left:50%;transform:translateX(-50%);width:30%;height:calc(var(--w)*.075);background:#000;border-radius:999px;z-index:2}
+.phone-f .view{position:absolute;left:0;right:0;bottom:0;top:calc(var(--w)*.135);overflow:hidden}
+.phone-f .view img{position:absolute;inset:0;width:100%;height:auto;min-height:100%;object-fit:cover;object-position:top;opacity:0;transition:opacity .35s ease}
+.phone-f .view img.on{opacity:1}
+.feat-grid>*{min-width:0}
+.feat-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:30px}
+.feat-head .lede{margin:0}
+.feat-cap{display:none}
+@media (max-width:860px){
+  .feat-grid{grid-template-columns:1fr;gap:18px}
+  .feat-list{flex-direction:row;overflow-x:auto;gap:8px;margin:0 -24px;padding:2px 24px 8px;scrollbar-width:none}
+  .feat-list::-webkit-scrollbar{display:none}
+  .feat-list button{white-space:nowrap;padding:10px 16px;border:1.5px solid var(--line);border-radius:999px;width:auto}
+  .feat-list button b{font-size:15px}
+  .feat-list button[aria-selected="true"]{background:var(--ink);border-color:var(--ink)}
+  .feat-list button[aria-selected="true"] b{color:#fff}
+  .feat-list button[aria-selected="true"] span{display:none}
+  .feat-stage{position:static;flex-direction:column;align-items:center;gap:16px}
+  .feat-cap{display:block;order:2;text-align:center;max-width:30em;color:var(--soft);font-size:15.5px;margin:0;min-height:3em}
+  .phone-f{--w:240px}
+}
 
 /* video */
 .video{padding:40px 0 80px}
@@ -354,24 +378,27 @@ footer .sp{margin-left:auto;display:flex;gap:20px;align-items:center}
     </div>
   </section>
 
-  <section class="screens" aria-labelledby="scrh">
-    <div class="wrap head">
-      <h2 class="d" id="scrh" style="font-size:clamp(40px,5.6vw,72px)">Inside the app</h2>
-      <div class="rail-nav"><button type="button" data-rail="-1" aria-label="Previous screens">←</button><button type="button" data-rail="1" aria-label="Next screens">→</button></div>
-    </div>
-    <div class="rail" id="rail" tabindex="0" aria-label="Screens from the Project Reset app">
-      <figure><div class="mk" data-src="today" data-alt="Your day, set the night before"></div><figcaption><b>Your day, set the night before</b>Intentions, training time and meals, ready when you wake.</figcaption></figure>
-      <figure><div class="mk" data-src="step1" data-alt="Wake up and move"></div><figcaption><b>Wake up and move</b>Your action and the check boxes to do on waking.</figcaption></figure>
-      <figure><div class="mk" data-src="meal1para" data-alt="Calm before you eat"></div><figcaption><b>Calm before you eat</b>Not calm yet? Quick ways to get there in under 5 minutes.</figcaption></figure>
-      <figure><div class="mk" data-src="arousal" data-alt="Rate your state"></div><figcaption><b>Rate your state</b>Calm, centred or wired, and where to aim.</figcaption></figure>
-      <figure><div class="mk" data-src="day" data-alt="Meals and walk blocks"></div><figcaption><b>Meals and walk blocks</b>Tick each meal, then a walk straight after.</figcaption></figure>
-      <figure><div class="mk" data-src="train" data-alt="Training with intent"></div><figcaption><b>Training with intent</b>Set-up steps, cues during and a close-out after.</figcaption></figure>
-      <figure><div class="mk" data-src="close" data-alt="Close the day"></div><figcaption><b>Close the day</b>Check the rules, then set up tomorrow.</figcaption></figure>
-      <figure><div class="mk" data-src="evening" data-alt="Wind down"></div><figcaption><b>Wind down</b>Your evening meal, then check points before bed.</figcaption></figure>
-      <figure><div class="mk" data-src="score" data-alt="Your daily score"></div><figcaption><b>Your daily score</b>Every completed task earns points.</figcaption></figure>
-      <figure><div class="mk" data-src="plans" data-alt="Meal plans"></div><figcaption><b>Meal plans</b>Training day and rest day plans, checked against the rules.</figcaption></figure>
-      <figure><div class="mk" data-src="foods" data-alt="Your shopping list"></div><figcaption><b>Your shopping list</b>Built from your plans, minus anything you'd never eat.</figcaption></figure>
-      <figure><div class="mk" data-src="progress" data-alt="Log any time"></div><figcaption><b>Log any time</b>Steps, protein and water, whenever suits you.</figcaption></figure>
+  <section class="features" aria-labelledby="feath">
+    <div class="wrap">
+      <div class="feat-head"><h2 class="d" id="feath" style="font-size:clamp(40px,5.6vw,72px)">Inside the app</h2>
+        <p class="lede">Tap through to see what each part looks like.</p></div>
+      <div class="feat-grid">
+        <div>
+          <ul class="feat-list" role="tablist" aria-label="App features" aria-orientation="vertical">
+          <li><button type="button" role="tab" id="ft-0" aria-controls="featPhone" aria-selected="true" tabindex="0" data-feat="0"><b>Your day, set the night before</b><span>Open the app to your intentions, your training time and your meals, all planned the evening before.</span></button></li>
+          <li><button type="button" role="tab" id="ft-1" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="1"><b>Wake up and move</b><span>Your action for the morning and the check boxes to tick on waking: water, daylight, bright lights.</span></button></li>
+          <li><button type="button" role="tab" id="ft-2" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="2"><b>Calm before you eat</b><span>Before every meal you check in. Not calm yet? Six quick ways to get there in under 5 minutes.</span></button></li>
+          <li><button type="button" role="tab" id="ft-3" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="3"><b>Meals and walk blocks</b><span>Tick each meal as you eat it, log the water and protein, then a walk straight after.</span></button></li>
+          <li><button type="button" role="tab" id="ft-4" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="4"><b>Training with intent</b><span>Set-up steps before your session, cues during it and a close-out after.</span></button></li>
+          <li><button type="button" role="tab" id="ft-5" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="5"><b>Rate your state</b><span>Calm, centred or wired. Learn where you are, and where to aim for that time of day.</span></button></li>
+          <li><button type="button" role="tab" id="ft-6" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="6"><b>Meal plans and shopping list</b><span>Save a training day and a rest day plan, checked against the food rules, with your shopping list built for you.</span></button></li>
+          <li><button type="button" role="tab" id="ft-7" aria-controls="featPhone" aria-selected="false" tabindex="-1" data-feat="7"><b>Your daily score</b><span>Every completed task earns points, so you can see how each day really went.</span></button></li>
+          </ul>
+        </div>
+        <div class="feat-stage">
+          <p class="feat-cap" id="featCap" aria-hidden="true"></p><div class="phone-f" id="featPhone" role="tabpanel"><div class="notch"></div><div class="scr"><div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div><div class="view"><img class="on" src="/home/today.webp" alt="Your day, set the night before" loading="lazy" width="585" height="1266"><img src="/home/step1.webp" alt="Wake up and move" loading="lazy" width="585" height="1266"><img src="/home/meal1para.webp" alt="Calm before you eat" loading="lazy" width="585" height="1266"><img src="/home/day.webp" alt="Meals and walk blocks" loading="lazy" width="585" height="1266"><img src="/home/train.webp" alt="Training with intent" loading="lazy" width="585" height="1266"><img src="/home/arousal.webp" alt="Rate your state" loading="lazy" width="585" height="1266"><img src="/home/plans.webp" alt="Meal plans and shopping list" loading="lazy" width="585" height="1266"><img src="/home/score.webp" alt="Your daily score" loading="lazy" width="585" height="1266"></div></div></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -580,8 +607,7 @@ const CONFIG={
 /* ------------------------------------- */
 document.documentElement.classList.add("js");
 (function(){
-  const reduce0=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  // checkout
+    // checkout
   if(CONFIG.stripeLink)document.querySelectorAll("[data-checkout]").forEach(a=>a.href=CONFIG.stripeLink);
   if(CONFIG.price){document.getElementById("price").innerHTML=CONFIG.price.replace(/[<>&]/g,"")+"<small>one payment</small>"}
 
@@ -599,8 +625,13 @@ document.documentElement.classList.add("js");
   // phone mockups from real app screens
   const SB='<div class="sb"><span>9:41</span><i><svg viewBox="0 0 18 12"><path d="M1 11h2V8H1zm4 0h2V6H5zm4 0h2V3H9zm4 0h2V1h-2z" fill="#000"/></svg><svg viewBox="0 0 26 12"><rect x=".5" y=".5" width="22" height="11" rx="3" fill="none" stroke="#000"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="#000"/><rect x="23.5" y="4" width="2" height="4" rx="1" fill="#000"/></svg></i></div>';
   document.querySelectorAll(".mk[data-src]").forEach(el=>{el.innerHTML=`<div class="notch"></div><div class="scr">${SB}<div class="view"><img src="/home/${el.dataset.src}.webp" alt="${el.dataset.alt||""}" loading="lazy" width="585" height="1266"></div></div>`;if(!el.dataset.alt)el.setAttribute("aria-hidden","true")});
-  const rail=document.getElementById("rail");
-  document.querySelectorAll("[data-rail]").forEach(b=>b.addEventListener("click",()=>rail.scrollBy({left:Number(b.dataset.rail)*Math.min(rail.clientWidth*.8,800),behavior:reduce0?"auto":"smooth"})));
+  // inside the app: pick a feature and the phone shows that screen
+  const fb=[...document.querySelectorAll("[data-feat]")],fi=[...document.querySelectorAll("#featPhone img")];
+  const fcap=document.getElementById("featCap");
+  const pick=(i,focus)=>{fb.forEach((b,k)=>{b.setAttribute("aria-selected",k===i);b.tabIndex=k===i?0:-1});fi.forEach((im,k)=>im.classList.toggle("on",k===i));fcap.textContent=fb[i].querySelector("span").textContent;if(focus)fb[i].focus();if(matchMedia("(max-width:860px)").matches)fb[i].scrollIntoView({block:"nearest",inline:"center",behavior:"smooth"})};
+  fcap.textContent=fb[0].querySelector("span").textContent;
+  fb.forEach((b,i)=>{b.addEventListener("click",()=>pick(i));b.addEventListener("keydown",e=>{const d=e.key==="ArrowDown"||e.key==="ArrowRight"?1:e.key==="ArrowUp"||e.key==="ArrowLeft"?-1:0;if(d){e.preventDefault();pick((i+d+fb.length)%fb.length,true)}})});
+  fi.forEach(im=>im.loading="eager");
 
   // nav border + mobile buy bar
   const nav=document.querySelector(".nav"),bar=document.getElementById("buybar"),co=document.getElementById("checkout");
