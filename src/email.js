@@ -2,6 +2,7 @@
 // Secrets (Cloudflare: Worker > Settings > Variables and Secrets):
 //   RESEND_API_KEY  the Resend API key
 //   EMAIL_FROM      who emails come from, e.g. "Project Reset <hello@yourdomain.com>" (domain verified in Resend)
+//   STRIPE_PAYMENT_LINK  the Project Reset Payment Link id (plink_...): only its checkouts send emails
 //   NOTIFY_EMAIL    optional: where Ellis's alerts go. If it's not set, they go to every coach account's email.
 // If RESEND_API_KEY or EMAIL_FROM isn't set, emails are skipped quietly and everything else still works.
 

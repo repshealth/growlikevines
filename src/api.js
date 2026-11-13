@@ -229,8 +229,11 @@ export async function onRequest(context) {
       const raw = await request.text();
       if (!(await verifyStripe(raw, request.headers.get("stripe-signature"), env.STRIPE_WEBHOOK_SECRET))) return err(400, "Bad signature");
       const ev = JSON.parse(raw);
-      if (ev.type === "checkout.session.completed") {
-        const ses = ev.data.object || {}, cd = ses.customer_details || {};
+      // Stripe sends every checkout on the account here, so only act on the Project Reset Payment Link
+      // (STRIPE_PAYMENT_LINK = its plink_... id, from the Payment Link's page in Stripe)
+      const ses0 = (ev.data && ev.data.object) || {};
+      if (ev.type === "checkout.session.completed" && env.STRIPE_PAYMENT_LINK && ses0.payment_link === env.STRIPE_PAYMENT_LINK) {
+        const ses = ses0, cd = ses.customer_details || {};
         const email = cleanEmail(cd.email || ses.customer_email), name = String(cd.name || "").trim().slice(0, 80);
         if (validEmail(email)) {
           const token = randomId(24);
