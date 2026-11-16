@@ -10,6 +10,11 @@
 <link rel="icon" type="image/png" href="/favicon.png">
 <meta name="theme-color" content="#0a0b0a">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Project Reset">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -567,6 +572,18 @@ details.moreopts summary{cursor:pointer;font-size:13px;font-weight:700;color:var
 .gauge-panel .input{background:color-mix(in srgb,var(--on-night) 10%,transparent);color:var(--on-night);border-color:transparent}
 .gauge-panel .muted{color:var(--on-night);opacity:.7}
 .gauge-space{height:96px}
+
+/* Feel like an app, not a website */
+body.has-bnav{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent}
+body.has-bnav button{-webkit-user-select:none;user-select:none;touch-action:manipulation}
+body.has-bnav .top{box-shadow:none}
+body.has-bnav .top-in{padding-block:6px;flex-wrap:nowrap}
+body.has-bnav .top .tabs{display:none}
+body.has-bnav .top .logo.sm{height:30px;width:auto}
+body.has-bnav .who{margin-left:auto}
+.bn{transition:color .15s}
+.bn:active svg{transform:scale(.9)}
+@media (min-width:700px){.bnav{left:50%;right:auto;transform:translateX(-50%);bottom:14px;border:1px solid var(--line);border-radius:22px;padding:6px 10px;width:min(560px,calc(100% - 28px));box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
