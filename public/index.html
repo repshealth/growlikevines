@@ -583,7 +583,8 @@ body.has-bnav .top .logo.sm{height:30px;width:auto}
 body.has-bnav .who{margin-left:auto}
 .bn{transition:color .15s}
 .bn:active svg{transform:scale(.9)}
-@media (min-width:700px){.bnav{left:50%;right:auto;transform:translateX(-50%);bottom:14px;border:1px solid var(--line);border-radius:22px;padding:6px 10px;width:min(560px,calc(100% - 28px));box-shadow:0 10px 30px -14px rgba(0,0,0,.35)}}
+body.has-bnav .col{max-width:560px}
+.bnav-in{display:flex;justify-content:space-around;gap:2px;width:100%;max-width:560px;margin:0 auto}
 .quiet{display:flex;flex-direction:column;gap:8px;padding:4px 2px}
 .quiet p{margin:0;font-size:15px;max-width:52ch}
 .quiet-go{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -1915,13 +1916,14 @@ const NAV_IC={
   oxygen:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7"/></svg>',
   food:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11h18a9 9 0 0 1-18 0zM8 7c0-2 2-2 2-4M13 7c0-2 2-2 2-4"/></svg>',
   training:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/></svg>',
+  meals:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="12" r="6"/><circle cx="13" cy="12" r="2.5"/><path d="M4 3v6M2.5 3v4.5a1.5 1.5 0 0 0 3 0V3M4 9v12"/></svg>',
   progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>',
   subconscious:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9.5 22h5"/></svg>'
 };
-const CLIENT_TABS=[["today","Today"],["food","Food"],["training","Training"],["progress","Progress"]];
+const CLIENT_TABS=[["today","Today"],["food","Food"],["meals","Meals"],["training","Training"],["progress","Progress"]];
 const navOn=()=>{if(!S.session||S.session.role==="coach")return false;const m=me();return m.status==="active"&&introDone(m)&&!S.checkin};
 function bottomNav(){
-  return `<nav class="bnav" aria-label="Sections">${CLIENT_TABS.map(([k,l])=>`<button class="bn" data-tab="${k}" ${S.tab===k?'aria-current="page"':""}>${NAV_IC[k]}<span>${l}</span></button>`).join("")}</nav>`;
+  return `<nav class="bnav" aria-label="Sections"><div class="bnav-in">${CLIENT_TABS.map(([k,l])=>`<button class="bn" data-tab="${k}" ${S.tab===k||(S.tab==="nutrition"&&k==="food")||(S.tab==="workout"&&k==="training")?'aria-current="page"':""}>${NAV_IC[k]}<span>${l}</span></button>`).join("")}</div></nav>`;
 }
 function tabHead(title,lead,x){
   return `${S.guideFrom?`<div><button class="chip" data-guideback="1">&lsaquo; Back</button></div>`:""}
@@ -2034,6 +2036,13 @@ function trainingView(){
     ${v?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${esc(v.title)}</h2></div>${videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here.")}</section>`:""}
   </div>`;
 }
+function mealsView(){
+  return `<div class="stack">
+    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Optional. If you like structure, build a meal plan from your food list for a training day and a rest day. If you don't, skip this and eat from the list.</p></div></div>
+    ${mealPlansCard()}
+    <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
+  </div>`;
+}
 function numbersCard(){
   const c=me();if(!c||c.status!=="active")return "";const x=curCtx(),{log,wk}=x;if(x.dn<1)return "";
   return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's numbers</h2><span class="optional">Optional</span></div>
@@ -2047,6 +2056,7 @@ function clientView(){
   if(S.tab==="tracker")return trackerView();
   if(S.tab==="oxygen")return oxygenView();
   if(S.tab==="food")return foodView();
+  if(S.tab==="meals")return mealsView();
   if(S.tab==="training")return trainingView();
   if(S.tab==="subconscious")return subconsciousView();
   if(S.tab==="nutrition")return nutritionView();
@@ -2719,13 +2729,12 @@ function mealPlansCard(){
       <div class="plan-slots">${pp.meals.map((m,i)=>{const key="mp_"+k+"_"+i,open=S.openMeal===key,c=foodsCount(m.foods),cx=mpCtx(k,pp,i+1),role=cx.pre?"Pre-workout":cx.post?"Post-workout":cx.eve&&c?"Evening meal":"";
         return `<div class="plan-slot${c?" filled":""}${open?" open":""}"><button class="plan-head" data-mealopen="${key}"><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role${role==="Evening meal"?" eve":""}">${role}</span>`:""}</b><small>${c?esc(foodsSummary(m.foods)):"Tap to plan"}</small>${planIssue(m.foods,cx)?`<small class="carb-cue">${planIssue(m.foods,cx)}</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
           ${open?`<div class="pick-wrap">${foodPicker(key,i+1,m.foods,false,cx)}</div>`:""}</div>${k==="train"&&pp.after===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b></span></div>`:""}`}).join("")}</div>
-      ${issues.length?`<div class="miss"><b>To fix in this plan:</b><ul>${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:planFilled(pp)?`<div class="train-place ok"><span>${TICK} This plan follows all the meal rules</span></div>`:""}
+      ${issues.length?`<div class="miss"><b>Worth a look:</b><ul>${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:planFilled(pp)?`<div class="train-place ok"><span>${TICK} This plan follows all the meal rules</span></div>`:""}
       <div class="opts"><button class="link" data-mpstart="example">Reset to Ellis's example</button><button class="link" data-mpclear="1" style="color:var(--bad)">Clear this plan</button></div>`;
   }
   return `<section class="card guide-card" id="g-plans"><h2 class="sec-title" style="font-size:22px">Your meal plans</h2>
-    <p class="muted" style="font-size:13px">Set up your usual training day and rest day once. In your Evening, one tap fills tomorrow's meals, or let the app do it for you.</p>
+    <p class="muted" style="font-size:13px">Set up your usual training day and rest day once. Tap a meal to pick its foods. The rules are a guide, nothing is compulsory.</p>
     ${tabs}${body}
-    <button class="confirm${pr.auto?" on":""}" data-mpauto="1" aria-pressed="${!!pr.auto}"><span class="tick">${TICK}</span><span>Fill tomorrow's meals from my plans automatically, based on whether I'm training</span></button>
   </section>`;
 }
 function nutritionView(){
@@ -3045,6 +3054,9 @@ async function boot(){
   }
   S.booting=false;render();
 }
+// Each screen change adds a history entry, so the browser back button and swipe back work like an app
+function navPush(){try{history.replaceState({tab:S.tab,y:window.scrollY,gf:S.guideFrom},"");history.pushState({fwd:1},"")}catch(e){}}
+window.addEventListener("popstate",e=>{const st=e.state;if(!S.session||S.session.role==="coach"||!st||!st.tab)return;S.tab=st.tab;S.guideFrom=st.gf||null;render();window.scrollTo(0,st.y||0)});
 function afterLogin(){if(location.search||location.pathname==="/start")history.replaceState(null,"","/app");S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;S.checkin=null;return boot().then(()=>window.scrollTo(0,0))}
 const busy=(form,on)=>{const b=form&&form.querySelector("button[type=submit]");if(b){b.disabled=on;b.classList.toggle("busy",on)}};
 
@@ -3113,9 +3125,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpafter){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
-  if(b.dataset.guidepage){S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;render();window.scrollTo(0,0);return}
+  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
-  if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
+  if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
   if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
   if(b.dataset.open){S.open[b.dataset.open]=true;S.scrollTo=b.dataset.open;return render()}
   if(b.dataset.collapse){S.open[b.dataset.collapse]=false;S.scrollTo=b.dataset.collapse;return render()}
