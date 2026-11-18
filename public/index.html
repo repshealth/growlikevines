@@ -672,6 +672,10 @@ body.has-bnav .col{max-width:560px}
 .fg-protein{border-color:var(--fg)}
 .fg-protein .fg-ic{background:var(--lime);color:var(--ink)}
 .fg-protein .fg-list li{background:var(--lime-dim);border-color:transparent}
+
+.fguide{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--lime);border-radius:0 12px 12px 0;padding:12px 14px;font-size:14px}
+.fguide>b{font-size:15px}
+.fguide ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1170,11 +1174,24 @@ const EVENING=[
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
+const bothPlanned=l=>(l.tmr_up||[]).length>0&&(l.tmr_down||[]).length>0;
 const ZERO=[
-  {id:"e1",title:"Your food list",text:["No meal plan. Eat from this list, as much as you want"],
-   asks:[{k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Have a look through, so you know what to buy and eat from tomorrow.",btn:"See the list"},{k:"targets_ok",type:"confirm",label:"Got it: I eat from the list",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Plan Day 1 (tomorrow)",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["Set your intention","Set your hard thing","Set your alarm"],asks:TMR_ASKS},
-  {id:"e3",title:"Tonight: Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for the evening."],text:["Pick something from Oxygen, then be present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
+  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","Build a meal plan if you want one. It's optional"],
+   asks:[{k:"_fguide",type:"foodguide"},
+     {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
+     {k:"_go_meals0",type:"golink",go:"meals",title:"Build a meal plan (optional)",text:"Like structure? Set up a training day and a rest day from the list.",btn:"Open Meals"},
+     {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
+  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","How you'll bring it back down","Then your to-do list"],
+   asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: How will you get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
+     {k:"tmr_down",type:"oxyplan",g:"down",label:"Then: How will you bring it back down?",req:l=>(l.tmr_down||[]).length>0,reqMsg:"Pick how you'll bring it down"},
+     {k:"_pickboth",type:"note",text:"Pick one of each above to carry on.",when:l=>!bothPlanned(l)},
+     {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",when:bothPlanned},
+     {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow (optional)",text:"Just for you. Anything you want to get done.",when:bothPlanned}]},
+  {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["When you're going to sleep","Pick what you'll do to bring it down, then rate where you are","Set your alarm for tomorrow"],
+   asks:[{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
+     {k:"_oxy_pm",type:"oxypick",from:"pm",only:"down",label:"What will you do to bring it down?",req:l=>oxyOf(l).some(o=>o.from==="pm"),reqMsg:"Tap what you'll do"},
+     {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"},
+     {k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}]}
 ];
 const actDone=log=>Array.isArray(log.m_action_done)?log.m_action_done:[...(log.am_walk==="yes"?[WALK]:[]),...(Array.isArray(log.m_action)?log.m_action:[])];
 const brainHit=log=>{const b=new Set();if(log.m1)actDone(log).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
@@ -2226,12 +2243,12 @@ function todayView(){
     ${dayNav(x)}
     ${note&&note.text?`<div class="coachnote"><span class="eyebrow" style="color:var(--green-ink)">From your coach · ${fmtShort(new Date(note.at))}</span><p>${esc(note.text)}</p></div>`:""}
     ${ck?checkinCard(c):""}
-    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Today is Day 0</h2><p>Tonight you get set up: Look through your food list, set tomorrow's intention and alarm, then wind down. Day 1 starts tomorrow morning.</p></div>`:""}
+    ${dn===0&&!stepsDone(log,"evening")?`<div class="welcome"><span class="eyebrow">Welcome to Project Reset</span><h2 class="display" style="font-size:clamp(30px,8vw,40px)">Today is Day 0</h2><p>Tonight you set up tomorrow: Plan your food, plan your morning, then bring it down for sleep and set your alarm. Day 1 starts tomorrow morning.</p></div>`:""}
     ${pblock("morning",1,st.morning,stepsView("morning",x),log)}
     ${st.morning==="done"&&!S.open.morning&&dn>0&&!allDone?`<div class="signoff"><b>Your day is open.</b><span>Now go and live it. Use the tabs when you need to and keep the Tracker updated. Open Day Close when your day is done.</span></div>`:""}
     ${dn>0&&st.morning==="done"&&!allDone?quietDay(x):""}
     ${(()=>{const nx=AS_SLOTS.find(([sl,lb,d])=>d===dn+1&&d>0);return dn===today&&nx&&!assessOf(c.id)[nx[0]]&&st.evening!=="done"?`<div class="ck-heads"><span class="eyebrow">Heads up</span><b>Tomorrow is check-in day</b><span>It's your Week ${nx[2]/7} check-in: Your steps and screen time, 20 quick questions and three in your own words. About 5 minutes, any time tomorrow. Have your step count and screen time handy.</span></div>`:""})()}
-    ${pblock("evening",dn===0?0:2,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup day",goal:"Get ready for Day 1",intro:"See your food list, plan tomorrow, then wind down tonight. Three steps."}:null)}
+    ${pblock("evening",dn===0?0:2,st.evening,stepsView("evening",x),log,dn===0?{name:"Setup day",goal:"Get ready for Day 1",intro:"Plan your food for tomorrow, plan your morning, then bring it down tonight. Three steps."}:null)}
     ${dn===0?(allDone?readyCard(x):`<section class="pblock upcoming"><div class="pb-sum"><span class="pb-num">${LOCK}</span><span class="pb-text"><b>Day 1</b><small>Starts tomorrow morning.</small></span></div></section>`)
       :allDone?`<section class="scorecard" id="blk-score"><span class="eyebrow">Day ${dn} closed</span><h2 class="display" style="font-size:clamp(36px,10vw,54px);color:var(--lime)">See you in the morning</h2>${log.tmr_hard?`<p>Tomorrow's hard thing: <b>${esc(log.tmr_hard)}</b></p>`:""}${log.tmr_wake?`<p>Alarm set for <b class="num">${esc(log.tmr_wake)}</b></p>`:""}<p class="sytm">Today is complete. Tomorrow is set.<br><b>Release. Recover. Reset.</b></p></section>`:""}
   </div>`;
@@ -2314,20 +2331,30 @@ function askHtml(a,log,wk,locked){
     case"actplan":{const pl=(Array.isArray(log.m_action)?log.m_action:[]).filter(a=>MOVE.includes(a));return `<div class="numhead"><b>Your action this morning</b><span>${pl.length?`Planned last night: <b>${esc(pl.join(", "))}</b>. It's ticked below. Untick anything you didn't do, or tick anything else you did instead.`:"You didn't plan one last night. Do at least one of these, then tick what you've done."}</span></div>`}
     case"walknote":return `<div class="numhead"><b>Tomorrow morning: Action, then release</b><span>Your action is your switch up: Pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
     case"lastintent":{const p=curCtx().prev;return p.intentions?`<div class="direction"><span class="eyebrow">Your intention, from last night</span><p>${esc(p.intentions)}</p></div>`:`<div class="numhead"><b>Your intention</b><span>You didn't set one last night. Set it tonight in Day Close, so it's waiting for you tomorrow.</span></div>`}
-    case"oxypick":{const mine=oxyOf(log).filter(o=>o.from===a.from),groups=a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN;
-      return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">Tap to log it with the time.</small>
+    case"oxypick":{const pl=a.from==="am"?[...(curCtx().prev.tmr_up||[]),...(curCtx().prev.tmr_down||[])]:[],mine=oxyOf(log).filter(o=>o.from===a.from),groups=a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN;
+      return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?`Last night you planned: <b>${esc(pl.join(", "))}</b>. `:""}Tap to log it with the time.</small>
         ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?esc(it)+" · "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}</div>`}
     case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
     case"golink":{const t=typeof a.text==="function"?a.text(log):a.text;return `<div class="golink"><div><b>${esc(a.title)}</b><span>${esc(t)}</span></div><button class="btn" data-guidepage="${a.go}" ${dis}>${esc(a.btn)}</button></div>`}
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
       const p=x.prev;return `<div class="ask"><span class="ask-h">Day ${x.dn-1}: Your final numbers</span><div class="nums">${[["steps","Steps",1],["protein","Protein (g)",1],["water","Water (L)",0.5]].map(([k,l,st])=>{const t=x.wk[k],v=p[k],hit=v!==undefined&&v!==""&&Number(v)>=t;return `<label class="ask" for="pn-${k}"><span class="num-lbl">${l}<small class="num-sub num">Target ${Number(t).toLocaleString("en-GB")}${hit?` · <b class="hitok">${TICK} Hit</b>`:""}</small></span><input class="input" type="number" inputmode="decimal" min="0" step="${st}" id="pn-${k}" data-pin="${k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}).join("")}</div></div>`}
     case"wake":{const bed=log.tmr_bed||"",w=log.tmr_wake||"",from=bed?mins(bed):(mins(nowHHMM())+30),h=w?((mins(w)-from+1440)%1440)/60:0;
-      return `<div class="ask"><div class="nums"><label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label><label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label></div>
+      return `<div class="ask"><div class="nums">${a.nobed?"":`<label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label>`}<label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label></div>
         ${w?`<div class="train-place${h>=7&&h<=9.5?" ok":""}"><span>${h>=7&&h<=9.5?TICK+" ":""}That's <b class="num">${Math.floor(h)}h ${pad(Math.round((h%1)*60))}m</b> of sleep${bed?"":" if you're asleep in 30 minutes"}. ${h<7?"Aim for 7 to 9 hours: Can you get to bed earlier, or set the alarm a little later?":h>9.5?"That's a long one. Check the alarm time is right.":"Right where you want it."}</span></div>`:""}</div>`}
     case"numsnow":{const x=curCtx(),wk=x.wk,f=k=>k==="water"?(Number(log.water)||0)+"L":k==="protein"?(Number(log.protein)||0)+"g":(Number(log.steps)||0).toLocaleString("en-GB");
       return `<div class="golink"><div><b>Your numbers so far</b><span>${["steps","protein","water"].map(k=>`${f(k)} ${k}`).join(" · ")}</span></div><button class="btn" data-guidepage="tracker" ${dis}>Update in Tracker</button></div>`}
     case"remaining":{const x=curCtx(),wk=x.wk,rows=[["steps","Steps",""],["protein","Protein","g"],["water","Water","L"]].map(([k,l,u])=>{const left=Math.max(0,Math.round(((Number(wk[k])||0)-(Number(log[k])||0))*100)/100);return `<div class="rv"><span>${l}</span><span>${left?`<b class="num">${k==="steps"?left.toLocaleString("en-GB"):left}${u}</b> to go`:`<b class="hitok">${TICK} Hit</b>`}</span></div>`}).join("");
       return `<div class="ask"><div class="review">${rows}</div><button class="link" data-guidepage="tracker" style="align-self:flex-start">Update in Tracker</button></div>`}
+    case"foodguide":return `<div class="fguide"><b>Eat whatever you want, as long as it's on your list.</b><ul>
+      <li><b>As much as you want.</b> No counting, no weighing, no meal plan unless you want one.</li>
+      <li><b>${MEALS_GUIDE}.</b> Your last meal is your evening meal.</li>
+      <li><b>Protein in every meal.</b> It's the one thing that matters most. Hit your protein target every day.</li>
+      <li><b>Carbs</b> go in your evening meal, the meal before you train and the meal after.</li>
+      <li><b>Fats</b> go in the meals without carbs.</li>
+      <li><b>Fruit and veg</b> any time. Starting a meal with fruit is a good habit.</li>
+      <li><b>Water</b> with every meal.</li></ul></div>`;
+    case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
+    case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${G.items.map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`}
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
@@ -2402,7 +2429,7 @@ function meal1Cue(log){
 }
 // The one-line summary a finished step folds down to
 function stepSummary(s,log){
-  if(log.zero&&s.id==="e1")return "Targets confirmed. You know your numbers for every day.";
+  if(log.zero&&s.id==="e1")return "You know how to eat: Anything from your list, protein in every meal."+(planFoodsOf(log).some(f=>foodsCount(f))?" Meal plan set.":"");
   if(log.zero&&s.id==="e2")return zeroPlanSummary(log);
   const asks=s.asks.filter(a=>!a.when||a.when(log)),bits=[];
   if(!log.zero&&s.id==="e3")return zeroPlanSummary(log,"Tomorrow is set.");
@@ -2425,6 +2452,8 @@ function zeroPlanSummary(log,lead){
   const meals=(log.meals_tmr||[]).length||planFoodsOf(log).filter(f=>foodsCount(f)).length;
   const bits=[log.tmr_train==="yes"?`Training${log.tmr_train_time?" at "+esc(log.tmr_train_time):""}`:log.tmr_train==="no"?"Rest day":"",
     meals?`${meals} meals planned`:"",
+    (log.tmr_up||[]).length?`Up: ${esc(log.tmr_up.join(", "))}`:"",
+    (log.tmr_down||[]).length?`Down: ${esc(log.tmr_down.join(", "))}`:"",
     todosOf(log,"tmr_todos").length?`${todosOf(log,"tmr_todos").length} on the to-do list`:"",
     log.tmr_hard?`Hard thing: ${esc(log.tmr_hard)}`:"",
     log.tmr_wake?`Alarm ${esc(log.tmr_wake)}`:""].filter(Boolean);
@@ -3265,6 +3294,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
   if(b.dataset.qadd){const k=b.dataset.qadd,cur=Number(curCtx().log[k])||0,v=Math.round((cur+Number(b.dataset.amt))*100)/100;edit(k,v);toast(`${k==="water"?"Water":k==="protein"?"Protein":"Steps"}: ${k==="water"?v+"L":k==="protein"?v+"g":v.toLocaleString("en-GB")}`);return render()}
+  if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;return render()}
   if(b.dataset.mdrop){S.mealDraft.splice(Number(b.dataset.mdrop),1);return render()}
