@@ -608,6 +608,32 @@ body.has-bnav .col{max-width:560px}
 .tcards .tcard{flex:0 0 auto;width:min(300px,82vw);scroll-snap-align:start;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:14px}
 .tcard>b{font-size:16px}
 .tcard ol{margin:8px 0 0;padding-left:18px;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.trk{display:flex;flex-direction:column;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px}
+.trk.hit{border-color:var(--lime);background:var(--lime-dim)}
+.trk-h{display:flex;align-items:center;gap:8px}
+.trk-ic{font-size:22px}
+.trk-h b{font-size:18px}
+.trk-v{margin-left:auto;font-weight:800;font-size:18px}
+.trk-v small{font-weight:600;color:var(--muted);font-size:13px}
+.trk-bar{height:10px;border-radius:999px;background:var(--line);overflow:hidden}
+.trk-bar i{display:block;height:100%;background:var(--lime);border-radius:999px;transition:width .3s}
+.trk-q{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.trk-in{width:96px;margin-left:auto;padding:8px 10px}
+.trk-ok{color:var(--green-ink);font-weight:700}
+.wk-flow{list-style:none;margin:10px 0 0;padding:0;display:flex;flex-direction:column}
+.wk-ph{position:relative;padding:0 0 14px 0}
+.wk-ph:not(:last-child)::before{content:"";position:absolute;left:19px;top:40px;bottom:0;width:2px;background:var(--line)}
+.wk-ph.on:not(:last-child)::before{background:var(--lime)}
+.wk-top{display:flex;align-items:center;gap:12px}
+.wk-tick{width:40px;height:40px;flex:0 0 40px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-weight:800;display:grid;place-items:center;color:var(--fg)}
+.wk-ph.on .wk-tick{background:var(--lime);border-color:var(--lime)}
+.wk-tick svg{width:18px;height:18px}
+.wk-name{display:flex;flex-direction:column;align-items:flex-start;background:none;border:0;padding:0;text-align:left;color:var(--fg)}
+.wk-name b{font-size:16px}
+.wk-name small{color:var(--muted);font-size:12.5px}
+.wk-steps{margin:8px 0 0 52px;padding-left:16px;font-size:13.5px;display:flex;flex-direction:column;gap:6px}
+.food-add{display:flex;gap:8px}
+.food-add .input{flex:1;min-width:0}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1920,7 +1946,7 @@ const NAV_IC={
   progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>',
   subconscious:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a7 7 0 0 0-4 12.7V19h8v-3.3A7 7 0 0 0 12 3zM9.5 22h5"/></svg>'
 };
-const CLIENT_TABS=[["today","Today"],["food","Food"],["meals","Meals"],["training","Training"],["progress","Progress"]];
+const CLIENT_TABS=[["today","Today"],["tracker","Tracker"],["food","Food"],["meals","Meals"],["progress","Progress"]];
 const navOn=()=>{if(!S.session||S.session.role==="coach")return false;const m=me();return m.status==="active"&&introDone(m)&&!S.checkin};
 function bottomNav(){
   return `<nav class="bnav" aria-label="Sections"><div class="bnav-in">${CLIENT_TABS.map(([k,l])=>`<button class="bn" data-tab="${k}" ${S.tab===k||(S.tab==="nutrition"&&k==="food")||(S.tab==="workout"&&k==="training")?'aria-current="page"':""}>${NAV_IC[k]}<span>${l}</span></button>`).join("")}</div></nav>`;
@@ -1931,34 +1957,32 @@ function tabHead(title,lead,x){
     ${dayNav(x)}`;
 }
 function trackerView(){
-  const x=curCtx(),{log,wk,prev,c,dn}=x;
-  const sleep=log.slept_at&&log.woke_at?((mins(log.woke_at)-mins(log.slept_at)+1440)%1440)/60:null;
-  // Training this week
-  const wkStart=Math.floor((Math.max(1,dn)-1)/7)*7+1,logs=logsFor(c);
-  const week=Array.from({length:7},(_,i)=>{const d=wkStart+i,l=logs[ymd(dateOf(c,d))]||{};return{d,on:!!l.train_done||oxyOf(l).some(o=>o.item==="Workout"),future:d>x.today}});
-  const ox=oxyOf(log);
+  const x=curCtx(),{log,wk}=x;
+  const fmt=(k,v)=>k==="water"?`${Number(v||0).toLocaleString("en-GB",{maximumFractionDigits:2})}L`:k==="protein"?`${Number(v||0)}g`:Number(v||0).toLocaleString("en-GB");
+  const QUICK={steps:[["+1,000",1000],["+2,500",2500],["+5,000",5000]],protein:[["+10g",10],["+20g",20],["+30g",30]],water:[["+250ml",0.25],["+500ml",0.5],["+1L",1]]};
+  const ICON={steps:"👟",protein:"🍗",water:"💧"};
+  const num=(k,label)=>{const v=log[k],t=Number(wk[k])||0,n=Number(v)||0,pc=t?Math.min(100,Math.round(n/t*100)):0,hit=t&&n>=t;
+    return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ICON[k]}</span><b>${label}</b><span class="trk-v num">${fmt(k,n)}<small> / ${fmt(k,t)}</small></span></div>
+      <div class="trk-bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="${label}"><i style="width:${pc}%"></i></div>
+      <div class="trk-q">${QUICK[k].map(([l,a])=>`<button class="chip" data-qadd="${k}" data-amt="${a}">${l}</button>`).join("")}<input class="input trk-in num" type="number" inputmode="decimal" min="0" step="${k==="water"?0.25:1}" id="t-${k}" data-input="${k}" value="${v===undefined||v===""?"":esc(v)}" aria-label="${label} total" placeholder="Total"></div>
+      ${hit?`<small class="trk-ok">${TICK} Target hit</small>`:""}</section>`};
+  const ph=[["wk_pre","Before","Get set",PRE_STEPS],["train_done","Train","The session",MID_STEPS],["wk_down","Come down","Bring it down",CLOSE_STEPS]];
+  const food=Array.isArray(log.food_entries)?log.food_entries:[];
   return `<div class="stack">
-    ${tabHead("Tracker","Your numbers, your sleep and what you've done. Rain or shine.",x)}
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">The non-negotiables</h2><span class="muted num">${["steps","protein","water"].filter(k=>Number(log[k])>=wk[k]).length} / 3 hit</span></div>
-      <p class="muted" style="font-size:13px;margin:-2px 0 8px">Steps, protein and water. These three come before everything else, every single day.</p>
-      <div class="nums">${[{k:"steps",label:"Steps",target:"steps",remaining:true},{k:"protein",label:"Protein (g)",target:"protein",remaining:true},{k:"water",label:"Water (L)",target:"water",step:0.5,remaining:true}].map(a=>askHtml({...a,type:"number",idp:"t-"},log,wk,false)).join("")}</div>
-      <button class="link vid-toggle" data-vid="numbers">▶ ${S.vid==="numbers"?"Hide":"Watch"}: Why the numbers matter</button>${S.vid==="numbers"?videoEmbed(SPINE_VIDEOS.numbers,"Why the numbers matter","Ellis is recording this one. It'll appear here."):""}
+    <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
+    ${dayNav(x)}
+    ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Workout</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
+      ${askHtml({k:"workout_name",type:"text",label:"What are you training? (optional)",idp:"t-"},log,wk,false)}
+      <ol class="wk-flow">${ph.map(([k,t,sub,steps],i)=>{const on=log[k],open=S.wkOpen===k;return `<li class="wk-ph${on?" on":""}">
+        <div class="wk-top"><button class="wk-tick" data-ask="${k}" data-val="${on?"":nowHHMM()}" aria-pressed="${!!on}" aria-label="${on?"Untick":"Tick"} ${t}">${on?TICK:i+1}</button>
+        <button class="wk-name" data-wkopen="${k}" aria-expanded="${open}"><b>${t}</b><small>${on?"Done "+esc(on):sub} · ${open?"Hide":"How"}</small></button></div>
+        ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
     </section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Sleep</h2>${sleep!=null?`<span class="badge ${sleep>=7?"ok":"miss"}">${Math.floor(sleep)}h ${pad(Math.round((sleep%1)*60))}m</span>`:""}</div>
-      <div class="nums">${askHtml({k:"slept_at",type:"time",label:"Fell asleep last night",idp:"t-"},log,wk,false)}${askHtml({k:"woke_at",type:"time",label:"Got out of bed",idp:"t-"},log,wk,false)}</div>
-      ${prev.tmr_wake?`<small class="muted">Your alarm was set for <b class="num">${esc(prev.tmr_wake)}</b>.</small>`:""}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Food</h2><span class="optional">Optional</span></div>
+      <form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What did you eat? e.g. Chicken, rice, berries" autocomplete="off"><button class="btn primary" type="submit">Add</button></form>
+      ${food.length?`<div class="review">${food.map(f=>`<div class="rv"><span>${esc(f.t)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(f.at)}</span><button class="x" data-fdel="${f.id}" aria-label="Remove ${esc(f.t)}">×</button></span></div>`).join("")}</div>`:`<small class="muted">Nothing logged yet. <button class="link" data-tab="food">See your food list</button></small>`}
     </section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Training this week</h2><span class="muted num">${week.filter(w=>w.on).length} sessions</span></div>
-      <div class="wk-row">${week.map(w=>`<div class="wk-d${w.on?" on":""}${w.d===dn?" cur":""}${w.future?" fut":""}"><small>Day ${w.d}</small><b>${w.on?TICK:"·"}</b></div>`).join("")}</div>
-      ${askHtml({k:"train_done",type:"confirm",label:log.train_done?`Trained today, logged ${log.train_done}`:"I trained today"},{...log,train_done:log.train_done},wk,false).replace('data-ask="train_done" data-val="yes"',`data-ask="train_done" data-val="${nowHHMM()}"`)}
-    </section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Oxygen logged</h2><span class="muted num">${ox.length}</span></div>
-      ${ox.length?`<div class="review">${ox.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(o.at)}</span><button class="x" data-oxydel="${o.id}" aria-label="Remove ${esc(o.item)}">×</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing logged yet.</p>`}
-      <button class="link" data-tab="oxygen" style="align-self:flex-start;margin-top:8px">Log something in Oxygen</button>
-    </section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Food log</h2><span class="optional">Optional</span></div>
-      ${askHtml({k:"food_log",type:"textarea",label:"What you ate today, if you want to keep track",idp:"t-"},log,wk,false)}</section>
-    <button class="btn" data-tab="progress" style="align-self:flex-start">See your progress over the 21 days</button>
   </div>`;
 }
 function oxygenView(){
@@ -2006,9 +2030,9 @@ const FOOD_ROWS=[
 function quietDay(x){
   const {log}=x;
   return `<section class="quiet" id="blk-day"><span class="eyebrow">The rest of your day</span>
-    <p>Nothing to tick. Eat from your food list, as much as you want, and move when you can.</p>
-    <div class="quiet-go"><button class="hub-tile" data-tab="food"><span class="hub-ic">${NAV_IC.food}</span><b>Food list</b><small>${MEALS_GUIDE}, from the list</small></button>
-    <button class="hub-tile" data-tab="training"><span class="hub-ic">${NAV_IC.training}</span><b>Training</b><small>The guide, if you're training</small></button></div></section>`;
+    <p>Yours to run. Log your steps, protein and water as you go, plus your workout and food if you want to.</p>
+    <div class="quiet-go"><button class="hub-tile" data-tab="tracker"><span class="hub-ic">${NAV_IC.tracker}</span><b>Tracker</b><small>${["steps","protein","water"].filter(k=>Number(log[k])>=Number(x.wk[k])).length} of 3 targets hit</small></button>
+    <button class="hub-tile" data-tab="food"><span class="hub-ic">${NAV_IC.food}</span><b>Food list</b><small>${MEALS_GUIDE}, from the list</small></button></div></section>`;
 }
 function foodView(){
   const pr=PREFS();
@@ -2061,7 +2085,7 @@ function clientView(){
   if(S.tab==="subconscious")return subconsciousView();
   if(S.tab==="nutrition")return nutritionView();
   if(S.tab==="workout")return workoutView();
-  if(S.tab==="progress")return `<div class="stack">${numbersCard()}${progressView(me())}</div>`;
+  if(S.tab==="progress")return progressView(me());
   return todayView();
 }
 function ring(p,size=96){
@@ -3061,6 +3085,7 @@ function afterLogin(){if(location.search||location.pathname==="/start")history.r
 const busy=(form,on)=>{const b=form&&form.querySelector("button[type=submit]");if(b){b.disabled=on;b.classList.toggle("busy",on)}};
 
 root.addEventListener("submit",e=>{
+  if(e.target.dataset.foodform){e.preventDefault();const i=e.target.querySelector("#food-in"),t=i.value.trim();if(!t)return;const l=curCtx().log;edit("food_entries",[...(l.food_entries||[]),{id:uid(),t,at:nowHHMM()}]);render();const n=document.getElementById("food-in");if(n)n.focus();return}
   e.preventDefault();
   if(e.target.id==="loginForm"){const f=e.target,err=root.querySelector("#loginErr"),fd=new FormData(f);busy(f,true);
     api("/login",{method:"POST",body:{email:fd.get("email"),password:fd.get("password")}}).then(afterLogin).catch(x=>{err.textContent=x.message;busy(f,false)});return}
@@ -3189,6 +3214,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.oxydel){edit("oxygen",oxyOf(curCtx().log).filter(o=>o.id!==b.dataset.oxydel));return render()}
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
+  if(b.dataset.qadd){const k=b.dataset.qadd,cur=Number(curCtx().log[k])||0,v=Math.round((cur+Number(b.dataset.amt))*100)/100;edit(k,v);toast(`${k==="water"?"Water":k==="protein"?"Protein":"Steps"}: ${k==="water"?v+"L":k==="protein"?v+"g":v.toLocaleString("en-GB")}`);return render()}
+  if(b.dataset.fdel){const l=curCtx().log;edit("food_entries",(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel));return render()}
+  if(b.dataset.wkopen){S.wkOpen=S.wkOpen===b.dataset.wkopen?null:b.dataset.wkopen;return render()}
   if(b.dataset.mealbuild){S.mealBuild=!S.mealBuild;return render()}
   if(b.dataset.pickopen){const k=b.dataset.pickopen;S.openPick=S.openPick===k?null:k;S.dd=S.openPick?k:null;return render()}
   if(b.dataset.chkitem){const k=b.dataset.chkitem,l=curCtx().log,on=l[k]==="yes";edit(k,on?"":"yes");
