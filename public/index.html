@@ -659,6 +659,19 @@ body.has-bnav .col{max-width:560px}
 .ml-hint{color:var(--amber-ink,#8a5a00);font-weight:600}
 .shelf .food-tile:not(.wide){width:auto;min-width:0;padding:12px 16px;white-space:nowrap}
 .bn[aria-current="page"]::before{top:-6px}
+
+.fgroup{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.fg-h{display:flex;align-items:center;gap:12px}
+.fg-h h2{font-size:19px;margin:0;font-weight:800;letter-spacing:-.01em}
+.fg-h small{color:var(--muted);font-size:13px;display:block;line-height:1.35}
+.fg-ic{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--night);color:var(--lime)}
+.fg-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.fg-n{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:2px 9px}
+.fg-list{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.fg-list li{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:7px 13px;font-size:14px;font-weight:600;line-height:1.2}
+.fg-protein{border-color:var(--fg)}
+.fg-protein .fg-ic{background:var(--lime);color:var(--ink)}
+.fg-protein .fg-list li{background:var(--lime-dim);border-color:transparent}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2061,8 +2074,8 @@ function foodView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Food</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you want.</p></div></div>
     <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Last meal</b><span>is your evening meal</span></div></section>
-    ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);if(!c)return "";return `<section class="shelf"><div class="shelf-h"><h2><span class="sh-ic" aria-hidden="true">${ICO[r.k==="protein"?"protein":r.k]||ICO.food}</span>${esc(r.name)}</h2><small>${esc(r.d)}</small></div>
-      <div class="shelf-row" role="list">${c.items.map(it=>`<div class="food-tile" role="listitem"><b>${esc(it)}</b></div>`).join("")}</div></section>`}).join("")}
+    ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);if(!c)return "";return `<section class="fgroup fg-${r.k}"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO[r.k]||ICO.food}</span><div><h2>${esc(r.name)}</h2><small>${esc(r.d)}</small></div><span class="fg-n num">${c.items.length}</span></div>
+      <ul class="fg-list">${c.items.map(it=>`<li>${esc(it)}</li>`).join("")}</ul></section>`}).join("")}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Shopping list</h2><button class="btn" data-shopcopy="1">Copy list</button></div>
       <p class="muted" style="font-size:13px;margin:0">Everything on the list, ready to paste into your notes or a supermarket app.</p>
       <ul class="shop-list" id="shopList" hidden>${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return `<li><b>${esc(r.name)}:</b> ${c.items.map(esc).join(", ")}</li>`}).join("")}</ul></section>
