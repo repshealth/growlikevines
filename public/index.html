@@ -675,6 +675,7 @@ body.has-bnav .col{max-width:560px}
 
 .fguide{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--lime);border-radius:0 12px 12px 0;padding:12px 14px;font-size:14px}
 .fguide>b{font-size:15px}
+.opts.planned .chip{font-size:15px;padding:12px 18px;border-width:2px}
 .fguide ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
@@ -1007,7 +1008,7 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 /* ---------- the 3 phases ---------- */
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
-  {id:"morning",name:"Day Open",goal:"Be in this moment",intro:"Do this before anything else: Wake, do something hard, eat, then get on with your day. Five steps."},
+  {id:"morning",name:"Day Open",goal:"Be in this moment",intro:"Do this before anything else: Wake, switch on, bring it down, eat, then review your list. Five steps."},
   {id:"day",name:"Your day",goal:"Eat from your list",intro:"Nothing to tick. Eat from your food list and move when you can."},
   {id:"evening",name:"Day Close",goal:"Be in this moment",intro:"Do this once your active day is done, before you switch off for the evening. Five steps."}
 ];
@@ -1141,20 +1142,21 @@ const OXYGEN=[
 ];
 const oxyOf=log=>Array.isArray(log.oxygen)?log.oxygen:[];
 const MORNING=[
-  {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark your wake up time","Confirm the intention you set last night","Start your hard thing, then mark it done"],
-   asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_intent",type:"lastintent"},{k:"intent_ok",type:"confirm",label:"Intention confirmed",when:l=>!!curCtx().prev.intentions},
-     {k:"hard",type:"text",label:"Your hard thing"},{k:"hard_at",type:"time",label:"What time did you start it?"},{k:"hard_done",type:"confirm",label:"Hard thing done"},{k:"hard_more",type:"textarea",label:"Anything else you got done"}]},
-  {id:"m2",title:"Oxygen",cue:["up","Switch the system on."],text:["Pick something from Oxygen and do it, then tap it"],
-   asks:[{k:"_oxy_am",type:"oxypick",from:"am",first:"up",label:"What did you do?",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap what you did"}]},
-  {id:"m3",title:"Meal 1",text:["Eat Meal 1 within 90 minutes of waking, from your food list"],
+  {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark the time you got out of bed"],
+   asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"}]},
+  {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
+   asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
+  {id:"m3",title:"Bring it down",cue:["down","Bring it back to centre."],text:["Do what you planned last night, then tap it"],
+   asks:[{k:"_oxy_am2",type:"oxypick",from:"am2",only:"down",plan:"tmr_down",label:"Your action to bring it down",req:l=>oxyOf(l).some(o=>o.from==="am2"),reqMsg:"Tap it once you've done it"}]},
+  {id:"m4",title:"Meal 1",text:["Eat Meal 1 within 90 minutes of waking, from your food list"],
    asks:[{k:"meal1_done",type:"confirm",label:"Meal 1 eaten",req:l=>!!l.meal1_done,reqMsg:"Tick when you've eaten"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you want.",btn:"See the list"}]},
-  {id:"m4",title:"Yesterday's numbers",text:["Put in yesterday's final steps, protein and water"],
-   asks:[{k:"_prevnums",type:"prevnums"}]},
-  {id:"m5",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Rate where you are"],
+  {id:"m5",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Rate where you are"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"am_state",type:"rating",arousal:true,aim:"centred",aimText:"to open the day: Balanced and ready to go.",label:"Rate your zone, 1 to 10"}]}
 ];
 const ML=MORNING.length;
 const TMR_ASKS=[
+  {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: How will you get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
+  {k:"tmr_down",type:"oxyplan",g:"down",label:"Then: How will you bring it back down?",req:l=>(l.tmr_down||[]).length>0,reqMsg:"Pick how you'll bring it down"},
   {k:"intentions",type:"textarea",label:"Set your intention",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
   {k:"tmr_hard",type:"text",label:"Set your hard thing: The one you'll start first",req:l=>!!String(l.tmr_hard||"").trim(),reqMsg:"Set your hard thing"},
   {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list (optional)"},
@@ -1169,7 +1171,7 @@ const EVENING=[
    asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"_go_food2",type:"golink",go:"food",title:"Food for tomorrow",text:"Pick from your list for tomorrow's prep. Want set meals? Build them in Meals.",btn:"Open Food"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
-  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["Set your intention","Set your hard thing","Set your alarm"],asks:TMR_ASKS},
+  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up, and bring it back down","Set your intention and your hard thing","Set your alarm"],asks:TMR_ASKS},
   {id:"e4",title:"Still to hit",text:["What's left on your numbers today"],asks:[{k:"_left",type:"remaining"}]},
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
@@ -2198,7 +2200,7 @@ function readyCard(x){
 }
 function blockSummary(id,log){
   const sc=scoreOf(log);
-  if(id==="morning")return [(log.woke_at||log.m1)&&`Woke ${log.woke_at||log.m1}`,log.hard&&`Hard thing: ${log.hard}${log.hard_done?" ✓":""}`,oxyOf(log).filter(o=>o.from==="am").map(o=>o.item).join(", "),log.meal1_done&&"Meal 1 eaten",log.am_state&&`Zone: ${zoneTxt(log.am_state)}`].filter(Boolean).join(" · ");
+  if(id==="morning")return [(log.woke_at||log.m1)&&`Woke ${log.woke_at||log.m1}`,log.hard&&`Hard thing: ${log.hard}${log.hard_done?" ✓":""}`,oxyOf(log).filter(o=>o.from==="am"||o.from==="am2").map(o=>o.item).join(", "),log.meal1_done&&"Meal 1 eaten",log.am_state&&`Zone: ${zoneTxt(log.am_state)}`].filter(Boolean).join(" · ");
   if(id==="day")return [log.day_done&&`Finished ${log.day_done}`,log.train==="yes"?(log.train_done?`Trained ${log.train_done}`:"Training not ticked"):"",`${sc.pd} ${sc.pd===1?"meal":"meals"}`,`${sc.wk} walk ${sc.wk===1?"block":"blocks"}`,sc.fuN?`water with ${sc.fuYes} of ${sc.fuN}`:""].filter(Boolean).join(" · ");
   {const ev=eveningSteps(log),last=log[ev[ev.length-1].id];return [last&&`Done ${last}`,oxyOf(log).filter(o=>o.from==="pm").map(o=>o.item).join(", "),log.pm_state&&`Zone: ${zoneTxt(log.pm_state)}`,log.tmr_hard&&`Tomorrow's hard thing: ${log.tmr_hard}`,log.tmr_wake&&`Alarm ${log.tmr_wake}`].filter(Boolean).join(" · ")}
 }
@@ -2331,9 +2333,9 @@ function askHtml(a,log,wk,locked){
     case"actplan":{const pl=(Array.isArray(log.m_action)?log.m_action:[]).filter(a=>MOVE.includes(a));return `<div class="numhead"><b>Your action this morning</b><span>${pl.length?`Planned last night: <b>${esc(pl.join(", "))}</b>. It's ticked below. Untick anything you didn't do, or tick anything else you did instead.`:"You didn't plan one last night. Do at least one of these, then tick what you've done."}</span></div>`}
     case"walknote":return `<div class="numhead"><b>Tomorrow morning: Action, then release</b><span>Your action is your switch up: Pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
     case"lastintent":{const p=curCtx().prev;return p.intentions?`<div class="direction"><span class="eyebrow">Your intention, from last night</span><p>${esc(p.intentions)}</p></div>`:`<div class="numhead"><b>Your intention</b><span>You didn't set one last night. Set it tonight in Day Close, so it's waiting for you tomorrow.</span></div>`}
-    case"oxypick":{const pl=a.from==="am"?[...(curCtx().prev.tmr_up||[]),...(curCtx().prev.tmr_down||[])]:[],mine=oxyOf(log).filter(o=>o.from===a.from),groups=a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN;
-      return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?`Last night you planned: <b>${esc(pl.join(", "))}</b>. `:""}Tap to log it with the time.</small>
-        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?esc(it)+" · "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}</div>`}
+    case"oxypick":{const pl=a.plan?(curCtx().prev[a.plan]||[]):[],mine=oxyOf(log).filter(o=>o.from===a.from),planOnly=pl.length&&!(S.oxyAll||{})[a.k],groups=(a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN).map(G=>planOnly?{...G,items:[...new Set([...pl.filter(x=>G.items.includes(x)),...mine.map(o=>o.item)])]}:G);
+      return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?(planOnly?"What you planned last night. Tap it once you've done it.":"Tap what you did instead."):"Tap it once you've done it."}</small>
+        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">${planOnly?"Did something else? Change it":"Back to what you planned"}</button>`:""}</div>`}
     case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
     case"golink":{const t=typeof a.text==="function"?a.text(log):a.text;return `<div class="golink"><div><b>${esc(a.title)}</b><span>${esc(t)}</span></div><button class="btn" data-guidepage="${a.go}" ${dis}>${esc(a.btn)}</button></div>`}
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
@@ -2498,7 +2500,7 @@ function stepsView(ph,x,only){
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${(S.openStep||{})[s.id]?`<button class="link" data-openstep="${s.id}">Fold away</button>`:""}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
           :locked?`<span class="muted" style="font-size:13px">${LOCK} ${only?"Close your day first, at the end of your Day":"Finish step "+i+" first"}</span>`
-          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":s.id===steps[steps.length-1].id?(ph==="morning"?"Open my day":"Close my day"):"Mark step "+num+" done";return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}`})()}</div>
+          :(()=>{const miss=s.asks.filter(a=>(!a.when||a.when(log))&&a.req&&!a.req(log)).flatMap(a=>{const m=typeof a.reqMsg==="function"?a.reqMsg(log):a.reqMsg;return Array.isArray(m)?m:[m]}).map(m=>String(m||"").replace(/[,\s]+$/,"")),lbl=log.zero&&s.id==="e1"?"Got it":s.id===steps[steps.length-1].id?(ph==="morning"?"Complete my day opening":"Close my day"):"Mark step "+num+" done";return `<button class="btn primary" data-step="${s.id}"${miss.length?' data-part="1"':""}>${lbl}</button>${s.id==="m1"&&extra?extra:""}`})()}</div>
       </div></div>`;
   });
   html+=`</div>`;
@@ -3294,6 +3296,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
   if(b.dataset.qadd){const k=b.dataset.qadd,cur=Number(curCtx().log[k])||0,v=Math.round((cur+Number(b.dataset.amt))*100)/100;edit(k,v);toast(`${k==="water"?"Water":k==="protein"?"Protein":"Steps"}: ${k==="water"?v+"L":k==="protein"?v+"g":v.toLocaleString("en-GB")}`);return render()}
+  if(b.dataset.oxyall){S.oxyAll=S.oxyAll||{};S.oxyAll[b.dataset.oxyall]=!S.oxyAll[b.dataset.oxyall];return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;return render()}
