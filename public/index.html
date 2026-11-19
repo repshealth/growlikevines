@@ -1167,8 +1167,8 @@ const WIND_ASKS=[
   {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"}
 ];
 const EVENING=[
-  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Log your numbers so far, including any Oxygen you used","Pick the foods you'll eat tomorrow, and build set meals if you want to"],
-   asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"tmr_foods",type:"foodpick",label:"What will you eat tomorrow?",text:"Not meals, just the foods. Tap everything you'll have. It'll be waiting for you tomorrow in Food and the Tracker."},{k:"_go_meals2",type:"golink",go:"meals",title:"Want set meals?",text:"Build them from the list in Meals. Optional.",btn:"Open Meals"}]},
+  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Log your numbers so far, including any Oxygen you used","See your food list and build set meals, if you want to"],
+   asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"_go_food2",type:"golink",go:"food",title:"Your approved foods",text:"See the list, and pick what you'll eat tomorrow if you want to.",btn:"See the list"},{k:"_go_meals2",type:"golink",go:"meals",title:"Want set meals?",text:"Build them from the list in Meals. Optional.",btn:"Open Meals"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
   {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Set your intention and your hard thing","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
@@ -1178,9 +1178,9 @@ const EVENING=[
 // Day 0: the setup night after a new client signs up.
 const bothPlanned=l=>(l.tmr_up||[]).length>0;
 const ZERO=[
-  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","Pick the foods you'll eat tomorrow","Build a meal plan if you want one. It's optional"],
-   asks:[{k:"_fguide",type:"foodguide"},{k:"tmr_foods",type:"foodpick",label:"What will you eat tomorrow?",text:"Not meals, just the foods. Tap everything you'll have. It'll be waiting for you tomorrow in Food and the Tracker."},
-     {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
+  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","See your approved foods, and build a meal plan if you want one. Both optional"],
+   asks:[{k:"_fguide",type:"foodguide"},
+     {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"See the list, and pick what you'll eat tomorrow if you want to.",btn:"See the list"},
      {k:"_go_meals0",type:"golink",go:"meals",title:"Build a meal plan (optional)",text:"Like structure? Set up a training day and a rest day from the list.",btn:"Open Meals"},
      {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
   {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your intention and to-do list"],
@@ -2105,6 +2105,9 @@ function foodView(){
     <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Carbs</b><span>only around training</span></div></section>
     ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);if(!c)return "";return `<section class="fgroup fg-${r.k}"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO[r.k]||ICO.food}</span><div><h2>${esc(r.name)}</h2><small>${esc(r.d)}</small></div><span class="fg-n num">${c.items.length}</span></div>
       <ul class="fg-list">${c.items.map(it=>`<li>${esc(it)}</li>`).join("")}</ul></section>`}).join("")}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's foods</h2><span class="optional">Optional</span></div>
+      ${S.pickTmr?askHtml({k:"tmr_foods",type:"foodpick",label:"What will you eat tomorrow?",text:"Not meals, just the foods. It'll be waiting for you here tomorrow, and first in the Tracker."},curCtx().log,curCtx().wk,false):((curCtx().log.tmr_foods||[]).length?`<ul class="fg-list">${curCtx().log.tmr_foods.map(n=>`<li>${esc(n)}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Know what you'll eat tomorrow? Pick it from the list.</p>`)}
+      <button class="btn${S.pickTmr?" primary":""}" data-picktmr="1" style="align-self:flex-start;margin-top:8px">${S.pickTmr?"Done":(curCtx().log.tmr_foods||[]).length?"Change":"Pick tomorrow's foods"}</button></section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Shopping list</h2><button class="btn" data-shopcopy="1">Copy list</button></div>
       <p class="muted" style="font-size:13px;margin:0">Everything on the list, ready to paste into your notes or a supermarket app.</p>
       <ul class="shop-list" id="shopList" hidden>${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return `<li><b>${esc(r.name)}:</b> ${c.items.map(esc).join(", ")}</li>`}).join("")}</ul></section>
@@ -3301,6 +3304,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
   if(b.dataset.qadd){const k=b.dataset.qadd,cur=Number(curCtx().log[k])||0,v=Math.round((cur+Number(b.dataset.amt))*100)/100;edit(k,v);toast(`${k==="water"?"Water":k==="protein"?"Protein":"Steps"}: ${k==="water"?v+"L":k==="protein"?v+"g":v.toLocaleString("en-GB")}`);return render()}
   if(b.dataset.oxyall){S.oxyAll=S.oxyAll||{};S.oxyAll[b.dataset.oxyall]=!S.oxyAll[b.dataset.oxyall];return render()}
+  if(b.dataset.picktmr){S.pickTmr=!S.pickTmr;return render()}
   if(b.dataset.foodpick){const k=b.dataset.foodpick,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
