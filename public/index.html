@@ -675,6 +675,9 @@ body.has-bnav .col{max-width:560px}
 
 .fguide{background:var(--bg);border:1px solid var(--line);border-left:3px solid var(--lime);border-radius:0 12px 12px 0;padding:12px 14px;font-size:14px}
 .fguide>b{font-size:15px}
+.fp-g{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.fp-g>b{font-size:13px}
+.fg-today{border-color:var(--lime);background:var(--lime-dim)}
 .opts.planned .chip{font-size:15px;padding:12px 18px;border-width:2px}
 .fguide ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px}
 /* App Spine: bottom tabs, hub, Oxygen */
@@ -1008,7 +1011,7 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 /* ---------- the 3 phases ---------- */
 // Morning: stimulation & arousal. Day: keep energy stable. Evening: reduce arousal.
 const PHASES=[
-  {id:"morning",name:"Day Open",goal:"Be in this moment",intro:"Do this before anything else: Wake, switch on, bring it down, eat, then review your list. Five steps."},
+  {id:"morning",name:"Day Open",goal:"Be in this moment",intro:"Do this before anything else: Wake, switch on, eat, then review your list. Four steps."},
   {id:"day",name:"Your day",goal:"Eat from your list",intro:"Nothing to tick. Eat from your food list and move when you can."},
   {id:"evening",name:"Day Close",goal:"Be in this moment",intro:"Do this once your active day is done, before you switch off for the evening. Five steps."}
 ];
@@ -1137,7 +1140,7 @@ const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 const WORKOUTS=[["Your workout",["My own workout"]]];
 // Ellis's Process (18/11): Day Open and Day Close, five steps each. The bit in between is theirs, with the Tracker.
 const OXYGEN=[
-  {g:"up",name:"Switch up",d:"Raise your heart rate: Wake the body and brain up.",items:[...MOVE,"Morning sunlight"]},
+  {g:"up",name:"Switch up",d:"Oxygenate the body: Something physical that gets your heart rate up.",items:[...MOVE]},
   {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight"]}
 ];
 const oxyOf=log=>Array.isArray(log.oxygen)?log.oxygen:[];
@@ -1146,17 +1149,14 @@ const MORNING=[
    asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"}]},
   {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
    asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
-  {id:"m3",title:"Bring it down",cue:["down","Bring it back to centre."],text:["Do what you planned last night, then tap it"],
-   asks:[{k:"_oxy_am2",type:"oxypick",from:"am2",only:"down",plan:"tmr_down",label:"Your action to bring it down",req:l=>oxyOf(l).some(o=>o.from==="am2"),reqMsg:"Tap it once you've done it"}]},
-  {id:"m4",title:"Meal 1",text:["Eat Meal 1 within 90 minutes of waking, from your food list"],
-   asks:[{k:"meal1_done",type:"confirm",label:"Meal 1 eaten",req:l=>!!l.meal1_done,reqMsg:"Tick when you've eaten"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you want.",btn:"See the list"}]},
-  {id:"m5",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Rate where you are"],
+  {id:"m3",title:"Meal 1",text:["Eat Meal 1 within 90 minutes of waking, from your food list"],
+   asks:[{k:"meal1_done",type:"confirm",label:"Meal 1 eaten",req:l=>!!l.meal1_done,reqMsg:"Tick when you've eaten"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
+  {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Rate where you are"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"am_state",type:"rating",arousal:true,aim:"centred",aimText:"to open the day: Balanced and ready to go.",label:"Rate your zone, 1 to 10"}]}
 ];
 const ML=MORNING.length;
 const TMR_ASKS=[
-  {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: How will you get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
-  {k:"tmr_down",type:"oxyplan",g:"down",label:"Then: How will you bring it back down?",req:l=>(l.tmr_down||[]).length>0,reqMsg:"Pick how you'll bring it down"},
+  {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
   {k:"intentions",type:"textarea",label:"Set your intention",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
   {k:"tmr_hard",type:"text",label:"Set your hard thing: The one you'll start first",req:l=>!!String(l.tmr_hard||"").trim(),reqMsg:"Set your hard thing"},
   {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list (optional)"},
@@ -1167,33 +1167,32 @@ const WIND_ASKS=[
   {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"}
 ];
 const EVENING=[
-  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Log your numbers so far, including any Oxygen you used","Pick your food for tomorrow, and build set meals if you want to"],
-   asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"_go_food2",type:"golink",go:"food",title:"Food for tomorrow",text:"Pick from your list for tomorrow's prep. Want set meals? Build them in Meals.",btn:"Open Food"}]},
+  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Log your numbers so far, including any Oxygen you used","Pick the foods you'll eat tomorrow, and build set meals if you want to"],
+   asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"tmr_foods",type:"foodpick",label:"What will you eat tomorrow?",text:"Not meals, just the foods. Tap everything you'll have. It'll be waiting for you tomorrow in Food and the Tracker."},{k:"_go_meals2",type:"golink",go:"meals",title:"Want set meals?",text:"Build them from the list in Meals. Optional.",btn:"Open Meals"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
-  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up, and bring it back down","Set your intention and your hard thing","Set your alarm"],asks:TMR_ASKS},
+  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Set your intention and your hard thing","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
   {id:"e4",title:"Still to hit",text:["What's left on your numbers today"],asks:[{k:"_left",type:"remaining"}]},
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
-const bothPlanned=l=>(l.tmr_up||[]).length>0&&(l.tmr_down||[]).length>0;
+const bothPlanned=l=>(l.tmr_up||[]).length>0;
 const ZERO=[
-  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","Build a meal plan if you want one. It's optional"],
-   asks:[{k:"_fguide",type:"foodguide"},
+  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","Pick the foods you'll eat tomorrow","Build a meal plan if you want one. It's optional"],
+   asks:[{k:"_fguide",type:"foodguide"},{k:"tmr_foods",type:"foodpick",label:"What will you eat tomorrow?",text:"Not meals, just the foods. Tap everything you'll have. It'll be waiting for you tomorrow in Food and the Tracker."},
      {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
      {k:"_go_meals0",type:"golink",go:"meals",title:"Build a meal plan (optional)",text:"Like structure? Set up a training day and a rest day from the list.",btn:"Open Meals"},
      {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","How you'll bring it back down","Then your to-do list"],
-   asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: How will you get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
-     {k:"tmr_down",type:"oxyplan",g:"down",label:"Then: How will you bring it back down?",req:l=>(l.tmr_down||[]).length>0,reqMsg:"Pick how you'll bring it down"},
-     {k:"_pickboth",type:"note",text:"Pick one of each above to carry on.",when:l=>!bothPlanned(l)},
+  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your intention and to-do list","Your alarm"],
+   asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
+     {k:"_pickboth",type:"note",text:"Pick one above to carry on.",when:l=>!bothPlanned(l)},
      {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",when:bothPlanned},
-     {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow (optional)",text:"Just for you. Anything you want to get done.",when:bothPlanned}]},
-  {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["When you're going to sleep","Pick what you'll do to bring it down, then rate where you are","Set your alarm for tomorrow"],
-   asks:[{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
+     {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow (optional)",text:"Just for you. Anything you want to get done.",when:bothPlanned},
+     {k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm: What time do you need to get up to get all that done?",when:bothPlanned,req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}]},
+  {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["When you're going to sleep, worked back from your alarm","Pick what you'll do to bring it down, then rate where you are"],
+   asks:[{k:"_bedcue",type:"bedcue"},{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
      {k:"_oxy_pm",type:"oxypick",from:"pm",only:"down",label:"What will you do to bring it down?",req:l=>oxyOf(l).some(o=>o.from==="pm"),reqMsg:"Tap what you'll do"},
-     {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"},
-     {k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm for tomorrow",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}]}
+     {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"}]}
 ];
 const actDone=log=>Array.isArray(log.m_action_done)?log.m_action_done:[...(log.am_walk==="yes"?[WALK]:[]),...(Array.isArray(log.m_action)?log.m_action:[])];
 const brainHit=log=>{const b=new Set();if(log.m1)actDone(log).forEach(a=>((ACTIONS.find(x=>x[0]===a)||[0,[]])[1]).forEach(k=>b.add(k)));return b};
@@ -2040,11 +2039,11 @@ function trackerView(){
         ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
     </section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Food</h2><span class="optional">Optional</span></div>
-      <p class="food-note">Eat anything from your list, as much as you want. The only thing to watch is protein: Get some in every meal and hit your target.</p>
+      <p class="food-note">Eat anything from your list, as much as you need. The only thing to watch is protein: Get some in every meal and hit your target.</p>
       ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${it.length?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span></div>`}).join("")}</div>`:""}
       ${S.mealDraft?`<div class="ml-draft"><b>Meal ${food.length+1}</b>
         ${S.mealDraft.length?`<div class="opts">${S.mealDraft.map((n,i)=>`<button class="chip" aria-pressed="true" data-mdrop="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:`<small class="muted">Pick what you had, one at a time.</small>`}
-        <select class="input" id="food-pick" aria-label="Add a food"><option value="">Add a food from your list</option>${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option></select>
+        <select class="input" id="food-pick" aria-label="Add a food"><option value="">Add a food from your list</option>${(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option></select>
         ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
         ${S.mealDraft.length&&!S.mealDraft.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n))?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
         <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${S.mealDraft.length?"":"disabled"}>Save meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
@@ -2081,15 +2080,17 @@ function subconsciousView(){
   </div>`;
 }
 // The food list, shown like an app store: a row per category, swipe through the foods
-const MEALS_GUIDE="3 to 5 meals a day";
+const MEALS_GUIDE="3 to 7 meals a day";
 const FOOD_ROWS=[
   {k:"protein",name:"Protein",d:"In every meal. This is the one that matters most."},
-  {k:"fruit",name:"Fruit",d:"Any time. Start a meal with it."},
+  {k:"fruit",name:"Fruit",d:"Any time. Feel like you need carbs? Have fruit."},
   {k:"veg",name:"Veg and other",d:"As much as you like."},
-  {k:"fat",name:"Fats",d:"In meals without carbs."},
-  {k:"ecarbs",name:"Carbs",d:"In your evening meal and the meal after you train."},
+  {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs."},
+  {k:"ecarbs",name:"Carbs",d:"Only in the meal before you train, the meal after, and your evening meal if you want them."},
   {k:"pcarbs",name:"Before you train",d:"Carbs for the meal before a workout."}
 ];
+// Work back from the alarm: what time to be asleep for 7 to 9 hours
+function bedCue(w){const m=mins(w),t=h=>{const v=(m-h*60+1440)%1440;return pad(Math.floor(v/60))+":"+pad(v%60)};return `<div class="train-place ok"><span>Your alarm is <b class="num">${esc(w)}</b>. To get 8 hours, be asleep by <b class="num">${t(8)}</b>. Between <b class="num">${t(9)}</b> and <b class="num">${t(7)}</b> gives you 7 to 9 hours.</span></div>`}
 function quietDay(x){
   const {log}=x;
   return `<section class="quiet" id="blk-day"><span class="eyebrow">The rest of your day</span>
@@ -2100,8 +2101,9 @@ function quietDay(x){
 function foodView(){
   const pr=PREFS();
   return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Food</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you want.</p></div></div>
-    <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Last meal</b><span>is your evening meal</span></div></section>
+    <div class="tab-head"><div><h1 class="display">Food</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you need.</p></div></div>
+    ${(()=>{const x=curCtx(),f=x.prev.tmr_foods||[];return f.length?`<section class="fgroup fg-today"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO.today}</span><div><h2>Your foods for today</h2><small>What you picked last night</small></div><span class="fg-n num">${f.length}</span></div><ul class="fg-list">${f.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></section>`:""})()}
+    <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Carbs</b><span>only around training</span></div></section>
     ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);if(!c)return "";return `<section class="fgroup fg-${r.k}"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO[r.k]||ICO.food}</span><div><h2>${esc(r.name)}</h2><small>${esc(r.d)}</small></div><span class="fg-n num">${c.items.length}</span></div>
       <ul class="fg-list">${c.items.map(it=>`<li>${esc(it)}</li>`).join("")}</ul></section>`}).join("")}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Shopping list</h2><button class="btn" data-shopcopy="1">Copy list</button></div>
@@ -2341,22 +2343,25 @@ function askHtml(a,log,wk,locked){
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
       const p=x.prev;return `<div class="ask"><span class="ask-h">Day ${x.dn-1}: Your final numbers</span><div class="nums">${[["steps","Steps",1],["protein","Protein (g)",1],["water","Water (L)",0.5]].map(([k,l,st])=>{const t=x.wk[k],v=p[k],hit=v!==undefined&&v!==""&&Number(v)>=t;return `<label class="ask" for="pn-${k}"><span class="num-lbl">${l}<small class="num-sub num">Target ${Number(t).toLocaleString("en-GB")}${hit?` · <b class="hitok">${TICK} Hit</b>`:""}</small></span><input class="input" type="number" inputmode="decimal" min="0" step="${st}" id="pn-${k}" data-pin="${k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}).join("")}</div></div>`}
     case"wake":{const bed=log.tmr_bed||"",w=log.tmr_wake||"",from=bed?mins(bed):(mins(nowHHMM())+30),h=w?((mins(w)-from+1440)%1440)/60:0;
-      return `<div class="ask"><div class="nums">${a.nobed?"":`<label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label>`}<label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label></div>
+      return `<div class="ask"><div class="nums"><label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label>${a.nobed?"":`<label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label>`}</div>${a.nobed&&w?bedCue(w):""}
         ${w?`<div class="train-place${h>=7&&h<=9.5?" ok":""}"><span>${h>=7&&h<=9.5?TICK+" ":""}That's <b class="num">${Math.floor(h)}h ${pad(Math.round((h%1)*60))}m</b> of sleep${bed?"":" if you're asleep in 30 minutes"}. ${h<7?"Aim for 7 to 9 hours: Can you get to bed earlier, or set the alarm a little later?":h>9.5?"That's a long one. Check the alarm time is right.":"Right where you want it."}</span></div>`:""}</div>`}
     case"numsnow":{const x=curCtx(),wk=x.wk,f=k=>k==="water"?(Number(log.water)||0)+"L":k==="protein"?(Number(log.protein)||0)+"g":(Number(log.steps)||0).toLocaleString("en-GB");
       return `<div class="golink"><div><b>Your numbers so far</b><span>${["steps","protein","water"].map(k=>`${f(k)} ${k}`).join(" · ")}</span></div><button class="btn" data-guidepage="tracker" ${dis}>Update in Tracker</button></div>`}
     case"remaining":{const x=curCtx(),wk=x.wk,rows=[["steps","Steps",""],["protein","Protein","g"],["water","Water","L"]].map(([k,l,u])=>{const left=Math.max(0,Math.round(((Number(wk[k])||0)-(Number(log[k])||0))*100)/100);return `<div class="rv"><span>${l}</span><span>${left?`<b class="num">${k==="steps"?left.toLocaleString("en-GB"):left}${u}</b> to go`:`<b class="hitok">${TICK} Hit</b>`}</span></div>`}).join("");
       return `<div class="ask"><div class="review">${rows}</div><button class="link" data-guidepage="tracker" style="align-self:flex-start">Update in Tracker</button></div>`}
     case"foodguide":return `<div class="fguide"><b>Eat whatever you want, as long as it's on your list.</b><ul>
-      <li><b>As much as you want.</b> No counting, no weighing, no meal plan unless you want one.</li>
-      <li><b>${MEALS_GUIDE}.</b> Your last meal is your evening meal.</li>
+      <li><b>As much as you need.</b> No counting, no weighing, no meal plan unless you want one.</li>
+      <li><b>${MEALS_GUIDE}.</b></li>
       <li><b>Protein in every meal.</b> It's the one thing that matters most. Hit your protein target every day.</li>
-      <li><b>Carbs</b> go in your evening meal, the meal before you train and the meal after.</li>
-      <li><b>Fats</b> go in the meals without carbs.</li>
-      <li><b>Fruit and veg</b> any time. Starting a meal with fruit is a good habit.</li>
+      <li><b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.</li>
+      <li><b>Fats</b> fill the gaps in every other meal.</li>
+      <li><b>Fruit and veg</b> any time. If you feel like you need carbs outside of training, have fruit.</li>
       <li><b>Water</b> with every meal.</li></ul></div>`;
     case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
     case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${G.items.map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`}
+    case"foodpick":{const cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}${cur.length?` <span class="muted num">${cur.length}</span>`:""}</span><small class="muted" style="font-weight:500">${esc(a.text)}</small>
+      ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<div class="fp-g"><b>${esc(r.name)}</b><div class="opts">${c.items.map(it=>`<button class="chip" data-foodpick="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`:""}).join("")}</div>`}
+    case"bedcue":return log.tmr_wake?bedCue(log.tmr_wake):"";
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
     case"targets":return `<div class="ask"><div class="target-tiles">${[["Steps",wk.steps.toLocaleString("en-GB"),"a day"],["Protein",wk.protein+"g","a day"],["Water",wk.water+"L","a day"]].map(([l,v,u])=>`<div class="ttile"><span>${l}</span><b class="num">${v}</b><small>${u}</small></div>`).join("")}</div><small class="muted" style="font-weight:500">Your gauges at the bottom of the screen track these through the day.</small></div>`;
@@ -3297,6 +3302,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
   if(b.dataset.qadd){const k=b.dataset.qadd,cur=Number(curCtx().log[k])||0,v=Math.round((cur+Number(b.dataset.amt))*100)/100;edit(k,v);toast(`${k==="water"?"Water":k==="protein"?"Protein":"Steps"}: ${k==="water"?v+"L":k==="protein"?v+"g":v.toLocaleString("en-GB")}`);return render()}
   if(b.dataset.oxyall){S.oxyAll=S.oxyAll||{};S.oxyAll[b.dataset.oxyall]=!S.oxyAll[b.dataset.oxyall];return render()}
+  if(b.dataset.foodpick){const k=b.dataset.foodpick,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;return render()}
