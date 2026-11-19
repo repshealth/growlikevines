@@ -692,6 +692,10 @@ body.has-bnav .col{max-width:560px}
 .sp-go{font-size:13px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .saved-pick{display:flex;flex-direction:column;gap:4px;padding:12px;border-radius:12px;background:var(--lime-dim);border:1px solid var(--lime)}
 .saved-pick small{color:var(--muted);font-size:12.5px;margin-bottom:4px}
+
+.ml-g{font-size:12px;font-weight:800;background:var(--night);color:var(--lime);border-radius:999px;padding:2px 8px}
+.meal-pro{padding:12px;border-radius:12px;border:1px solid var(--fg);background:var(--surface)}
+.meal-pro small{font-size:12px;line-height:1.35}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2034,7 +2038,7 @@ function trackerView(){
   const num=(k,label)=>{const v=log[k],t=Number(wk[k])||0,n=Number(v)||0,pc=t?Math.min(100,Math.round(n/t*100)):0,hit=t&&n>=t;
     return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ICON[k]}</span><b>${label}</b><span class="trk-v num">${fmt(k,n)}<small> / ${fmt(k,t)}</small></span></div>
       <div class="trk-bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="${label}"><i style="width:${pc}%"></i></div>
-      <div class="trk-q">${QUICK[k].map(([l,a])=>`<button class="chip" data-qadd="${k}" data-amt="${a}">${l}</button>`).join("")}<input class="input trk-in num" type="number" inputmode="decimal" min="0" step="${k==="water"?0.25:1}" id="t-${k}" data-input="${k}" value="${v===undefined||v===""?"":esc(v)}" aria-label="${label} total" placeholder="Total"></div>
+      ${k==="protein"?`<div class="trk-q"><small class="muted" style="font-weight:600">Adds up from the meals you log below.${(log.food_entries||[]).length?` ${(log.food_entries||[]).length} ${(log.food_entries||[]).length===1?"meal":"meals"} so far.`:""}</small><button class="chip" data-scrollmeal="1" style="margin-left:auto">Log a meal</button></div>`:`<div class="trk-q">${QUICK[k].map(([l,a])=>`<button class="chip" data-qadd="${k}" data-amt="${a}">${l}</button>`).join("")}<input class="input trk-in num" type="number" inputmode="decimal" min="0" step="${k==="water"?0.25:1}" id="t-${k}" data-input="${k}" value="${v===undefined||v===""?"":esc(v)}" aria-label="${label} total" placeholder="Total"></div>`}
       ${hit?`<small class="trk-ok">${TICK} Target hit</small>`:""}</section>`};
   const ph=[["wk_pre","Before","Get set",PRE_STEPS],["train_done","Train","The session",MID_STEPS],["wk_down","Come down","Bring it down",CLOSE_STEPS]];
   const food=Array.isArray(log.food_entries)?log.food_entries:[];
@@ -2049,15 +2053,16 @@ function trackerView(){
         <button class="wk-name" data-wkopen="${k}" aria-expanded="${open}"><b>${t}</b><small>${on?"Done "+esc(on):sub} · ${open?"Hide":"How"}</small></button></div>
         ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
     </section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Food</h2><span class="optional">Optional</span></div>
-      <p class="food-note">Eat anything from your list, as much as you need. The only thing to watch is protein: Get some in every meal and hit your target.</p>
-      ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${it.length?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span>${f.from?`<small class="muted">From your saved meal: ${esc(f.from)}</small>`:""}</div>`}).join("")}</div>`:""}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2></div>
+      <p class="food-note">Eat anything from your list, as much as you need. Log each meal here with how much protein was in it: That's how your protein count for the day adds up.</p>
+      ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${f.protein!=null?`<span class="ml-g num">${Number(f.protein)}g protein</span>`:""}${it.length&&f.protein==null?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span>${f.from?`<small class="muted">From your saved meal: ${esc(f.from)}</small>`:""}</div>`}).join("")}</div>`:""}
       ${S.mealDraft?`<div class="ml-draft"><b>Meal ${food.length+1}${S.mealFrom?` <small class="muted" style="font-weight:600">from your saved meal: ${esc(S.mealFrom)}</small>`:""}</b>
         ${S.mealDraft.length?`<div class="opts">${S.mealDraft.map((n,i)=>`<button class="chip" aria-pressed="true" data-mdrop="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:(planKeys().some(k=>planFilled(myPlan(k)))?"":`<small class="muted">Pick what you had, one at a time.</small>`)}
         ${planKeys().filter(k=>planFilled(myPlan(k))).length&&!S.mealDraft.length?`<div class="saved-pick"><b>Your saved meals</b><small>Pick one from the meal plans you've saved</small><select class="input" id="plan-pick" aria-label="Your saved meals"><option value="">Choose a saved meal</option>${planKeys().filter(k=>planFilled(myPlan(k))).map(k=>{const pl=myPlan(k);return `<optgroup label="${esc(planName(k,pl))}">${pl.meals.map((m,i)=>foodsCount(m.foods)?`<option value="${k}|${i}">Meal ${i+1}: ${esc(foodsSummary(m.foods))}</option>`:"").join("")}</optgroup>`}).join("")}</select></div><small class="muted" style="text-align:center;font-weight:600">or build it yourself from the food list</small>`:""}
         <select class="input" id="food-pick" aria-label="Add a food"><option value="">Add a food from your list</option>${(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option></select>
         ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
         ${S.mealDraft.length&&!S.mealDraft.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n))?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
+        ${S.mealDraft.length?`<label class="ask meal-pro" for="meal-protein"><span>How much protein was in this meal? (g)</span><input class="input num" type="number" inputmode="numeric" min="0" step="1" id="meal-protein" value="${S.mealProtein==null?"":esc(S.mealProtein)}" placeholder="e.g. 30"><small class="muted">Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g.</small></label>`:""}
         <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${S.mealDraft.length?"":"disabled"}>Save meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
       :`<button class="btn${food.length?"":" primary"}" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
       <small class="muted">${planKeys().length?`You have ${planKeys().length} saved meal ${planKeys().length===1?"plan":"plans"}.`:"Want structure?"} <button class="link" data-tab="meals">${planKeys().length?"See your saved meal plans":"Build and save a meal plan"}</button></small>
@@ -2815,6 +2820,8 @@ const planIsTrain=(k,p)=>p&&p.kind?p.kind==="train":k==="train";
 const planName=(k,p)=>(p&&p.name)||(k==="train"?"Training day":k==="rest"?"Rest day":"Meal plan");
 const planKeys=()=>Object.keys(PREFS().plans||{}).filter(k=>myPlan(k));
 const planItems=f=>Object.values(f||{}).flat();
+// Protein only comes from logged meals: the day's total is the sum of each meal's protein
+const proteinOf=list=>(list||[]).reduce((t,f)=>t+(Number(f.protein)||0),0);
 const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods)),t=planIsTrain(k,p);return{pre:t&&p.after===slot,post:t&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
 function mpProblems(k,p){
   const out=[];if(!planFilled(p))return out;
@@ -3002,7 +3009,7 @@ function progressView(c){
   const st=statsFor(c);
   return `<div class="stack">
     <div><span class="eyebrow">Your ${PROGRAMME_DAYS} days</span><h1 class="display" style="font-size:clamp(44px,11vw,72px)">Day ${st.today} of ${PROGRAMME_DAYS}</h1></div>
-    ${(()=>{const x=curCtx();if(!x||x.dn<1)return"";return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Log your numbers</h2><span class="muted" style="font-size:12px">Day ${x.dn}, any time</span></div><div class="nums">${NUM_ASKS.map(a=>askHtml({...a,type:"number",idp:"p-"},x.log,x.wk,false)).join("")}</div></section>`})()}
+    <button class="btn" data-tab="tracker" style="align-self:flex-start">Log today's numbers in the Tracker</button>
     <div class="tiles">
       <div class="tile"><small>Points today</small><b class="num">${st.todayRow.sc.pts}</b></div>
       <div class="tile"><small>Avg points, 7 days</small><b class="num">${st.pts7.toFixed(1)}</b></div>
@@ -3337,10 +3344,12 @@ root.addEventListener("click",e=>{
   if(b.dataset.foodpick){const k=b.dataset.foodpick,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
-  if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;S.mealFrom=null;return render()}
+  if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;return render()}
   if(b.dataset.mdrop){S.mealDraft.splice(Number(b.dataset.mdrop),1);return render()}
-  if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const l=curCtx().log;edit("food_entries",[...(l.food_entries||[]),{id:uid(),items:d,t:d.join(", "),at:nowHHMM(),from:S.mealFrom||""}]);S.mealDraft=null;S.mealOther=false;S.mealFrom=null;toast("Meal logged");return render()}
-  if(b.dataset.fdel){const l=curCtx().log;edit("food_entries",(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel));return render()}
+  if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const pi=root.querySelector("#meal-protein"),pv=pi?pi.value.trim():"";if(pv===""||isNaN(Number(pv))){toast("Add how much protein was in this meal");if(pi)pi.focus();return}
+    const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),items:d,t:d.join(", "),at:nowHHMM(),from:S.mealFrom||"",protein:Math.round(Number(pv))}];edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;toast(`Meal logged: ${Math.round(Number(pv))}g protein`);return render()}
+  if(b.dataset.fdel){const l=curCtx().log,list=(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel);edit("food_entries",list);edit("protein",proteinOf(list));return render()}
+  if(b.dataset.scrollmeal){if(!S.mealDraft){S.mealDraft=[];S.mealOther=false}render();const el=root.querySelector(".ml-draft");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return}
   if(b.dataset.wkopen){S.wkOpen=S.wkOpen===b.dataset.wkopen?null:b.dataset.wkopen;return render()}
   if(b.dataset.mealbuild){S.mealBuild=!S.mealBuild;return render()}
   if(b.dataset.pickopen){const k=b.dataset.pickopen;S.openPick=S.openPick===k?null:k;S.dd=S.openPick?k:null;return render()}
@@ -3419,6 +3428,7 @@ root.addEventListener("click",e=>{
 root.addEventListener("keydown",e=>{if(e.target.id==="mpInput"&&e.key==="Enter"){e.preventDefault();const bt=root.querySelector("[data-mpadd]");if(bt)bt.click();return}if(e.target.id==="tmrInput"&&e.key==="Enter"){e.preventDefault();const bt=root.querySelector("[data-tadd]");if(bt)bt.click();return}const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
 let timers={};
 root.addEventListener("input",e=>{
+  if(e.target.id==="meal-protein"){S.mealProtein=e.target.value;return}
   if(e.target.dataset.mpname){const k=e.target.dataset.mpname,pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans&&pr.plans[k]){pr.plans[k].name=e.target.value.slice(0,40);savePrefs(pr);const ch=root.querySelector(`[data-mpkind="${k}"] .sp-t b`);if(ch)ch.textContent=e.target.value||"Meal plan"}return}
   const pin=e.target.dataset.pin;if(pin){const x=curCtx(),pk=ymd(addDays(x.date,-1)),v=e.target.value===""?"":Number(e.target.value);clearTimeout(timers["p"+pin]);timers["p"+pin]=setTimeout(()=>saveEdit(x.c.id,pk,pin,v),300);return}
   const mt=e.target.dataset.mtext||e.target.dataset.mnote;if(mt){const f=e.target.dataset.mtext?"text":"note",v=e.target.value;clearTimeout(timers["m"+mt+f]);timers["m"+mt+f]=setTimeout(()=>setMeals(a=>a.map(m=>m.id===mt?{...m,[f]:v}:m)),300);return}
