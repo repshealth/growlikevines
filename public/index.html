@@ -696,6 +696,21 @@ body.has-bnav .col{max-width:560px}
 .ml-g{font-size:12px;font-weight:800;background:var(--night);color:var(--lime);border-radius:999px;padding:2px 8px}
 .meal-pro{padding:12px;border-radius:12px;border:1px solid var(--fg);background:var(--surface)}
 .meal-pro small{font-size:12px;line-height:1.35}
+
+.bn-main{position:relative}
+.bn-fab{display:grid;place-items:center;width:52px;height:52px;margin-top:-26px;border-radius:999px;background:var(--lime);color:var(--ink);box-shadow:0 6px 18px -6px rgba(0,0,0,.45);border:4px solid var(--bg)}
+.bn-fab svg{width:24px;height:24px;stroke-width:2.2!important}
+.bn-main[aria-current="page"]::before{display:none}
+.bn-main[aria-current="page"] .bn-fab{background:var(--night);color:var(--lime)}
+.bn-main span:last-child{font-weight:800;color:var(--fg)}
+.bn span:last-child{font-size:10.5px;white-space:nowrap}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px}
+.seg button{border:0;background:none;border-radius:999px;padding:10px;font-weight:700;color:var(--muted)}
+.seg button[aria-selected="true"]{background:var(--night);color:var(--lime)}
+.trk-link{display:flex;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px;color:var(--fg)}
+.trk-link>span:nth-child(2){display:flex;flex-direction:column;flex:1}
+.trk-link b{font-size:18px}
+.trk-link small{color:var(--muted);font-size:13px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1047,7 +1062,7 @@ const INFO={
   "Sauna":"10 to 20 minutes. Drink water before and after.",
   "Workout":"Pick the workout from the library, or log your own.",
   "Breath work":"A guided breathing session. As your action it switches you up; As your release it brings you back down.",
-  "The Reset":"Ellis's nervous system regulator: Journalling, breathing and glute bridges in one guided routine of around 10 minutes. The full step by step is on the Workout page. Eat and drink either before or after it.",
+  "The Reset":"Ellis's nervous system regulator: Journalling, breathing and glute bridges in one guided routine of around 10 minutes. Eat and drink either before or after it.",
   arousal:"The 1 to 10 scale is simply which zone your nervous system is in. 1 to 3: Within parasympathetic tone (rest & digest). 4 to 6: Centred. 7 to 10: Within sympathetic tone (fight or flight). Each rating shows the zone to aim for. The closer you are to it (right at 1 or 10 when aiming for an end), the more points you score.",
   senses:"The more sensory signals you use through the day, the more self-regulating your nervous system will be. Tap the i next to each sense for examples.",
   "Meditation":"Sit still, eyes closed, and follow your breath for 10 minutes.",
@@ -2018,12 +2033,14 @@ function topBar(){
 /* ---------- client: the app tabs (Ellis's App Spine) ---------- */
 // Video slots: paste Ellis's links here when they're recorded
 const SPINE_VIDEOS={numbers:"",tomorrow:""};
-const ICO={today:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18M9 15.5l2 2 4-4"/></svg>',tracker:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',food:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',meals:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2M6 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/></svg>',progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>',steps:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-2.4C4 11.5 3 10.5 3 8c0-2.7 1.5-6 4.5-6C9.4 2 10 3.8 10 5.5c0 3.1-2 5.7-2 8.7V16a2 2 0 1 1-4 0z"/><path d="M20 20v-2.4c0-2.1 1-3.1 1-5.6 0-2.7-1.5-6-4.5-6C14.6 6 14 7.8 14 9.5c0 3.1 2 5.7 2 8.7V20a2 2 0 1 0 4 0zM16 17h4M4 13h4"/></svg>',protein:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12.5" cy="8.5" r="2.5"/><path d="M12.5 2a6.5 6.5 0 0 0-6.2 4.6c-1.1 3.1-.8 3.9-3.2 6.1A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3A6.5 6.5 0 0 0 12.5 2z"/><path d="M18.5 6l2.2 4.5a6.5 6.5 0 0 1-2.3 7.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.7-1.7L2.4 16.5"/></svg>',water:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z"/></svg>',fruit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',veg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.3 21.7s9.9-3.5 12.7-6.4a4.5 4.5 0 0 0-6.4-6.4C5.8 11.8 2.3 21.7 2.3 21.7zM8.6 14l-2-2M15.3 15l-2.4-2.4"/><path d="M22 9s-1.3-2-3.5-2C16.9 7 15 9 15 9s1.3 2 3.5 2S22 9 22 9zM15 2s-2 1.3-2 3.5S15 9 15 9s2-1.8 2-3.5C17 3.3 15 2 15 2z"/></svg>',fat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7c3 3.3 6 6.6 6 10.3a6 6 0 0 1-12 0c0-3.7 3-7 6-10.3z"/><path d="M12 18a3 3 0 0 1-3-3"/></svg>',ecarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22 16 8M3.5 12.5 5 11l1.5 1.5a3.5 3.5 0 0 1 0 5L5 19l-1.5-1.5a3.5 3.5 0 0 1 0-5zM7.5 8.5 9 7l1.5 1.5a3.5 3.5 0 0 1 0 5L9 15l-1.5-1.5a3.5 3.5 0 0 1 0-5zM11.5 4.5 13 3l1.5 1.5a3.5 3.5 0 0 1 0 5L13 11l-1.5-1.5a3.5 3.5 0 0 1 0-5z"/></svg>',pcarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>'};
-const NAV_IC={today:ICO.today,tracker:ICO.tracker,food:ICO.food,meals:ICO.meals,progress:ICO.progress,training:ICO.pcarbs,oxygen:ICO.water,subconscious:ICO.today};
-const CLIENT_TABS=[["today","Today"],["tracker","Tracker"],["food","Food"],["meals","Meals"],["progress","Progress"]];
+const ICO={dumbbell:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.36a2 2 0 1 1 2.82 2.83l-1.76 1.76a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></svg>',brain:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a3 3 0 1 0-6 .13 4 4 0 0 0-2.52 5.77 4 4 0 0 0 .55 6.59A4 4 0 1 0 12 18z"/><path d="M12 5a3 3 0 1 1 6 .13 4 4 0 0 1 2.52 5.77 4 4 0 0 1-.55 6.59A4 4 0 1 1 12 18z"/><path d="M12 5v13M15 13a4.5 4.5 0 0 1-3-4M9 13a4.5 4.5 0 0 0 3-4"/></svg>',today:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18M9 15.5l2 2 4-4"/></svg>',tracker:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',food:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',meals:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2M6 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/></svg>',progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>',steps:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-2.4C4 11.5 3 10.5 3 8c0-2.7 1.5-6 4.5-6C9.4 2 10 3.8 10 5.5c0 3.1-2 5.7-2 8.7V16a2 2 0 1 1-4 0z"/><path d="M20 20v-2.4c0-2.1 1-3.1 1-5.6 0-2.7-1.5-6-4.5-6C14.6 6 14 7.8 14 9.5c0 3.1 2 5.7 2 8.7V20a2 2 0 1 0 4 0zM16 17h4M4 13h4"/></svg>',protein:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12.5" cy="8.5" r="2.5"/><path d="M12.5 2a6.5 6.5 0 0 0-6.2 4.6c-1.1 3.1-.8 3.9-3.2 6.1A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3A6.5 6.5 0 0 0 12.5 2z"/><path d="M18.5 6l2.2 4.5a6.5 6.5 0 0 1-2.3 7.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.7-1.7L2.4 16.5"/></svg>',water:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z"/></svg>',fruit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',veg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.3 21.7s9.9-3.5 12.7-6.4a4.5 4.5 0 0 0-6.4-6.4C5.8 11.8 2.3 21.7 2.3 21.7zM8.6 14l-2-2M15.3 15l-2.4-2.4"/><path d="M22 9s-1.3-2-3.5-2C16.9 7 15 9 15 9s1.3 2 3.5 2S22 9 22 9zM15 2s-2 1.3-2 3.5S15 9 15 9s2-1.8 2-3.5C17 3.3 15 2 15 2z"/></svg>',fat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7c3 3.3 6 6.6 6 10.3a6 6 0 0 1-12 0c0-3.7 3-7 6-10.3z"/><path d="M12 18a3 3 0 0 1-3-3"/></svg>',ecarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22 16 8M3.5 12.5 5 11l1.5 1.5a3.5 3.5 0 0 1 0 5L5 19l-1.5-1.5a3.5 3.5 0 0 1 0-5zM7.5 8.5 9 7l1.5 1.5a3.5 3.5 0 0 1 0 5L9 15l-1.5-1.5a3.5 3.5 0 0 1 0-5zM11.5 4.5 13 3l1.5 1.5a3.5 3.5 0 0 1 0 5L13 11l-1.5-1.5a3.5 3.5 0 0 1 0-5z"/></svg>',pcarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>'};
+const NAV_IC={today:ICO.today,tracker:ICO.tracker,food:ICO.food,meals:ICO.meals,progress:ICO.progress,training:ICO.dumbbell,workout:ICO.dumbbell,oxygen:ICO.water,subconscious:ICO.brain};
+const CLIENT_TABS=[["today","Today"],["meals","Meals"],["tracker","Tracker"],["training","Workout"],["subconscious","Subconscious"]];
+// which bottom tab lights up for pages that sit under another one
+const NAV_OF={food:"meals",nutrition:"meals",workout:"training",oxygen:"subconscious",progress:"tracker"};
 const navOn=()=>{if(!S.session||S.session.role==="coach")return false;const m=me();return m.status==="active"&&introDone(m)&&!S.checkin};
 function bottomNav(){
-  return `<nav class="bnav" aria-label="Sections"><div class="bnav-in">${CLIENT_TABS.map(([k,l])=>`<button class="bn" data-tab="${k}" ${S.tab===k||(S.tab==="nutrition"&&k==="food")||(S.tab==="workout"&&k==="training")?'aria-current="page"':""}>${NAV_IC[k]}<span>${l}</span></button>`).join("")}</div></nav>`;
+  return `<nav class="bnav" aria-label="Sections"><div class="bnav-in">${CLIENT_TABS.map(([k,l])=>`<button class="bn${k==="tracker"?" bn-main":""}" data-tab="${k}" ${(NAV_OF[S.tab]||S.tab)===k?'aria-current="page"':""}>${k==="tracker"?`<span class="bn-fab">${NAV_IC[k]}</span>`:NAV_IC[k]}<span>${l}</span></button>`).join("")}</div></nav>`;
 }
 function tabHead(title,lead,x){
   return `${S.guideFrom?`<div><button class="chip" data-guideback="1">&lsaquo; Back</button></div>`:""}
@@ -2046,13 +2063,7 @@ function trackerView(){
     <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Workout</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
-      ${askHtml({k:"workout_name",type:"text",label:"What are you training? (optional)",idp:"t-"},log,wk,false)}
-      <ol class="wk-flow">${ph.map(([k,t,sub,steps],i)=>{const on=log[k],open=S.wkOpen===k;return `<li class="wk-ph${on?" on":""}">
-        <div class="wk-top"><button class="wk-tick" data-ask="${k}" data-val="${on?"":nowHHMM()}" aria-pressed="${!!on}" aria-label="${on?"Untick":"Tick"} ${t}">${on?TICK:i+1}</button>
-        <button class="wk-name" data-wkopen="${k}" aria-expanded="${open}"><b>${t}</b><small>${on?"Done "+esc(on):sub} · ${open?"Hide":"How"}</small></button></div>
-        ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
-    </section>
+    <button class="trk-link" data-tab="training"><span class="trk-ic" aria-hidden="true">${ICO.dumbbell}</span><span><b>Workout</b><small>${log.train_done?"Trained at "+esc(log.train_done):log.wk_pre?"Getting set":"Log your session in Workout"}</small></span><span class="sp-go">Open</span></button>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2></div>
       <p class="food-note">Eat anything from your list, as much as you need. Log each meal here with how much protein was in it: That's how your protein count for the day adds up.</p>
       ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${f.protein!=null?`<span class="ml-g num">${Number(f.protein)}g protein</span>`:""}${it.length&&f.protein==null?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span>${f.from?`<small class="muted">From your saved meal: ${esc(f.from)}</small>`:""}</div>`}).join("")}</div>`:""}
@@ -2081,22 +2092,6 @@ function oxygenView(){
       ${ox.length?`<div class="review">${ox.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(o.at)}</span><button class="x" data-oxydel="${o.id}" aria-label="Remove ${esc(o.item)}">×</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet. Tap Log on anything you've done.</p>`}</section>
   </div>`;
 }
-function subconsciousView(){
-  const x=curCtx(),{log,wk,prev}=x;
-  return `<div class="stack">
-    ${tabHead("Subconscious","Get it out of your head and onto the page, so your brain can let go of it.",x)}
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>${todoHtml("todos",log,true,false)}</section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Thought dump</h2></div>
-      ${askHtml({k:"dump",type:"textarea",label:"Anything on your mind, as it comes",idp:"s-"},log,wk,false)}</section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Journal</h2></div>
-      ${askHtml({k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary",idp:"s-"},log,wk,false)}</section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Planned workouts</h2></div>
-      <div class="review"><div class="rv"><span>Today</span><span>${log.train==="yes"?`Training${log.train_time?" at "+esc(log.train_time):""}${log.workout_name?" · "+esc(log.workout_name):""}`:log.train==="no"?"Rest day":"Not set"}</span></div><div class="rv"><span>Tomorrow</span><span>${log.tmr_train==="yes"?`Training${log.tmr_train_time?" at "+esc(log.tmr_train_time):""}${log.tmr_workout_name?" · "+esc(log.tmr_workout_name):""}`:log.tmr_train==="no"?"Rest day":"Set it in Day Close"}</span></div></div></section>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}
-      <button class="link vid-toggle" data-vid="tomorrow">▶ ${S.vid==="tomorrow"?"Hide":"Watch"}: Why we plan tomorrow tonight</button>${S.vid==="tomorrow"?videoEmbed(SPINE_VIDEOS.tomorrow,"Why we plan tomorrow tonight","Ellis is recording this one. It'll appear here."):""}</section>
-  </div>`;
-}
-// The food list, shown like an app store: a row per category, swipe through the foods
 const MEALS_GUIDE="3 to 7 meals a day";
 const FOOD_ROWS=[
   {k:"protein",name:"Protein",d:"In every meal. This is the one that matters most."},
@@ -2117,8 +2112,8 @@ function quietDay(x){
 }
 function foodView(){
   const pr=PREFS();
-  return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Food</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you need.</p></div></div>
+  return `<div class="stack">${mealsSeg()}
+    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you need.</p></div></div>
     ${(()=>{const x=curCtx(),f=x.prev.tmr_foods||[];return f.length?`<section class="fgroup fg-today"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO.today}</span><div><h2>Your foods for today</h2><small>What you picked last night</small></div><span class="fg-n num">${f.length}</span></div><ul class="fg-list">${f.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></section>`:""})()}
     <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Carbs</b><span>only around training</span></div></section>
     ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);if(!c)return "";return `<section class="fgroup fg-${r.k}"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO[r.k]||ICO.food}</span><div><h2>${esc(r.name)}</h2><small>${esc(r.d)}</small></div><span class="fg-n num">${c.items.length}</span></div>
@@ -2132,22 +2127,39 @@ function foodView(){
     <button class="btn" data-guidepage="nutrition" style="align-self:flex-start">Watch Ellis explain the food</button>
   </div>`;
 }
+function workoutCard(x){
+  const {log,wk}=x,ph=[["wk_pre","Before","Get set",PRE_STEPS],["train_done","Train","The session",MID_STEPS],["wk_down","Come down","Bring it down",CLOSE_STEPS]];
+  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's session</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
+      ${askHtml({k:"workout_name",type:"text",label:"What are you training? (optional)",idp:"t-"},log,wk,false)}
+      <ol class="wk-flow">${ph.map(([k,t,sub,steps],i)=>{const on=log[k],open=S.wkOpen===k;return `<li class="wk-ph${on?" on":""}">
+        <div class="wk-top"><button class="wk-tick" data-ask="${k}" data-val="${on?"":nowHHMM()}" aria-pressed="${!!on}" aria-label="${on?"Untick":"Tick"} ${t}">${on?TICK:i+1}</button>
+        <button class="wk-name" data-wkopen="${k}" aria-expanded="${open}"><b>${t}</b><small>${on?"Done "+esc(on):sub} · ${open?"Hide":"How"}</small></button></div>
+        ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
+    </section>`;
+}
 function trainingView(){
-  const v=INTRO_VIDEOS.find(x=>x.k==="workout");
-  const card=(t,list)=>`<div class="tcard"><b>${t}</b><ol>${list.map(([k,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol></div>`;
+  const v=INTRO_VIDEOS.find(x=>x.k==="workout"),x=curCtx();
   return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Training</h1><p class="muted">Train how you like, when you like. When you do, these steps either side make it count.</p></div></div>
-    <section class="shelf"><div class="shelf-h"><h2>Your session</h2><small>Swipe through</small></div>
-      <div class="shelf-row tcards">${card("1 · Before",PRE_STEPS)}${card("2 · During",MID_STEPS)}${card("3 · After",CLOSE_STEPS)}</div></section>
-    ${OXYGEN.map(G=>`<section class="shelf"><div class="shelf-h"><h2>${G.g==="up"?"Switch up":"Bring it down"}</h2><small>${esc(G.d)}</small></div>
-      <div class="shelf-row">${G.items.map(it=>`<button class="food-tile wide${S.oxyOpen===G.g+it?" open":""}" data-oxyopen="${esc(G.g+it)}"><b>${esc(it)}</b><small>${esc(INFO[it]||"")}</small></button>`).join("")}</div></section>`).join("")}
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">The Reset, step by step</h2></div><ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol></section>
+    <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Train how you like, when you like. Tick each part as you go: The bits either side of the session are what make it count.</p></div></div>
+    ${x&&x.dn>0?dayNav(x)+workoutCard(x):""}
     ${v?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${esc(v.title)}</h2></div>${videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here.")}</section>`:""}
   </div>`;
 }
-const backChip=()=>S.guideFrom&&S.guideFrom.tab==="today"?`<div style="margin-bottom:12px"><button class="chip" data-guideback="1">&lsaquo; Back to Today</button></div>`:"";
-function mealsView(){
+function subconsciousView(){
+  const x=curCtx(),log=x?x.log:{},ox=oxyOf(log);
+  const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-add="1">Did it</button>`:""}
+    ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div>`;
   return `<div class="stack">
+    <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
+    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>${todoHtml("todos",log,true,false)}</section>`:""}
+    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${esc(G.d)}</p>${list(G)}</section>`).join("")}
+    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
+  </div>`;
+}
+const backChip=()=>S.guideFrom&&S.guideFrom.tab==="today"?`<div style="margin-bottom:12px"><button class="chip" data-guideback="1">&lsaquo; Back to Today</button></div>`:"";
+const mealsSeg=()=>`<div class="seg" role="tablist"><button role="tab" data-tab="food" aria-selected="${S.tab==="food"}">Food list</button><button role="tab" data-tab="meals" aria-selected="${S.tab==="meals"}">My meal plans</button></div>`;
+function mealsView(){
+  return `<div class="stack">${mealsSeg()}
     <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Optional. Build your own meal plans from the food list and save as many as you like. Then pick a meal straight from them when you log food in the Tracker.</p></div></div>
     ${mealPlansCard()}
     <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
