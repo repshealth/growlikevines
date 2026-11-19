@@ -2039,15 +2039,16 @@ function trackerView(){
     </section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Food</h2><span class="optional">Optional</span></div>
       <p class="food-note">Eat anything from your list, as much as you need. The only thing to watch is protein: Get some in every meal and hit your target.</p>
-      ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${it.length?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span></div>`}).join("")}</div>`:""}
-      ${S.mealDraft?`<div class="ml-draft"><b>Meal ${food.length+1}</b>
+      ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${it.length?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span>${f.from?`<small class="muted">From ${esc(f.from)}</small>`:""}</div>`}).join("")}</div>`:""}
+      ${S.mealDraft?`<div class="ml-draft"><b>Meal ${food.length+1}${S.mealFrom?` <small class="muted" style="font-weight:600">from ${esc(S.mealFrom)}</small>`:""}</b>
         ${S.mealDraft.length?`<div class="opts">${S.mealDraft.map((n,i)=>`<button class="chip" aria-pressed="true" data-mdrop="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:`<small class="muted">Pick what you had, one at a time.</small>`}
+        ${planKeys().filter(k=>planFilled(myPlan(k))).length&&!S.mealDraft.length?`<select class="input" id="plan-pick" aria-label="Pick a meal from your plans"><option value="">Pick a meal from your meal plans</option>${planKeys().filter(k=>planFilled(myPlan(k))).map(k=>{const pl=myPlan(k);return `<optgroup label="${esc(planName(k,pl))}">${pl.meals.map((m,i)=>foodsCount(m.foods)?`<option value="${k}|${i}">Meal ${i+1}: ${esc(foodsSummary(m.foods))}</option>`:"").join("")}</optgroup>`}).join("")}</select><small class="muted" style="text-align:center">or build it yourself</small>`:""}
         <select class="input" id="food-pick" aria-label="Add a food"><option value="">Add a food from your list</option>${(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option></select>
         ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
         ${S.mealDraft.length&&!S.mealDraft.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n))?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
         <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${S.mealDraft.length?"":"disabled"}>Save meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
       :`<button class="btn${food.length?"":" primary"}" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
-      <small class="muted">Want structure? <button class="link" data-tab="meals">See the meal guide</button></small>
+      <small class="muted">${planKeys().length?"Your saved meal plans show when you log a meal.":"Want structure?"} <button class="link" data-tab="meals">${planKeys().length?"Edit your meal plans":"Build a meal plan"}</button></small>
     </section>
   </div>`;
 }
@@ -2130,7 +2131,7 @@ function trainingView(){
 const backChip=()=>S.guideFrom&&S.guideFrom.tab==="today"?`<div style="margin-bottom:12px"><button class="chip" data-guideback="1">&lsaquo; Back to Today</button></div>`:"";
 function mealsView(){
   return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Optional. If you like structure, build a meal plan from your food list for a training day and a rest day. If you don't, skip this and eat from the list.</p></div></div>
+    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Optional. Build your own meal plans from the food list and save as many as you like. Then pick a meal straight from them when you log food in the Tracker.</p></div></div>
     ${mealPlansCard()}
     <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
   </div>`;
@@ -2797,7 +2798,12 @@ const EXAMPLE_PLANS={
 };
 const myPlan=k=>{const p=(PREFS().plans||{})[k];return p&&p.meals?p:null};
 const planFilled=p=>!!p&&p.meals.some(m=>foodsCount(m.foods));
-const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods));return{pre:k==="train"&&p.after===slot,post:k==="train"&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
+// A client can save as many meal plans as they like. Each has a name, and a training day plan has a session slot.
+const planIsTrain=(k,p)=>p&&p.kind?p.kind==="train":k==="train";
+const planName=(k,p)=>(p&&p.name)||(k==="train"?"Training day":k==="rest"?"Rest day":"Meal plan");
+const planKeys=()=>Object.keys(PREFS().plans||{}).filter(k=>myPlan(k));
+const planItems=f=>Object.values(f||{}).flat();
+const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods)),t=planIsTrain(k,p);return{pre:t&&p.after===slot,post:t&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
 function mpProblems(k,p){
   const out=[];if(!planFilled(p))return out;
   p.meals.forEach((m,i)=>{const x=planIssue(m.foods,mpCtx(k,p,i+1));if(x)out.push("Meal "+(i+1)+": "+x.charAt(0).toLowerCase()+x.slice(1))});
@@ -2829,23 +2835,23 @@ function foodsView(){
     ${mealPlansCard()}`;
 }
 function mealPlansCard(){
-  const k=S.mpKind||"train",p=myPlan(k),pr=PREFS(),label=MP_KINDS.find(x=>x[0]===k)[1];
-  const tabs=`<div class="opts">${MP_KINDS.map(([kk,l])=>`<button class="chip" data-mpkind="${kk}" aria-pressed="${k===kk}">${l}${planFilled(myPlan(kk))?" ✓":""}</button>`).join("")}</div>`;
-  let body;
-  if(!planFilled(p)&&!S.mpEdit){
-    body=`<p class="muted" style="font-size:13px">No ${label.toLowerCase()} plan yet. Start from Ellis's example and change it to suit you, or build your own.</p>
-      <div class="opts"><button class="btn primary" data-mpstart="example">Start from the example</button><button class="btn" data-mpstart="blank">Build my own</button></div>`;
-  }else{
-    const pp=p||emptyPlan(),issues=mpProblems(k,pp);
-    body=`${k==="train"?`<div class="train-place"><span>Training goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-mpafter="${n}" aria-pressed="${pp.after===n}">Meal ${n}</button>`).join("")}</div></div>`:""}
-      <div class="plan-slots">${pp.meals.map((m,i)=>{const key="mp_"+k+"_"+i,open=S.openMeal===key,c=foodsCount(m.foods),cx=mpCtx(k,pp,i+1),role=cx.pre?"Pre-workout":cx.post?"Post-workout":cx.eve&&c?"Evening meal":"";
-        return `<div class="plan-slot${c?" filled":""}${open?" open":""}"><button class="plan-head" data-mealopen="${key}"><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role${role==="Evening meal"?" eve":""}">${role}</span>`:""}</b><small>${c?esc(foodsSummary(m.foods)):"Tap to plan"}</small>${planIssue(m.foods,cx)?`<small class="carb-cue">${planIssue(m.foods,cx)}</small>`:""}</span><span class="plan-x">${open?"Done":c?"Edit":"Plan"}</span></button>
-          ${open?`<div class="pick-wrap">${foodPicker(key,i+1,m.foods,false,cx)}</div>`:""}</div>${k==="train"&&pp.after===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b></span></div>`:""}`}).join("")}</div>
-      ${issues.length?`<div class="miss"><b>Worth a look:</b><ul>${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:planFilled(pp)?`<div class="train-place ok"><span>${TICK} This plan follows all the meal rules</span></div>`:""}
-      <div class="opts"><button class="link" data-mpstart="example">Reset to Ellis's example</button><button class="link" data-mpclear="1" style="color:var(--bad)">Clear this plan</button></div>`;
-  }
+  const keys=planKeys(),k=keys.includes(S.mpKind)?S.mpKind:keys[0],p=k?myPlan(k):null;
+  const tabs=keys.length?`<div class="opts">${keys.map(kk=>`<button class="chip" data-mpkind="${kk}" aria-pressed="${k===kk}">${esc(planName(kk,myPlan(kk)))}</button>`).join("")}<button class="chip" data-mpnew="1">+ New plan</button></div>`:"";
+  if(!p||S.mpNew)return `<section class="card guide-card" id="g-plans"><h2 class="sec-title" style="font-size:22px">${keys.length?"New meal plan":"Your meal plans"}</h2>
+    <p class="muted" style="font-size:13px">Build as many as you like and give each a name, like "Workout day" or "Busy day". When you log a meal in the Tracker, you can pick one straight from these.</p>
+    <div class="opts"><button class="btn primary" data-mpcreate="blank">Build my own</button><button class="btn" data-mpcreate="train">Start from Ellis's training day</button><button class="btn" data-mpcreate="rest">Start from Ellis's rest day</button></div>
+    ${keys.length?`<button class="link" data-mpnew="0" style="align-self:flex-start">Cancel</button>`:""}</section>`;
+  const issues=mpProblems(k,p),train=planIsTrain(k,p);
+  const body=`<label class="ask" for="mp-name"><span>Plan name</span><input class="input" id="mp-name" data-mpname="${k}" value="${esc(planName(k,p))}" maxlength="40"></label>
+      <div class="opts"><button class="chip" data-mpkindset="train" aria-pressed="${train}">Training day</button><button class="chip" data-mpkindset="rest" aria-pressed="${!train}">No training</button></div>
+      ${train?`<div class="train-place"><span>Training goes after</span><div class="opts">${[1,2,3,4].map(n=>`<button class="chip" data-mpafter="${n}" aria-pressed="${p.after===n}">Meal ${n}</button>`).join("")}</div></div>`:""}
+      <div class="plan-slots">${p.meals.map((m,i)=>{const key="mp_"+k+"_"+i,open=S.openMeal===key,c=foodsCount(m.foods),cx=mpCtx(k,p,i+1),role=cx.pre?"Pre-workout":cx.post?"Post-workout":cx.eve&&c?"Evening meal":"";
+        return `<div class="plan-slot${c?" filled":""}${open?" open":""}"><button class="plan-head" data-mealopen="${key}"><span class="plan-n">${c?TICK:i+1}</span><span class="plan-t"><b>Meal ${i+1}${role?` <span class="role${role==="Evening meal"?" eve":""}">${role}</span>`:""}</b><small>${c?esc(foodsSummary(m.foods)):"Tap to pick the foods"}</small></span></button>
+          ${open?`<div class="pick-wrap">${foodPicker(key,i+1,m.foods,false,cx)}</div>`:""}</div>${train&&p.after===i+1?`<div class="plan-train"><span class="plan-n">${DUMBBELL}</span><span><b>Training session</b></span></div>`:""}`}).join("")}</div>
+      ${issues.length?`<div class="miss soft"><b>Worth a look:</b><ul>${issues.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:planFilled(p)?`<div class="train-place ok"><span>${TICK} This plan follows the meal guide</span></div>`:""}
+      <div class="opts"><button class="link" data-mpclear="${k}" style="color:var(--bad)">${S.mpDelArm===k?"Tap again to delete this plan":"Delete this plan"}</button></div>`;
   return `<section class="card guide-card" id="g-plans"><h2 class="sec-title" style="font-size:22px">Your meal plans</h2>
-    <p class="muted" style="font-size:13px">Set up your usual training day and rest day once. Tap a meal to pick its foods. The rules are a guide, nothing is compulsory.</p>
+    <p class="muted" style="font-size:13px">Tap a meal to pick its foods. It saves as you go. The guide is there to help, nothing is compulsory.</p>
     ${tabs}${body}
   </section>`;
 }
@@ -3232,10 +3238,15 @@ root.addEventListener("click",e=>{
   if(b.dataset.foodpref){const fk=b.dataset.foodpref,pr=JSON.parse(JSON.stringify(PREFS())),ex=pr.exclude=pr.exclude||[];pr.exclude=ex.includes(fk)?ex.filter(x=>x!==fk):[...ex,fk];savePrefs(pr);return render()}
   if(b.dataset.shopall){S.shopAll=!S.shopAll;return render()}
   if(b.dataset.shopcopy){const el=root.querySelector("#shopList"),t=el?[...el.querySelectorAll("li")].map(li=>li.textContent).join("\n"):"";try{navigator.clipboard.writeText("Shopping list\n"+t).then(()=>toast("Shopping list copied"),()=>toast("Couldn't copy: Select the list and copy it"))}catch(e){toast("Couldn't copy: Select the list and copy it")}return}
-  if(b.dataset.mpkind){S.mpKind=b.dataset.mpkind;S.mpEdit=false;S.openMeal=null;return render()}
+  if(b.dataset.mpkind){S.mpKind=b.dataset.mpkind;S.mpNew=false;S.mpDelArm=null;S.openMeal=null;return render()}
+  if(b.dataset.mpnew){S.mpNew=b.dataset.mpnew==="1";S.openMeal=null;return render()}
+  if(b.dataset.mpcreate){const t=b.dataset.mpcreate,pr=JSON.parse(JSON.stringify(PREFS())),k="c"+uid(),n=Object.keys(pr.plans||{}).length+1;pr.plans=pr.plans||{};
+    const pl=t==="blank"?emptyPlan():JSON.parse(JSON.stringify(EXAMPLE_PLANS[t]));pl.kind=t==="train"?"train":"rest";pl.name=t==="train"?"Training day":t==="rest"?"Rest day":"Meal plan "+n;if(t==="blank")pl.after=0;
+    pr.plans[k]=pl;S.mpKind=k;S.mpNew=false;S.openMeal=t==="blank"?"mp_"+k+"_0":null;savePrefs(pr);return render()}
+  if(b.dataset.mpkindset){const k=S.mpKind&&myPlan(S.mpKind)?S.mpKind:planKeys()[0],pr=JSON.parse(JSON.stringify(PREFS())),pl=pr.plans[k];pl.kind=b.dataset.mpkindset;if(pl.kind==="train"&&!pl.after)pl.after=2;savePrefs(pr);return render()}
   if(b.dataset.mpstart){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};pr.plans[k]=b.dataset.mpstart==="example"?JSON.parse(JSON.stringify(EXAMPLE_PLANS[k])):emptyPlan();S.mpEdit=true;S.openMeal=b.dataset.mpstart==="blank"?"mp_"+k+"_0":null;savePrefs(pr);return render()}
-  if(b.dataset.mpclear){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans)delete pr.plans[k];S.mpEdit=false;S.openMeal=null;savePrefs(pr);toast("Plan cleared");return render()}
-  if(b.dataset.mpafter){const k=S.mpKind||"train",pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
+  if(b.dataset.mpclear){const k=b.dataset.mpclear;if(S.mpDelArm!==k){S.mpDelArm=k;return render()}const pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans)delete pr.plans[k];S.mpDelArm=null;S.mpKind=null;S.openMeal=null;savePrefs(pr);toast("Plan deleted");return render()}
+  if(b.dataset.mpafter){const k=S.mpKind&&myPlan(S.mpKind)?S.mpKind:planKeys()[0],pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
   if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;render();window.scrollTo(0,0);return}
@@ -3308,9 +3319,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.foodpick){const k=b.dataset.foodpick,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
-  if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;return render()}
+  if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;S.mealFrom=null;return render()}
   if(b.dataset.mdrop){S.mealDraft.splice(Number(b.dataset.mdrop),1);return render()}
-  if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const l=curCtx().log;edit("food_entries",[...(l.food_entries||[]),{id:uid(),items:d,t:d.join(", "),at:nowHHMM()}]);S.mealDraft=null;S.mealOther=false;toast("Meal logged");return render()}
+  if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const l=curCtx().log;edit("food_entries",[...(l.food_entries||[]),{id:uid(),items:d,t:d.join(", "),at:nowHHMM(),from:S.mealFrom||""}]);S.mealDraft=null;S.mealOther=false;S.mealFrom=null;toast("Meal logged");return render()}
   if(b.dataset.fdel){const l=curCtx().log;edit("food_entries",(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel));return render()}
   if(b.dataset.wkopen){S.wkOpen=S.wkOpen===b.dataset.wkopen?null:b.dataset.wkopen;return render()}
   if(b.dataset.mealbuild){S.mealBuild=!S.mealBuild;return render()}
@@ -3390,6 +3401,7 @@ root.addEventListener("click",e=>{
 root.addEventListener("keydown",e=>{if(e.target.id==="mpInput"&&e.key==="Enter"){e.preventDefault();const bt=root.querySelector("[data-mpadd]");if(bt)bt.click();return}if(e.target.id==="tmrInput"&&e.key==="Enter"){e.preventDefault();const bt=root.querySelector("[data-tadd]");if(bt)bt.click();return}const tr=e.target.closest("tr[data-client]");if(tr&&(e.key==="Enter"||e.key===" ")){e.preventDefault();tr.click()}});
 let timers={};
 root.addEventListener("input",e=>{
+  if(e.target.dataset.mpname){const k=e.target.dataset.mpname,pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans&&pr.plans[k]){pr.plans[k].name=e.target.value.slice(0,40);savePrefs(pr);const ch=root.querySelector(`[data-mpkind="${k}"]`);if(ch)ch.textContent=e.target.value||"Meal plan"}return}
   const pin=e.target.dataset.pin;if(pin){const x=curCtx(),pk=ymd(addDays(x.date,-1)),v=e.target.value===""?"":Number(e.target.value);clearTimeout(timers["p"+pin]);timers["p"+pin]=setTimeout(()=>saveEdit(x.c.id,pk,pin,v),300);return}
   const mt=e.target.dataset.mtext||e.target.dataset.mnote;if(mt){const f=e.target.dataset.mtext?"text":"note",v=e.target.value;clearTimeout(timers["m"+mt+f]);timers["m"+mt+f]=setTimeout(()=>setMeals(a=>a.map(m=>m.id===mt?{...m,[f]:v}:m)),300);return}
   const inote=e.target.dataset.inote;if(inote){const v=e.target.value;clearTimeout(timers["i"+inote]);timers["i"+inote]=setTimeout(()=>setItems(a=>a.map(i=>i.id===inote?{...i,note:v}:i)),300);return}
@@ -3398,6 +3410,7 @@ root.addEventListener("input",e=>{
   clearTimeout(timers[k]);timers[k]=setTimeout(()=>edit(k,v),300);
 });
 root.addEventListener("change",e=>{
+  if(e.target.id==="plan-pick"){const v=e.target.value;if(!v)return;const[k,i]=v.split("|"),pl=myPlan(k),m=pl&&pl.meals[Number(i)];if(m){S.mealDraft=[...new Set(planItems(m.foods))];S.mealFrom=planName(k,pl)+", Meal "+(Number(i)+1)}return render()}
   if(e.target.id==="food-pick"){const v=e.target.value;if(v==="__other"){S.mealOther=true}else if(v&&!(S.mealDraft||[]).includes(v)){S.mealDraft=[...(S.mealDraft||[]),v]}render();const n=document.getElementById(S.mealOther?"food-in":"food-pick");if(n)n.focus();return}
   const pin=e.target.dataset.pin;if(pin){const x=curCtx(),pk=ymd(addDays(x.date,-1)),v=e.target.value===""?"":Number(e.target.value);clearTimeout(timers["p"+pin]);timers["p"+pin]=setTimeout(()=>saveEdit(x.c.id,pk,pin,v),300);timers._nrender=setTimeout(render,400);return}
   // Time boxes save straight away but only redraw once the picker closes: iPhone fires "change" on every scroll of the wheel, and redrawing then closes it
