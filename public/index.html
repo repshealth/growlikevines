@@ -714,6 +714,7 @@ body.has-bnav .col{max-width:560px}
 
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
+.meals-start{flex-direction:column;align-items:stretch}
 .golink.lime{background:var(--lime-dim);border-color:var(--lime)}
 .golink.done1 b{color:var(--green-ink)}
 .golink.done1 b svg{width:14px;height:14px}
@@ -1230,16 +1231,15 @@ const EVENING=[
 // Day 0: the setup night after a new client signs up.
 const bothPlanned=l=>(l.tmr_up||[]).length>0;
 const ZERO=[
-  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","See your approved foods, and build a meal plan if you want one. Both optional"],
+  {id:"e1",title:"Plan your food for tomorrow",text:["How eating works on Project Reset","Create your favourite meals, and a meal plan if you want one","Then choose what you'll eat tomorrow, or log as you go"],
    asks:[{k:"_fguide",type:"foodguide"},
-     {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"See the list, and pick what you'll eat tomorrow if you want to.",btn:"See the list"},
-     {k:"_go_meals0",type:"golink",go:"meals",title:"Build a meal plan (optional)",text:"Like structure? Set up a training day and a rest day from the list.",btn:"Open Meals"},
+     {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
+     {k:"_tmrmeals",type:"tmrmeals",zero:true,label:"What will you eat tomorrow?"},
      {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
   {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your intention and to-do list"],
    asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
      {k:"_pickboth",type:"note",text:"Pick one above to carry on.",when:l=>!bothPlanned(l)},
      {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",when:bothPlanned},
-     {k:"_tmrmeals",type:"tmrmeals",label:"What will you eat tomorrow?",when:bothPlanned},
      {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow (optional)",text:"Just for you. Anything you want to get done.",when:bothPlanned}]},
   {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["Set your alarm, then when you're going to sleep","Pick what you'll do to bring it down, then rate where you are"],
    asks:[{k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm: Now tomorrow's planned, what time do you need to get up to get it all done?",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"},{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
@@ -2503,13 +2503,15 @@ function askHtml(a,log,wk,locked){
       return f?`<div class="golink done1"><div><b>${TICK} Meal 1 logged at ${esc(f.at)}</b><span>${esc(f.name?f.name+": ":"")}${esc(f.t)}${f.protein!=null?` · ${Number(f.protein)}g protein`:""}</span></div><button class="btn" data-logmeal1="1" ${dis}>Log another</button></div>`
       :`<div class="golink lime"><div><b>Log your meal here</b><span>Pick a favourite or build it from your list, add the protein, and you'll come straight back to finish your Day Open.</span></div><button class="btn primary" data-logmeal1="1" ${dis}>Log Meal 1</button></div>`}
     case"tmrmeals":{const plans=mplansOf(),favs=favsOf(),mode=log.tmr_mmode||(log.tmr_mplan?"plan":(log.tmr_favs||[]).length?"favs":""),tf=log.tmr_favs||[];
-      if(!plans.length&&!favs.length)return `<div class="ask"><span class="ask-h">${a.label}<span class="optional">Optional</span></span><div class="golink"><div><b>Plan your meals for tomorrow</b><span>Save some favourite meals or build a meal plan in Meals, then you can pick them here.</span></div><button class="btn" data-guidepage="meals" ${dis}>Open Meals</button></div></div>`;
+      const start=`<div class="golink lime meals-start"><div><b>Start by creating your meals</b><span>Save the meals you eat on repeat as favourites, and build a meal plan if you want one. Then come back here and choose what you'll eat tomorrow.</span></div><div class="opts"><button class="btn primary" data-guidepage="meals" data-gomseg="favs" ${dis}>Create favourites</button><button class="btn" data-guidepage="meals" data-gomseg="plans" ${dis}>Build a meal plan</button></div></div>`;
+      if(!plans.length&&!favs.length)return `<div class="ask"><span class="ask-h">${a.label}</span>${start}<div class="opts"><button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div></div>`;
       return `<div class="ask"><span class="ask-h">${a.label}<span class="optional">Optional</span></span><small class="muted" style="font-weight:500">It'll be waiting for you in the morning, ready to log.</small>
-        <div class="opts">${plans.length?`<button class="chip" data-tmrmode="plan" aria-pressed="${mode==="plan"}" ${dis}>Follow a meal plan</button>`:""}${favs.length?`<button class="chip" data-tmrmode="favs" aria-pressed="${mode==="favs"}" ${dis}>Pick from favourites</button>`:""}<button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning</button></div>
+        <div class="opts">${plans.length?`<button class="chip" data-tmrmode="plan" aria-pressed="${mode==="plan"}" ${dis}>Follow a meal plan</button>`:""}${favs.length?`<button class="chip" data-tmrmode="favs" aria-pressed="${mode==="favs"}" ${dis}>Pick from favourites</button>`:""}<button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div>
         ${mode==="plan"?`<select class="input" id="tmr-plan" aria-label="Meal plan for tomorrow" ${dis}><option value="">Choose a meal plan</option>${plans.map(p=>`<option value="${p.id}" ${log.tmr_mplan===p.id?"selected":""}>${esc(p.name)} (${p.count||p.meals.length} meals${p.kind==="train"?", training day":p.kind==="rest"?", non-training day":""})</option>`).join("")}</select>
           ${(()=>{const p=plans.find(q=>q.id===log.tmr_mplan);return p?`<div class="plan-run">${p.meals.map((sl,i)=>{const m=slotMeal(sl);return m?`<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(m.name||"Meal "+(i+1))}</b><small>${esc(m.items.join(", "))} · ${Number(m.protein)||0}g protein</small></span></div>`:""}).join("")}</div>`:""})()}`:""}
         ${mode==="favs"?`${tf.length?`<div class="plan-run">${tf.map((id,i)=>{const f=favById(id);return f?`<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></span><button class="x" data-tfrm="${i}" aria-label="Remove" ${dis}>×</button></div>`:""}).join("")}</div><small class="muted num" style="font-weight:600">${tf.reduce((t,id)=>t+(Number((favById(id)||{}).protein)||0),0)}g protein planned</small>`:""}
-          <small class="muted" style="font-weight:600">Tap to add Meal ${tf.length+1}</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-tfadd="${f.id}" ${dis}><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`:""}</div>`}
+          <small class="muted" style="font-weight:600">Tap to add Meal ${tf.length+1}</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-tfadd="${f.id}" ${dis}><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`:""}
+        <div class="opts"><button class="link" data-guidepage="meals" data-gomseg="favs" ${dis}>${favs.length?"Add more favourites":"Create favourites"}</button><button class="link" data-guidepage="meals" data-gomseg="plans" ${dis}>${plans.length?"Build another meal plan":"Build a meal plan"}</button></div></div>`}
     case"bedcue":return log.tmr_wake?bedCue(log.tmr_wake):"";
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
@@ -2585,7 +2587,7 @@ function meal1Cue(log){
 }
 // The one-line summary a finished step folds down to
 function stepSummary(s,log){
-  if(log.zero&&s.id==="e1")return "You know how to eat: Anything from your list, protein in every meal."+(planFoodsOf(log).some(f=>foodsCount(f))?" Meal plan set.":"");
+  if(log.zero&&s.id==="e1"){const pl=mplansOf().find(p=>p.id===log.tmr_mplan);return "You know how to eat: Anything from your list, protein in every meal. "+(pl?`Tomorrow: ${esc(pl.name)}.`:(log.tmr_favs||[]).length?`Tomorrow: ${log.tmr_favs.length} meals planned.`:"Tomorrow: Logging as you go.")}
   if(log.zero&&s.id==="e2")return zeroPlanSummary(log);
   const asks=s.asks.filter(a=>!a.when||a.when(log)),bits=[];
   if(!log.zero&&s.id==="e3")return zeroPlanSummary(log,"Tomorrow is set.");
@@ -3407,7 +3409,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpafter){const k=S.mpKind&&myPlan(S.mpKind)?S.mpKind:planKeys()[0],pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
-  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;render();window.scrollTo(0,0);return}
+  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);return}
   if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";S.mealDraft=[];S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
   if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
