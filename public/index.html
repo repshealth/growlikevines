@@ -714,6 +714,10 @@ body.has-bnav .col{max-width:560px}
 
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
+.eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
+.eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
+.eat-remind span{font-size:13px;line-height:1.35}
+.er-ic{flex:0 0 36px;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:18px;background:rgba(255,255,255,.6)}
 .eat-ask{border:2px solid var(--fg)}
 .eat-ask .sk{border:0;text-align:left;cursor:pointer}
 .golink.warn-eat{background:#fff4e0;border-color:#e8b04a}
@@ -2217,6 +2221,7 @@ function mealsView(){
   const seg=S.mseg||"today",x=curCtx();
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Eat anything from your list, as much as you need. Log each meal with its protein: That's how your protein adds up.</p></div></div>
+    <div class="eat-remind"><span class="er-ic" aria-hidden="true">↓</span><div><b>Eat in rest and digest</b><span>Before every meal, make sure you're calm and in a parasympathetic state. Feeling wired? Bring it down first.</span></div><button class="btn" data-guidepage="subconscious" data-scrollto="oxy-down">Bring it down</button></div>
     <div class="seg seg3" role="tablist">${MSEG.map(([k,l])=>`<button role="tab" data-mseg="${k}" aria-selected="${seg===k}">${l}</button>`).join("")}</div>
     ${seg==="favs"?favsSection():seg==="plans"?plansSection():(x&&x.dn>0?todayMeals(x):`<p class="muted">Logging starts on Day 1. Have a look at your food list and save some favourites.</p>`)}
     <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
@@ -3010,8 +3015,8 @@ const planItems=f=>Object.values(f||{}).flat();
 // Protein only comes from logged meals: the day's total is the sum of each meal's protein
 // When a meal was logged from Day Open's Meal 1 step, return to Today where they left off
 function backAfterMeal(){if(S.guideFrom&&S.guideFrom.meal1){S.guideFrom=null;S.tab="today";S.mealDraft=null;if(!curCtx().log.m3)edit("m3",nowHHMM());toast("Meal 1 logged. Now finish your Day Open");S.scrollSel=".step.current";render();return true}return false}
-// A state check before every meal they log
-const eatFresh=()=>false;
+// No per-meal state check: Meals shows a reminder instead
+const eatFresh=()=>true;
 const proteinOf=list=>(list||[]).reduce((t,f)=>t+(Number(f.protein)||0),0);
 const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods)),t=planIsTrain(k,p);return{pre:t&&p.after===slot,post:t&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
 function mpProblems(k,p){
@@ -3466,7 +3471,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
   if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);if(b.dataset.scrollto){const el=document.getElementById(b.dataset.scrollto);if(el)window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)}return}
-  if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";const st=Number(curCtx().log.am_state);if(st&&st<=3){S.eatOk=Date.now();S.mealDraft=[]}else{S.eatAsk={kind:"new"};S.mealDraft=null}S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
+  if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";S.eatAsk=null;S.mealDraft=[];S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
   if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
   if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
