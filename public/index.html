@@ -726,6 +726,10 @@ body.has-bnav .col{max-width:560px}
 .inv-link .input{flex:1;min-width:0;font-size:13px}
 .inv-list{display:flex;flex-direction:column;gap:4px;margin-top:14px}
 .confirm-line{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
+.intro-notes{display:flex;flex-direction:column;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.in-sec h3{font-size:16px;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
+.in-sec p{margin:0;font-size:14.5px;line-height:1.5}
+.in-sec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
@@ -1922,10 +1926,31 @@ function suggestTargets(f){
 /* ---------- intro videos (straight after the onboarding form) ---------- */
 // Paste each video's link into url when it's ready: YouTube, Vimeo, Loom or a direct .mp4 link all work.
 const INTRO_VIDEOS=[
-  {k:"overview",title:"Project overview",blurb:"What Project Reset is, how the 21 days work, and what Ellis expects from you.",url:""},
-  {k:"meals",title:"Meal set up",blurb:"How to plan your meals the night before, the approved foods and the meal rules.",url:""},
-  {k:"workout",title:"Workout set up",blurb:"How your training days work: The pre-workout steps, your session and closing it down.",url:""}
+  {k:"overview",title:"Project overview",blurb:"What Project Reset is, how the 21 days work and how each day runs.",url:""},
+  {k:"meals",title:"Nutrition",blurb:"How to eat on Project Reset: Your food list, protein, and eating in rest and digest.",url:""},
+  {k:"workout",title:"Workouts",blurb:"How your training works: The steps before, during and after your session.",url:""}
 ];
+// Written guides, shown while Ellis's videos are being recorded. Once a video URL is added above, the video shows instead.
+const INTRO_NOTES={
+  overview:[
+    ["What Project Reset is","21 days to reset your nervous system. You'll learn to switch on when you need to and switch off when you need to, through how you wake, eat, move and sleep. Simple things, done every day, without having to think about them."],
+    ["Your three non-negotiables",["<b>Steps, protein and water.</b> Ellis sets your targets. Hit them every day, rain or shine. They come before everything else."]],
+    ["How each day works",["<b>Day Open:</b> First thing. Log when you got up, do your action to get your heart rate up, eat Meal 1 in a calm state, then review your to-do list. Four quick steps.","<b>Your day:</b> Live it. Log your steps, water, meals and workout as you go, and keep an eye on the Tracker.","<b>Day Close:</b> Once your active day is done. A quick look back at your day, clear your head, plan tomorrow (your intention, morning action, meals, to-do list and alarm), then bring it down for the evening."]],
+    ["The app",["<b>Today:</b> Your Day Open and Day Close.","<b>Meals:</b> Log your meals, save favourites and build meal plans.","<b>Tracker:</b> How your day is going: Steps, protein, water, fruit, veg, workout.","<b>Workout:</b> The steps before, during and after your session.","<b>Subconscious:</b> Your to-do list, and everything you can do to bring yourself up or down."]],
+    ["Tonight is Day 0","Your setup day. Plan your food, plan tomorrow morning, set your alarm and wind down. Day 1 starts when you wake up."]],
+  meals:[
+    ["No meal plan. No counting.","Eat anything from your approved food list, as much as you need. 3 to 7 meals a day, whatever suits your day."],
+    ["The one thing to hit: Protein",["Get protein in every meal.","Log each meal in Meals with how much protein was in it. That's how your protein for the day adds up towards your target."]],
+    ["How to build a meal",["<b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.","<b>Fats</b> fill the gaps in your other meals. We wouldn't normally put carbs and fats in the same meal.","<b>Fruit</b> in at least 3 meals a day. Need carbs outside of training? Have fruit.","<b>Veg</b> in at least 3 meals a day.","<b>Water</b> with every meal."]],
+    ["Eat in rest and digest","Your body digests properly when you're calm. Before Meal 1 you'll rate where you are, 1 to 10. Under 6 and you're good to eat. 6 or above, bring it down first. Then go for a short walk after every meal."],
+    ["Make it easy on yourself",["<b>Favourites:</b> Save the meals you eat on repeat, with their protein, and log them in one tap.","<b>Meal plans:</b> Optional. Put a day of meals together for a training day or a rest day.","<b>Plan tomorrow tonight:</b> In Day Close, pick what you'll eat tomorrow. It'll be waiting for you in the morning."]]],
+  workout:[
+    ["Train how you like","When and what you train is up to you. What makes it count is how you get into it and how you come out of it. Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system."],
+    ["The five parts of every session",["<b>1. Pre-training set up:</b> Eat calmly, write your workout down and visualise it, then change your clothes, music and space to get into the performance mindset.","<b>2. Movement prep:</b> 5 to 10 minutes of easy cardio, set your breathing, then balance and coordination work to get your heart rate and body temperature up.","<b>3. First movement:</b> Deep belly breaths into the muscle you're working, then one powerful, max intensity first movement.","<b>4. Mid workout:</b> Keep every rep under tension, use your breath to drive each rep, and visualise the muscle working.","<b>5. Close the workout:</b> Release the tension, walk it off slowly, cool down, then change your clothes, music and space to step out of performance mode."]],
+    ["Your morning action is different","First thing in the morning you'll do something physical to get your heart rate up: A walk, cold therapy, breath work. That's not your workout. It's to wake your body and brain up."],
+    ["Log it as you go","Tick each step in the Workout tab as you do it. It shows in your Tracker and in your Day Close."]]
+};
+const notesHtml=k=>`<div class="intro-notes">${(INTRO_NOTES[k]||[]).map(([h,b])=>`<div class="in-sec"><h3>${esc(h)}</h3>${Array.isArray(b)?`<ul>${b.map(x=>`<li>${x}</li>`).join("")}</ul>`:`<p>${esc(b)}</p>`}</div>`).join("")}</div>`;
 const introDone=c=>INTRO_VIDEOS.every(v=>c.intro&&c.intro[v.k]);
 function videoEmbed(url,title,soon){
   if(!url)return `<div class="vid-soon"><span class="vid-play">▶</span><b>Video coming soon</b><small>${esc(soon||"Ellis is recording this one. You can mark it watched for now.")}</small></div>`;
@@ -1941,19 +1966,19 @@ function introView(c){
   const blocks=INTRO_VIDEOS.map((v,i)=>{
     const isDone=!!done[v.k],isNow=i===first,open=isNow||(isDone&&S.open["vid_"+v.k]);
     if(open)return `<section class="pblock open ${isDone?"done":"active"}" id="vid-${v.k}">
-      <header class="pb-head"><span class="pb-num">${isDone?TICK:i+1}</span><div><span class="eyebrow">${isDone?"Watching again":"Video "+(i+1)+" of 3"}</span><h2 class="display pb-title">${esc(v.title)}</h2><p class="muted" style="font-size:13px">${esc(v.blurb)}</p></div>${isDone?`<button class="chip" data-vidopen="${v.k}">Close</button>`:""}</header>
-      ${videoEmbed(v.url,v.title)}
-      ${isDone?"":`<button class="btn primary" data-vidwatched="${v.k}" style="align-self:flex-start;min-height:48px">I've watched it</button>`}
+      <header class="pb-head"><span class="pb-num">${isDone?TICK:i+1}</span><div><span class="eyebrow">${isDone?(v.url?"Watching again":"Reading again"):(v.url?"Video ":"Guide ")+(i+1)+" of 3"}</span><h2 class="display pb-title">${esc(v.title)}</h2><p class="muted" style="font-size:13px">${esc(v.blurb)}</p></div>${isDone?`<button class="chip" data-vidopen="${v.k}">Close</button>`:""}</header>
+      ${v.url?videoEmbed(v.url,v.title):notesHtml(v.k)}
+      ${isDone?"":`<button class="btn primary" data-vidwatched="${v.k}" style="align-self:flex-start;min-height:48px">${v.url?"I've watched it":"I've read it"}</button>`}
     </section>`;
     return `<section class="pblock ${isDone?"done":"upcoming"}" id="vid-${v.k}"><button class="pb-sum" ${isDone?`data-vidopen="${v.k}"`:"disabled"}>
       <span class="pb-num">${isDone?TICK:LOCK}</span>
-      <span class="pb-text"><b>${esc(v.title)}</b>${isDone?`<span class="pb-done">Done</span>`:""}<small>${isDone?"Watched "+esc(fmtWhen(done[v.k])):"Opens when you've watched "+esc(INTRO_VIDEOS[i-1].title)}</small></span>
-      ${isDone?`<span class="pb-edit">Watch again</span>`:""}</button></section>`;
+      <span class="pb-text"><b>${esc(v.title)}</b>${isDone?`<span class="pb-done">Done</span>`:""}<small>${isDone?(v.url?"Watched ":"Read ")+esc(fmtWhen(done[v.k])):"Opens when you've "+(INTRO_VIDEOS[i-1].url?"watched ":"read ")+esc(INTRO_VIDEOS[i-1].title)}</small></span>
+      ${isDone?`<span class="pb-edit">${v.url?"Watch again":"Read again"}</span>`:""}</button></section>`;
   }).join("");
   return `<section class="card intro-head"><span class="eyebrow">Your targets are in</span>
-      <h1 class="display" style="font-size:clamp(36px,8vw,54px)">Watch these 3 videos</h1>
-      <p class="muted">Watch them in order. Each one unlocks the next, and once all 3 are done, today is your <b>Day 0</b>: your setup day.</p>
-      <div class="intro-dots">${INTRO_VIDEOS.map(v=>`<span class="${done[v.k]?"on":""}"></span>`).join("")}<b class="num">${INTRO_VIDEOS.filter(v=>done[v.k]).length} of 3 watched</b></div>
+      ${(()=>{const vids=INTRO_VIDEOS.some(v=>v.url);return `<h1 class="display" style="font-size:clamp(36px,8vw,54px)">${vids?"Watch these 3 videos":"Read these 3 quick guides"}</h1>
+      <p class="muted">Go through them in order. Each one unlocks the next, and once all 3 are done, today is your <b>Day 0</b>: your setup day.</p>
+      <div class="intro-dots">${INTRO_VIDEOS.map(v=>`<span class="${done[v.k]?"on":""}"></span>`).join("")}<b class="num">${INTRO_VIDEOS.filter(v=>done[v.k]).length} of 3 ${vids?"watched":"done"}</b></div>`})()}
     </section>
     <div class="stack">${blocks}</div>`;
 }
