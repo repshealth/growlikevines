@@ -714,7 +714,9 @@ body.has-bnav .col{max-width:560px}
 
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
-.warn-eat{background:#fff4e0;border-color:#e8b04a}
+.eat-ask{border:2px solid var(--fg)}
+.eat-ask .sk{border:0;text-align:left;cursor:pointer}
+.golink.warn-eat{background:#fff4e0;border-color:#e8b04a}
 .nums.stacked{display:flex;flex-direction:column;gap:12px}
 .nums.stacked .input{max-width:220px}
 .overview{display:flex;flex-direction:column;gap:12px}
@@ -2106,7 +2108,7 @@ function trackerView(){
     <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
-    ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious"};
+    ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious",meal:"Meals"};
       return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
       <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
       ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
@@ -2230,10 +2232,21 @@ function plannedMeals(x){
   return rows.filter(r=>r.m).map(r=>{let done=food.find(e=>e.plan===r.plan&&e.slot===r.slot);if(!done&&r.fav)done=food.find(e=>e.fav===r.fav&&e.slot==null&&!used.has(e.id));if(done)used.add(done.id);return{...r,done}});
 }
 function logPlanned(r){const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:r.m.name||"Meal "+(r.slot+1),items:r.m.items,t:r.m.items.join(", "),at:nowHHMM(),protein:Number(r.m.protein)||0,fav:r.fav,plan:r.plan,slot:r.slot}];edit("food_entries",list);edit("protein",proteinOf(list));return list}
+function eatAskHtml(log){
+  const downs=(OXYGEN.find(G=>G.g==="down")||{items:[]}).items,ox=oxyOf(log);
+  return `<section class="card eat-ask"><span class="eyebrow">Before you eat</span><h2 class="sec-title" style="font-size:20px;margin:2px 0 6px">Which state are you in right now?</h2>
+    ${S.eatSym?`<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>In a sympathetic state your body isn't ready to digest. Do one of these, tap it, then come back to your meal.</span></div></div>
+      <div class="opts">${downs.map(it=>{const d=ox.some(o=>o.item===it&&o.g==="down"&&o.from==="meal");return `<button class="chip${d?"":""}" data-oxy="${esc(it)}" data-oxyg="down" data-oxyfrom="meal" data-oxyadd="1" aria-pressed="${d}">${d?TICK+" ":""}${esc(it)}</button>`}).join("")}</div>
+      <button class="link" data-guidepage="subconscious" data-scrollto="oxy-down" style="align-self:flex-start">See how each one works in Subconscious</button>
+      <div class="opts"><button class="btn primary" data-eatstate="para">I'm in rest and digest now</button><button class="link" data-eatstate="skip">Log it anyway</button></div>`
+    :`<div class="state-key"><button class="sk down" data-eatstate="para"><b>↓ Parasympathetic</b><span>Calm, rest and digest. Ready to eat.</span></button><button class="sk up" data-eatstate="sym"><b>↑ Sympathetic</b><span>Wired, heart rate up, fight or flight.</span></button></div>`}
+    <button class="link" data-eatcancel="1" style="align-self:flex-start">Cancel</button></section>`;
+}
 function todayMeals(x){
   const {log,wk}=x,food=Array.isArray(log.food_entries)?log.food_entries:[],favs=favsOf(),plans=mplansOf(),plan=plans.find(p=>p.id===log.mplan),rows=plannedMeals(x);
   const d=S.mealDraft;
   return `${proteinBar(log,wk)}
+    ${S.eatAsk?eatAskHtml(log):""}
     ${plans.length||rows.length?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${plan?"Today's plan":rows.length?"Planned for today":"Today's plan"}</h2></div>
       ${plans.length?`<select class="input" id="plan-today" aria-label="Meal plan for today"><option value="">${rows.length&&!plan?"Not following a meal plan":"Not following a plan today"}</option>${plans.map(p=>`<option value="${p.id}" ${plan&&plan.id===p.id?"selected":""}>${esc(p.name)}</option>`).join("")}</select>`:""}
       ${rows.length?`<div class="plan-run">${rows.map((r,i)=>`<div class="pr-row${r.done?" done":""}"><span class="plan-n">${r.done?TICK:i+1}</span><span class="pr-t"><b>${esc(r.m.name||"Meal "+(r.slot+1))}</b><small>${esc(r.m.items.join(", "))} · ${Number(r.m.protein)||0}g protein</small></span>${r.done?`<small class="num muted">${esc(r.done.at)}</small>`:`<button class="btn primary" data-plannedlog="${i}">Log it</button>`}</div>`).join("")}</div>`:""}
@@ -2997,6 +3010,8 @@ const planItems=f=>Object.values(f||{}).flat();
 // Protein only comes from logged meals: the day's total is the sum of each meal's protein
 // When a meal was logged from Day Open's Meal 1 step, return to Today where they left off
 function backAfterMeal(){if(S.guideFrom&&S.guideFrom.meal1){S.guideFrom=null;S.tab="today";S.mealDraft=null;if(!curCtx().log.m3)edit("m3",nowHHMM());toast("Meal 1 logged. Now finish your Day Open");S.scrollSel=".step.current";render();return true}return false}
+// A quick state check before eating; it holds for 45 minutes
+const eatFresh=()=>S.eatOk&&Date.now()-S.eatOk<45*60000;
 const proteinOf=list=>(list||[]).reduce((t,f)=>t+(Number(f.protein)||0),0);
 const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods)),t=planIsTrain(k,p);return{pre:t&&p.after===slot,post:t&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
 function mpProblems(k,p){
@@ -3451,7 +3466,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
   if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);if(b.dataset.scrollto){const el=document.getElementById(b.dataset.scrollto);if(el)window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)}return}
-  if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";S.mealDraft=[];S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
+  if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";const st=Number(curCtx().log.am_state);if(st&&st<=3){S.eatOk=Date.now();S.mealDraft=[]}else{S.eatAsk={kind:"new"};S.mealDraft=null}S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
   if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
   if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
@@ -3528,7 +3543,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.tmrmode){const m=b.dataset.tmrmode;edit("tmr_mmode",m);if(m!=="plan")edit("tmr_mplan","");if(m!=="favs")edit("tmr_favs",[]);return render()}
   if(b.dataset.tfadd){const l=curCtx().log;edit("tmr_favs",[...(l.tmr_favs||[]),b.dataset.tfadd]);return render()}
   if(b.dataset.tfrm){const l=curCtx().log,t=[...(l.tmr_favs||[])];t.splice(Number(b.dataset.tfrm),1);edit("tmr_favs",t);return render()}
-  if(b.dataset.plannedlog){const r=plannedMeals(curCtx())[Number(b.dataset.plannedlog)];if(!r)return;logPlanned(r);toast(`${r.m.name||"Meal "+(r.slot+1)} logged: ${Number(r.m.protein)||0}g protein`);if(b.dataset.m1){if(!curCtx().log.m3)edit("m3",nowHHMM());S.scrollSel=".step.current"}if(backAfterMeal())return;return render()}
+  if(b.dataset.plannedlog){const r=plannedMeals(curCtx())[Number(b.dataset.plannedlog)];if(!r)return;if(!b.dataset.m1&&!eatFresh()){S.eatAsk={kind:"planned",i:Number(b.dataset.plannedlog)};S.mealDraft=null;render();const el=root.querySelector(".eat-ask");if(el)el.scrollIntoView({block:"center"});return}logPlanned(r);toast(`${r.m.name||"Meal "+(r.slot+1)} logged: ${Number(r.m.protein)||0}g protein`);if(b.dataset.m1){if(!curCtx().log.m3)edit("m3",nowHHMM());S.scrollSel=".step.current"}if(backAfterMeal())return;return render()}
   if(b.dataset.plog){const l=curCtx().log,pl=mplansOf().find(p=>p.id===l.mplan),i=Number(b.dataset.plog),f=pl&&slotMeal(pl.meals[i]);if(!f)return;const list=[...(l.food_entries||[]),{id:uid(),name:f.name||"Meal "+(i+1),items:f.items,t:f.items.join(", "),at:nowHHMM(),protein:Number(f.protein)||0,fav:f.fav,plan:pl.id,slot:i}];edit("food_entries",list);edit("protein",proteinOf(list));toast(`Meal ${i+1} logged: ${Number(f.protein)||0}g protein`);if(backAfterMeal())return;return render()}
   if(b.dataset.favnew){S.favDraft={name:"",items:[],protein:null};return render()}
   if(b.dataset.favedit){const f=favById(b.dataset.favedit);if(f)S.favDraft=JSON.parse(JSON.stringify(f));return render()}
@@ -3558,13 +3573,18 @@ root.addEventListener("click",e=>{
   if(b.dataset.plansave){const pd=S.planDraft,name=(pd.name||"").trim();if(!name){toast("Give it a name");return}if(!pd.count||!pd.kind){toast("Pick how many meals and the type of day");return}const miss=Array.from({length:pd.count},(_,i)=>i).filter(i=>!slotMeal(pd.meals[i]));if(miss.length){toast(`Add Meal ${miss[0]+1}, or pick fewer meals`);return}
     const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count)};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");return render()}
   if(b.dataset.planuse){if(curCtx().dn<1){toast("Plans start on Day 1");return}edit("mplan",b.dataset.planuse);S.mseg="today";toast("Following this plan today");window.scrollTo(0,0);return render()}
-  if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
+  if(b.dataset.mnew){if(!eatFresh()){S.eatAsk={kind:"new"};S.eatSym=false;return render()}S.mealDraft=[];S.mealOther=false;return render()}
+  if(b.dataset.eatstate){const v=b.dataset.eatstate,ask=S.eatAsk;if(v==="sym"){S.eatSym=true;return render()}
+    S.eatOk=Date.now();S.eatState=v==="para"?"para":"skip";S.eatAsk=null;S.eatSym=false;
+    if(ask&&ask.kind==="planned"){const r=plannedMeals(curCtx())[ask.i];if(r){logPlanned(r);toast(`${r.m.name||"Meal "+(r.slot+1)} logged: ${Number(r.m.protein)||0}g protein`);if(backAfterMeal())return}return render()}
+    S.mealDraft=[];S.mealOther=false;return render()}
+  if(b.dataset.eatcancel){S.eatAsk=null;S.eatSym=false;return render()}
   if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;return render()}
   if(b.dataset.mdrop){S.mealDraft.splice(Number(b.dataset.mdrop),1);return render()}
   if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const pi=root.querySelector("#meal-protein"),pv=pi?pi.value.trim():"";if(pv===""||isNaN(Number(pv))){toast("Add how much protein was in this meal");if(pi)pi.focus();return}
     if(S.favToo&&!(S.favName||"").trim()){toast("Name your favourite, or untick it");return}
     let fav="";if(S.favToo){fav=uid();const nm=S.favName.trim();setPrefs(pr=>{pr.favs=pr.favs||[];pr.favs.push({id:fav,name:nm,items:d,protein:Math.round(Number(pv))})})}
-    const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:S.favToo?S.favName.trim():"",items:d,t:d.join(", "),at:nowHHMM(),protein:Math.round(Number(pv)),fav}];S.favToo=false;S.favName="";edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;toast(`Meal logged: ${Math.round(Number(pv))}g protein`);if(backAfterMeal())return;return render()}
+    const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:S.favToo?S.favName.trim():"",items:d,t:d.join(", "),at:nowHHMM(),protein:Math.round(Number(pv)),fav,state:S.eatState||""}];S.favToo=false;S.favName="";edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;toast(`Meal logged: ${Math.round(Number(pv))}g protein`);if(backAfterMeal())return;return render()}
   if(b.dataset.fdel){const l=curCtx().log,list=(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel);edit("food_entries",list);edit("protein",proteinOf(list));return render()}
   if(b.dataset.scrollmeal){if(!S.mealDraft){S.mealDraft=[];S.mealOther=false}render();const el=root.querySelector(".ml-draft");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return}
   if(b.dataset.wkopen){S.wkOpen=S.wkOpen===b.dataset.wkopen?null:b.dataset.wkopen;return render()}
