@@ -488,6 +488,31 @@ export async function onRequest(context) {
       }
     }
 
+    // Invite links Ellis makes himself, for clients who didn't come through Stripe
+    if (path === "/invites" && method === "POST") {
+      const b = await readBody(request);
+      const email = cleanEmail(b.email), name = String(b.name || "").trim().slice(0, 80);
+      if (!validEmail(email)) return err(400, "Enter a valid email.");
+      const taken = await db.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
+      if (taken) return err(409, "There's already an account with that email.");
+      let inv = await db.prepare("SELECT * FROM invites WHERE email = ? AND used_at IS NULL AND session_id LIKE 'manual-%'").bind(email).first();
+      if (!inv) {
+        const token = randomId(24);
+        await db.prepare("INSERT INTO invites (token, session_id, email, name, customer, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+          .bind(token, "manual-" + token, email, name, "", new Date().toISOString()).run();
+        inv = { token, email, name };
+      } else if (name && name !== inv.name) {
+        await db.prepare("UPDATE invites SET name = ? WHERE token = ?").bind(name, inv.token).run();
+      }
+      const link = `${origin}/start?invite=${inv.token}`;
+      const emailed = b.send ? await sendEmail(env, email, welcomeEmail(origin, { name: name || inv.name || "", link })) : null;
+      return json({ link, email, name: name || inv.name || "", emailed });
+    }
+    if (path === "/invites" && method === "GET") {
+      const r = await db.prepare("SELECT token, email, name, created_at, used_at FROM invites WHERE session_id LIKE 'manual-%' ORDER BY created_at DESC LIMIT 30").all();
+      return json({ invites: (r.results || []).map(i => ({ ...i, link: `${origin}/start?invite=${i.token}` })) });
+    }
+
     if (path === "/test-client" && method === "POST") {
       const b = await readBody(request);
       const email = cleanEmail(b.email);

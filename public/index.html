@@ -720,6 +720,12 @@ body.has-bnav .col{max-width:560px}
 .fruit-dots svg{display:none}
 .rule-note{font-size:12.5px;font-weight:600;color:var(--muted)}
 .rule-note.warn{color:#8a4b0a;background:#fff4e0;border:1px solid #e8b04a;border-radius:10px;padding:8px 10px;line-height:1.4}
+.invite-made{display:flex;flex-direction:column;gap:6px;margin-top:12px;padding:12px;border-radius:12px;background:var(--lime-dim);border:1px solid var(--lime)}
+.invite-made small{color:var(--muted)}
+.inv-link{display:flex;gap:8px}
+.inv-link .input{flex:1;min-width:0;font-size:13px}
+.inv-list{display:flex;flex-direction:column;gap:4px;margin-top:14px}
+.confirm-line{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:600}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
@@ -3332,6 +3338,22 @@ function coachView(){
   if(S.detail)return detailView(allClients().find(c=>c.id===S.detail));
   return overviewView();
 }
+// Ellis makes an onboarding link for anyone who didn't come through Stripe
+function inviteCard(){
+  const list=S.invites||[],last=S.inviteMade;
+  return `<section class="card invite-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Invite a client</h2></div>
+    <p class="muted" style="font-size:13px">For anyone joining without the free trial checkout. Make them a one-off onboarding link: Send it yourself, or have the app email it to them.</p>
+    <form id="inviteForm" class="test-form" novalidate>
+      <label class="field" for="iv-name">Their name<input class="input" id="iv-name" name="name" autocomplete="off"></label>
+      <label class="field" for="iv-email">Their email<input class="input" id="iv-email" name="email" type="email" autocomplete="off"></label>
+      <label class="confirm-line"><input type="checkbox" name="send" checked> Email the link to them now</label>
+      <div id="inviteErr" class="onb-err" role="alert"></div>
+      <button class="btn primary" type="submit">Create invite link</button>
+    </form>
+    ${last?`<div class="invite-made"><b>${TICK} Link ready for ${esc(last.name||last.email)}</b>${last.emailed?`<small>${last.emailed.ok?"Emailed to "+esc(last.email)+".":"Couldn't email it: Copy the link and send it yourself."}</small>`:""}<div class="inv-link"><input class="input" readonly value="${esc(last.link)}" id="inv-link"><button class="btn" data-copyinv="${esc(last.link)}">Copy</button></div></div>`:""}
+    ${list.length?`<div class="inv-list"><b>Recent invites</b>${list.map(i=>`<div class="rv"><span>${esc(i.name||i.email)}<small class="muted" style="display:block">${esc(i.email)}</small></span><span>${i.used_at?`<span class="pill ok">Onboarded</span>`:`<button class="link" data-copyinv="${esc(i.link)}">Copy link</button>`}</span></div>`).join("")}</div>`:""}
+  </section>`;
+}
 function testClientCard(){
   return `<section class="card test-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Test accounts</h2></div>
     <p class="muted" style="font-size:13px">Create a client account for testing. It starts on Day 0 straight away with default targets, and has a <b>Next day</b> button so you can step through the programme without waiting.</p>
@@ -3350,7 +3372,7 @@ function overviewView(){
   if(!all.length)return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
     ${pendingClients().length?"":`<section class="card"><h2 class="sec-title" style="font-size:22px">No clients yet</h2><p class="muted">When someone fills in the onboarding form, they'll appear here for you to set their targets. Share the app's address with them and they'll pick "Start your onboarding form".</p></section>`}
-    ${pendingSignupsCard()}${testClientCard()}</div>`;
+    ${pendingSignupsCard()}${inviteCard()}${testClientCard()}</div>`;
   const counts={ok:0,warn:0,bad:0,new:0};all.forEach(s=>counts[s.status]++);
   const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
   const order={bad:0,warn:1,ok:2,new:3};
@@ -3411,7 +3433,7 @@ function overviewView(){
           :`<p class="muted" style="font-size:12px;margin-bottom:8px">How often each step gets done across all clients.</p>`+stepRows.map(r=>`<div class="habit"><span><span class="pl">${r.ph}</span> ${esc(r.label)}</span>${bar(r.p)}<span class="num" style="text-align:right">${r.p}%</span></div>`).join("")}
       </section>
     </div>
-  ${testClientCard()}</div>`;
+  ${inviteCard()}${testClientCard()}</div>`;
 }
 function phaseLog(title,steps,log,wk){
   return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
@@ -3487,7 +3509,7 @@ async function boot(){
   try{const d=await api("/state");
     if(d.me.role==="client"){d.logs={[d.me.id]:d.logs||{}};
       const pd=pendingGet(d.me.id);for(const day in pd){d.logs[d.me.id][day]=pd[day];dirty.add(day)}}
-    DATA=d;S.needsSetup=false;
+    DATA=d;S.needsSetup=false;if(d.me.role==="coach")api("/invites").then(x=>{S.invites=x.invites;render()}).catch(()=>{});
     if(dirty.size)setTimeout(flush,0);
     WEEKS=(d.settings&&d.settings.weeks?d.settings.weeks:DEFAULT_WEEKS).map(w=>({...DEFAULT_WEEKS[0],...w}));
   }catch(e){
@@ -3509,6 +3531,8 @@ root.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="loginForm"){const f=e.target,err=root.querySelector("#loginErr"),fd=new FormData(f);busy(f,true);
     api("/login",{method:"POST",body:{email:fd.get("email"),password:fd.get("password")}}).then(afterLogin).catch(x=>{err.textContent=x.message;busy(f,false)});return}
+  if(e.target.id==="inviteForm"){e.preventDefault();const f=e.target,er=root.querySelector("#inviteErr"),fd=new FormData(f);busy(f,true);
+    api("/invites",{method:"POST",body:{name:fd.get("name"),email:fd.get("email"),send:!!fd.get("send")}}).then(r=>{S.inviteMade=r;toast(r.emailed&&r.emailed.ok?"Invite emailed":"Invite link ready");return api("/invites").then(x=>{S.invites=x.invites;render()})}).catch(x=>{busy(f,false);if(er)er.textContent=x.message});return}
   if(e.target.id==="testForm"){const f=e.target,err=root.querySelector("#testErr"),fd=new FormData(f);busy(f,true);
     api("/test-client",{method:"POST",body:Object.fromEntries(fd)}).then(()=>{toast("Test client created. Log out and log in as "+fd.get("email"));return boot()}).catch(x=>{err.textContent=x.message;busy(f,false)});return}
   if(e.target.id==="setupForm"){const f=e.target,err=root.querySelector("#setupErr"),fd=new FormData(f);busy(f,true);
@@ -3655,6 +3679,7 @@ root.addEventListener("click",e=>{
     const ph=WORKOUT.find(p=>p.steps.some(s=>s.k===k)),lg=curCtx().log;if(ph&&wkDone(lg,ph)===ph.steps.length){const nx=WORKOUT.find(p=>wkDone(lg,p)<p.steps.length);S.wkPhase=nx?nx.k:null;toast(nx?`${ph.name} done. Next: ${nx.name}`:"Workout complete")}return render()}
   if(b.dataset.wkphase){S.wkPhase=S.wkPhase===b.dataset.wkphase?"__none":b.dataset.wkphase;return render()}
   if(b.dataset.wkwhy){S.wkWhy=!S.wkWhy;return render()}
+  if(b.dataset.copyinv){const t=b.dataset.copyinv;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Link copied")).catch(()=>{const i=root.querySelector("#inv-link");if(i){i.select();document.execCommand("copy");toast("Link copied")}});return}
   if(b.dataset.copytodos){const l=curCtx().log,have=new Set(todosOf(l,"tmr_todos").map(t=>t.t)),add=todosOf(l,"todos").filter(t=>!t.done&&!have.has(t.t)).map(t=>({...t,id:uid(),done:""}));edit("tmr_todos",[...todosOf(l,"tmr_todos"),...add]);toast(`${add.length} ${add.length===1?"task":"tasks"} copied to tomorrow`);return render()}
   if(b.dataset.tmrmode){const m=b.dataset.tmrmode;edit("tmr_mmode",m);if(m!=="plan")edit("tmr_mplan","");if(m!=="favs")edit("tmr_favs",[]);return render()}
   if(b.dataset.tfadd){const l=curCtx().log;edit("tmr_favs",[...(l.tmr_favs||[]),b.dataset.tfadd]);return render()}
