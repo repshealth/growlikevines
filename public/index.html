@@ -1233,8 +1233,6 @@ const MORNING=[
 const ML=MORNING.length;
 const TMR_ASKS=[
   {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
-  {k:"intentions",type:"textarea",label:"Set your intention",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
-  {k:"tmr_hard",type:"text",label:"Set your hard thing: The one you'll start first",req:l=>!!String(l.tmr_hard||"").trim(),reqMsg:"Set your hard thing"},
   {k:"_tmrmeals",type:"tmrmeals",label:"What will you eat tomorrow?"},
   {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list"},
   {k:"_copytodos",type:"copytodos"},
@@ -1249,7 +1247,7 @@ const EVENING=[
    asks:[{k:"_nums",type:"numsnow"},{k:"_overview",type:"dayoverview"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
-  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Set your intention and your hard thing","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
+  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","What you'll eat, and your to-do list","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
@@ -1260,10 +1258,9 @@ const ZERO=[
      {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
      {k:"_tmrmeals",type:"tmrmeals",zero:true,label:"What will you eat tomorrow?"},
      {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your intention and to-do list"],
+  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your to-do list"],
    asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
      {k:"_pickboth",type:"note",text:"Pick one above to carry on.",when:l=>!bothPlanned(l)},
-     {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",when:bothPlanned},
      {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow (optional)",text:"Just for you. Anything you want to get done.",when:bothPlanned}]},
   {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["Set your alarm, then when you're going to sleep","Pick what you'll do to bring it down, then rate where you are"],
    asks:[{k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm: Now tomorrow's planned, what time do you need to get up to get it all done?",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"},{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
