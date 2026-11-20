@@ -2086,6 +2086,11 @@ function trackerView(){
     <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
+    ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious"};
+      return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
+      <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
+      ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
+      <button class="btn" data-tab="subconscious" style="align-self:flex-start;margin-top:8px">Open Subconscious</button></section>`})()}
     <button class="trk-link" data-tab="training"><span class="trk-ic" aria-hidden="true">${ICO.dumbbell}</span><span><b>Workout</b><small>${log.train_done?"Trained at "+esc(log.train_done):log.wk_pre?"Getting set":"Log your session in Workout"}</small></span><span class="sp-go">Open</span></button>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2><span class="muted num">${food.length}</span></div>
       ${mealRows(food,false)||`<p class="muted" style="font-size:13px;margin:0">No meals logged yet.</p>`}
@@ -2099,7 +2104,7 @@ function oxygenView(){
   return `<div class="stack">
     ${tabHead("Oxygen","Everything that moves your nervous system. Switch it up to get going, bring it down to recover. Tap Log when you've done one.",x)}
     ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"↑":"↓"} ${G.name}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${G.d}</p>
-      <div class="oxy-list">${G.items.map(it=>{const n=cnt(it,G.g),open=S.oxyOpen===G.g+it;return `<div class="oxy-row${n?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n?`<small>${TICK} Logged ${n>1?n+" times":"at "+esc(ox.filter(o=>o.item===it&&o.g===G.g).pop().at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button><button class="btn${n?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-add="1">Log</button>
+      <div class="oxy-list">${G.items.map(it=>{const n=cnt(it,G.g),open=S.oxyOpen===G.g+it;return `<div class="oxy-row${n?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n?`<small>${TICK} Logged ${n>1?n+" times":"at "+esc(ox.filter(o=>o.item===it&&o.g===G.g).pop().at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button><button class="btn${n?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Log</button>
         ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div></section>`).join("")}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Logged today</h2><span class="muted num">${ox.length}</span></div>
       ${ox.length?`<div class="review">${ox.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(o.at)}</span><button class="x" data-oxydel="${o.id}" aria-label="Remove ${esc(o.item)}">×</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet. Tap Log on anything you've done.</p>`}</section>
@@ -2160,7 +2165,7 @@ function trainingView(){
 }
 function subconsciousView(){
   const x=curCtx(),log=x?x.log:{},ox=oxyOf(log);
-  const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-add="1">Did it</button>`:""}
+  const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Did it</button>`:""}
     ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div>`;
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
@@ -3474,7 +3479,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.chk){const sl=b.dataset.chk,ins=[...root.querySelectorAll(`[id^="a-c${sl}-"]`)];ins.forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Steps updated");return render()}
   if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
-  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.add&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:uid(),item:it,g,from,at:t}]);if(!on)toast(it+" logged "+t);return render()}
+  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.oxyadd&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:uid(),item:it,g,from,at:t}]);if(!on)toast(it+" logged "+t);return render()}
   if(b.dataset.oxydel){edit("oxygen",oxyOf(curCtx().log).filter(o=>o.id!==b.dataset.oxydel));return render()}
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
