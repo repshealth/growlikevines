@@ -711,6 +711,21 @@ body.has-bnav .col{max-width:560px}
 .trk-link>span:nth-child(2){display:flex;flex-direction:column;flex:1}
 .trk-link b{font-size:18px}
 .trk-link small{color:var(--muted);font-size:13px}
+
+.seg3{grid-template-columns:repeat(3,1fr)}
+.seg3 button{padding:10px 4px;font-size:13px}
+.fav-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px}
+.fav-tile{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;color:var(--fg)}
+.fav-tile b{font-size:14px;line-height:1.2}
+.fav-tile small{font-size:12px;color:var(--muted);font-weight:700}
+.plan-run{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.pr-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--bg)}
+.pr-row.done{background:var(--lime-dim);border-color:var(--lime)}
+.pr-t{display:flex;flex-direction:column;flex:1;min-width:0}
+.pr-t small{font-size:12px;color:var(--muted)}
+.sp-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.sp-item{flex-wrap:wrap}
+.sp-item .sp-act{flex-basis:100%;justify-content:flex-start;padding-left:52px;gap:16px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2055,7 +2070,7 @@ function trackerView(){
   const num=(k,label)=>{const v=log[k],t=Number(wk[k])||0,n=Number(v)||0,pc=t?Math.min(100,Math.round(n/t*100)):0,hit=t&&n>=t;
     return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ICON[k]}</span><b>${label}</b><span class="trk-v num">${fmt(k,n)}<small> / ${fmt(k,t)}</small></span></div>
       <div class="trk-bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="${label}"><i style="width:${pc}%"></i></div>
-      ${k==="protein"?`<div class="trk-q"><small class="muted" style="font-weight:600">Adds up from the meals you log below.${(log.food_entries||[]).length?` ${(log.food_entries||[]).length} ${(log.food_entries||[]).length===1?"meal":"meals"} so far.`:""}</small><button class="chip" data-scrollmeal="1" style="margin-left:auto">Log a meal</button></div>`:`<div class="trk-q">${QUICK[k].map(([l,a])=>`<button class="chip" data-qadd="${k}" data-amt="${a}">${l}</button>`).join("")}<input class="input trk-in num" type="number" inputmode="decimal" min="0" step="${k==="water"?0.25:1}" id="t-${k}" data-input="${k}" value="${v===undefined||v===""?"":esc(v)}" aria-label="${label} total" placeholder="Total"></div>`}
+      ${k==="protein"?`<div class="trk-q"><small class="muted" style="font-weight:600">Adds up from the meals you log in Meals.${(log.food_entries||[]).length?` ${(log.food_entries||[]).length} ${(log.food_entries||[]).length===1?"meal":"meals"} so far.`:""}</small><button class="chip" data-gomeals="1" style="margin-left:auto">Log a meal</button></div>`:`<div class="trk-q">${QUICK[k].map(([l,a])=>`<button class="chip" data-qadd="${k}" data-amt="${a}">${l}</button>`).join("")}<input class="input trk-in num" type="number" inputmode="decimal" min="0" step="${k==="water"?0.25:1}" id="t-${k}" data-input="${k}" value="${v===undefined||v===""?"":esc(v)}" aria-label="${label} total" placeholder="Total"></div>`}
       ${hit?`<small class="trk-ok">${TICK} Target hit</small>`:""}</section>`};
   const ph=[["wk_pre","Before","Get set",PRE_STEPS],["train_done","Train","The session",MID_STEPS],["wk_down","Come down","Bring it down",CLOSE_STEPS]];
   const food=Array.isArray(log.food_entries)?log.food_entries:[];
@@ -2064,19 +2079,9 @@ function trackerView(){
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
     <button class="trk-link" data-tab="training"><span class="trk-ic" aria-hidden="true">${ICO.dumbbell}</span><span><b>Workout</b><small>${log.train_done?"Trained at "+esc(log.train_done):log.wk_pre?"Getting set":"Log your session in Workout"}</small></span><span class="sp-go">Open</span></button>
-    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2></div>
-      <p class="food-note">Eat anything from your list, as much as you need. Log each meal here with how much protein was in it: That's how your protein count for the day adds up.</p>
-      ${food.length?`<div class="meal-log">${food.map((f,i)=>{const it=f.items||[],pro=it.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));return `<div class="ml-row"><div class="ml-top"><b>Meal ${i+1}</b><span class="num muted">${esc(f.at)}</span>${f.protein!=null?`<span class="ml-g num">${Number(f.protein)}g protein</span>`:""}${it.length&&f.protein==null?`<span class="ml-pro${pro?" ok":""}">${pro?TICK+" Protein":"No protein"}</span>`:""}<button class="x" data-fdel="${f.id}" aria-label="Remove meal ${i+1}">×</button></div><span class="ml-items">${esc(f.t)}</span>${f.from?`<small class="muted">From your saved meal: ${esc(f.from)}</small>`:""}</div>`}).join("")}</div>`:""}
-      ${S.mealDraft?`<div class="ml-draft"><b>Meal ${food.length+1}${S.mealFrom?` <small class="muted" style="font-weight:600">from your saved meal: ${esc(S.mealFrom)}</small>`:""}</b>
-        ${S.mealDraft.length?`<div class="opts">${S.mealDraft.map((n,i)=>`<button class="chip" aria-pressed="true" data-mdrop="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:(planKeys().some(k=>planFilled(myPlan(k)))?"":`<small class="muted">Pick what you had, one at a time.</small>`)}
-        ${planKeys().filter(k=>planFilled(myPlan(k))).length&&!S.mealDraft.length?`<div class="saved-pick"><b>Your saved meals</b><small>Pick one from the meal plans you've saved</small><select class="input" id="plan-pick" aria-label="Your saved meals"><option value="">Choose a saved meal</option>${planKeys().filter(k=>planFilled(myPlan(k))).map(k=>{const pl=myPlan(k);return `<optgroup label="${esc(planName(k,pl))}">${pl.meals.map((m,i)=>foodsCount(m.foods)?`<option value="${k}|${i}">Meal ${i+1}: ${esc(foodsSummary(m.foods))}</option>`:"").join("")}</optgroup>`}).join("")}</select></div><small class="muted" style="text-align:center;font-weight:600">or build it yourself from the food list</small>`:""}
-        <select class="input" id="food-pick" aria-label="Add a food"><option value="">Add a food from your list</option>${(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option></select>
-        ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
-        ${S.mealDraft.length&&!S.mealDraft.some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n))?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
-        ${S.mealDraft.length?`<label class="ask meal-pro" for="meal-protein"><span>How much protein was in this meal? (g)</span><input class="input num" type="number" inputmode="numeric" min="0" step="1" id="meal-protein" value="${S.mealProtein==null?"":esc(S.mealProtein)}" placeholder="e.g. 30"><small class="muted">Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g.</small></label>`:""}
-        <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${S.mealDraft.length?"":"disabled"}>Save meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
-      :`<button class="btn${food.length?"":" primary"}" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
-      <small class="muted">${planKeys().length?`You have ${planKeys().length} saved meal ${planKeys().length===1?"plan":"plans"}.`:"Want structure?"} <button class="link" data-tab="meals">${planKeys().length?"See your saved meal plans":"Build and save a meal plan"}</button></small>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2><span class="muted num">${food.length}</span></div>
+      ${mealRows(food,false)||`<p class="muted" style="font-size:13px;margin:0">No meals logged yet.</p>`}
+      <button class="btn${food.length?"":" primary"}" data-gomeals="1" style="align-self:flex-start;margin-top:8px">Log a meal in Meals</button>
     </section>
   </div>`;
 }
@@ -2112,7 +2117,7 @@ function quietDay(x){
 }
 function foodView(){
   const pr=PREFS();
-  return `<div class="stack">${mealsSeg()}
+  return `<div class="stack"><div><button class="chip" data-tab="meals">&lsaquo; Back to Meals</button></div>
     <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">No meal plan, no counting. Eat from this list and have as much as you need.</p></div></div>
     ${(()=>{const x=curCtx(),f=x.prev.tmr_foods||[];return f.length?`<section class="fgroup fg-today"><div class="fg-h"><span class="fg-ic" aria-hidden="true">${ICO.today}</span><div><h2>Your foods for today</h2><small>What you picked last night</small></div><span class="fg-n num">${f.length}</span></div><ul class="fg-list">${f.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></section>`:""})()}
     <section class="food-rules"><div><b class="num">${MEALS_GUIDE.split(" meals")[0]}</b><span>meals a day</span></div><div><b>Protein</b><span>in every meal</span></div><div><b>Water</b><span>with every meal</span></div><div><b>Carbs</b><span>only around training</span></div></section>
@@ -2158,12 +2163,78 @@ function subconsciousView(){
 }
 const backChip=()=>S.guideFrom&&S.guideFrom.tab==="today"?`<div style="margin-bottom:12px"><button class="chip" data-guideback="1">&lsaquo; Back to Today</button></div>`:"";
 const mealsSeg=()=>`<div class="seg" role="tablist"><button role="tab" data-tab="food" aria-selected="${S.tab==="food"}">Food list</button><button role="tab" data-tab="meals" aria-selected="${S.tab==="meals"}">My meal plans</button></div>`;
+/* ---------- Meals: today's meals, favourites and meal plans ---------- */
+// Favourites are meals a client eats on repeat (foods + protein). Meal plans put favourites in order for a whole day.
+const favsOf=()=>Array.isArray(PREFS().favs)?PREFS().favs:[];
+const mplansOf=()=>Array.isArray(PREFS().mplans)?PREFS().mplans:[];
+const favById=id=>favsOf().find(f=>f.id===id);
+const hasProtein=items=>(items||[]).some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));
+function setPrefs(fn){const pr=JSON.parse(JSON.stringify(PREFS()));fn(pr);savePrefs(pr)}
+function foodOptions(x){return `<option value="">Add a food from your list</option>${x&&(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option>`}
+const chipsOf=(items,attr)=>items.length?`<div class="opts">${items.map((n,i)=>`<button class="chip" aria-pressed="true" ${attr}="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:"";
+const MSEG=[["today","Today's meals"],["favs","Favourites"],["plans","Meal plans"]];
 function mealsView(){
-  return `<div class="stack">${mealsSeg()}
-    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Optional. Build your own meal plans from the food list and save as many as you like. Then pick a meal straight from them when you log food in the Tracker.</p></div></div>
-    ${mealPlansCard()}
+  const seg=S.mseg||"today",x=curCtx();
+  return `<div class="stack">
+    <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Eat anything from your list, as much as you need. Log each meal with its protein: That's how your protein adds up.</p></div></div>
+    <div class="seg seg3" role="tablist">${MSEG.map(([k,l])=>`<button role="tab" data-mseg="${k}" aria-selected="${seg===k}">${l}</button>`).join("")}</div>
+    ${seg==="favs"?favsSection():seg==="plans"?plansSection():(x&&x.dn>0?todayMeals(x):`<p class="muted">Logging starts on Day 1. Have a look at your food list and save some favourites.</p>`)}
     <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
   </div>`;
+}
+function proteinBar(log,wk){const n=Number(log.protein)||0,t=Number(wk.protein)||0,pc=t?Math.min(100,Math.round(n/t*100)):0;
+  return `<section class="trk${t&&n>=t?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ICO.protein}</span><b>Protein today</b><span class="trk-v num">${n}g<small> / ${t}g</small></span></div><div class="trk-bar" role="progressbar" aria-valuenow="${pc}" aria-valuemin="0" aria-valuemax="100" aria-label="Protein"><i style="width:${pc}%"></i></div>${t&&n<t?`<small class="muted" style="font-weight:600">${t-n}g to go</small>`:t?`<small class="trk-ok">${TICK} Target hit</small>`:""}</section>`}
+function mealRows(food,del){return food.length?`<div class="meal-log">${food.map((f,i)=>`<div class="ml-row"><div class="ml-top"><b>${esc(f.name||"Meal "+(i+1))}</b><span class="num muted">${esc(f.at)}</span>${f.protein!=null?`<span class="ml-g num">${Number(f.protein)}g</span>`:""}${del?`<button class="x" data-fdel="${f.id}" aria-label="Remove">×</button>`:""}</div><span class="ml-items">${esc(f.t)}</span></div>`).join("")}</div>`:""}
+function todayMeals(x){
+  const {log,wk}=x,food=Array.isArray(log.food_entries)?log.food_entries:[],favs=favsOf(),plans=mplansOf(),plan=plans.find(p=>p.id===log.mplan);
+  const d=S.mealDraft;
+  return `${proteinBar(log,wk)}
+    ${plans.length?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's plan</h2></div>
+      <select class="input" id="plan-today" aria-label="Meal plan for today"><option value="">Not following a plan today</option>${plans.map(p=>`<option value="${p.id}" ${plan&&plan.id===p.id?"selected":""}>${esc(p.name)}</option>`).join("")}</select>
+      ${plan?`<div class="plan-run">${(()=>{const used=new Set();return plan.meals.map((fid,i)=>{let done=food.find(e=>e.plan===plan.id&&e.slot===i);if(!done)done=food.find(e=>e.fav===fid&&e.slot==null&&!used.has(e.id));if(done)used.add(done.id);return [fid,i,done]})})().map(([fid,i,done])=>{const f=favById(fid);return f?`<div class="pr-row${done?" done":""}"><span class="plan-n">${done?TICK:i+1}</span><span class="pr-t"><b>${esc(f.name)}</b><small>${esc(f.items.join(", "))} · ${Number(f.protein)||0}g protein</small></span>${done?`<small class="num muted">${esc(done.at)}</small>`:`<button class="btn primary" data-plog="${i}">Log it</button>`}</div>`:""}).join("")}</div>`:""}
+    </section>`:""}
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Logged today</h2><span class="muted num">${food.length}</span></div>
+      ${mealRows(food,true)||`<p class="muted" style="font-size:13px;margin:0 0 8px">Nothing logged yet.</p>`}
+      ${d?`<div class="ml-draft">
+        ${favs.length&&!d.length?`<div class="saved-pick"><b>Your favourites</b><small>Tap one to log it</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-favlog="${f.id}"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div></div><small class="muted" style="text-align:center;font-weight:600">or build it yourself from the food list</small>`:""}
+        ${chipsOf(d,"data-mdrop")}
+        <select class="input" id="food-pick" aria-label="Add a food">${foodOptions(x)}</select>
+        ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
+        ${d.length&&!hasProtein(d)?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
+        ${d.length?`<label class="ask meal-pro" for="meal-protein"><span>How much protein was in this meal? (g)</span><input class="input num" type="number" inputmode="numeric" min="0" step="1" id="meal-protein" value="${S.mealProtein==null?"":esc(S.mealProtein)}" placeholder="e.g. 30"><small class="muted">Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g.</small></label>
+          <button class="confirm${S.favToo?" on":""}" data-favtoo="1" aria-pressed="${!!S.favToo}"><span class="tick">${TICK}</span><span>Save this as a favourite too</span></button>
+          ${S.favToo?`<label class="ask" for="mfav-name"><span>Name it</span><input class="input" id="mfav-name" maxlength="40" value="${esc(S.favName||"")}" placeholder="e.g. Chicken &amp; rice"></label>`:""}`:""}
+        <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${d.length?"":"disabled"}>Log meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
+      :`<button class="btn primary" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
+    </section>`;
+}
+function favsSection(){
+  const favs=favsOf(),fd=S.favDraft;
+  if(fd)return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${fd.id?"Edit favourite":"New favourite"}</h2></div>
+    <label class="ask" for="fav-name"><span>Name</span><input class="input" id="fav-name" maxlength="40" value="${esc(fd.name||"")}" placeholder="e.g. Eggs on sourdough"></label>
+    <div class="ask"><span class="ask-h">What's in it</span>${chipsOf(fd.items,"data-favdrop")}<select class="input" id="fav-food" aria-label="Add a food">${foodOptions(null)}</select>
+      ${fd.items.length&&!hasProtein(fd.items)?`<small class="ml-hint">No protein in this meal yet.</small>`:""}</div>
+    <label class="ask" for="fav-protein"><span>Protein in this meal (g)</span><input class="input num" type="number" inputmode="numeric" min="0" id="fav-protein" value="${fd.protein==null?"":esc(fd.protein)}" placeholder="e.g. 30"></label>
+    <div style="display:flex;gap:8px"><button class="btn primary" data-favsave="1">Save favourite</button><button class="btn" data-favcancel="1">Cancel</button></div></section>`;
+  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your favourites</h2><span class="fg-n num">${favs.length}</span></div>
+    <p class="muted" style="font-size:13px;margin:-2px 0 10px">The meals you eat on repeat, with their protein. Log any of them in one tap, or put them in order to make a meal plan.</p>
+    ${favs.length?`<div class="sp-list">${favs.map(f=>`<div class="sp-item"><span class="sp-ic" aria-hidden="true">${ICO.meals}</span><span class="sp-t"><b>${esc(f.name)} <span class="ml-g num">${Number(f.protein)||0}g</span></b><small>${esc(f.items.join(", "))}</small></span><span class="sp-act"><button class="link" data-favedit="${f.id}">Edit</button><button class="link" data-favdel="${f.id}" style="color:var(--bad)">${S.favDelArm===f.id?"Sure?":"Delete"}</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px">No favourites yet. Add the meals you have most often.</p>`}
+    <button class="btn primary" data-favnew="1" style="align-self:flex-start;margin-top:10px">+ New favourite</button></section>`;
+}
+function plansSection(){
+  const plans=mplansOf(),favs=favsOf(),pd=S.planDraft,wk=(curCtx()||{}).wk||{};
+  const total=ids=>ids.reduce((t,id)=>t+(Number((favById(id)||{}).protein)||0),0);
+  if(pd)return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${pd.id?"Edit meal plan":"New meal plan"}</h2></div>
+    <label class="ask" for="plan-name"><span>Name</span><input class="input" id="plan-name" maxlength="40" value="${esc(pd.name||"")}" placeholder="e.g. Workout day"></label>
+    <div class="plan-run">${pd.meals.map((fid,i)=>{const f=favById(fid);return `<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(f?f.name:"Removed favourite")}</b><small>${f?Number(f.protein)||0:0}g protein</small></span><span class="sp-act">${i?`<button class="link" data-planup="${i}" aria-label="Move up">Up</button>`:""}<button class="x" data-planrm="${i}" aria-label="Remove">×</button></span></div>`}).join("")}</div>
+    <select class="input" id="plan-add" aria-label="Add a meal"><option value="">Add meal ${pd.meals.length+1} from your favourites</option>${favs.map(f=>`<option value="${f.id}">${esc(f.name)} (${Number(f.protein)||0}g)</option>`).join("")}</select>
+    <div class="train-place${wk.protein&&total(pd.meals)>=wk.protein?" ok":""}"><span>This plan gives you <b class="num">${total(pd.meals)}g</b> protein${wk.protein?` of your <b class="num">${wk.protein}g</b> target`:""}.</span></div>
+    <div style="display:flex;gap:8px"><button class="btn primary" data-plansave="1">Save meal plan</button><button class="btn" data-plancancel="1">Cancel</button></div></section>`;
+  if(!favs.length)return `<section class="card"><h2 class="sec-title" style="font-size:20px">Meal plans</h2><p class="muted" style="font-size:14px">A meal plan is your favourites put in order for a whole day: Meal 1, Meal 2 and so on. Save a few favourites first, then build your plan from them.</p><button class="btn primary" data-mseg="favs" style="align-self:flex-start">Add favourites</button></section>`;
+  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your meal plans</h2><span class="fg-n num">${plans.length}</span></div>
+    <p class="muted" style="font-size:13px;margin:-2px 0 10px">Your favourites in order for a whole day. Pick one in Today's meals and log each meal as you eat it. Optional.</p>
+    ${plans.length?`<div class="sp-list">${plans.map(p=>`<div class="sp-item"><span class="sp-ic" aria-hidden="true">${ICO.today}</span><span class="sp-t"><b>${esc(p.name)}</b><small>${p.meals.length} meals · ${total(p.meals)}g protein</small></span><span class="sp-act"><button class="link" data-planuse="${p.id}">Use today</button><button class="link" data-planedit="${p.id}">Edit</button><button class="link" data-plandel="${p.id}" style="color:var(--bad)">${S.planDelArm===p.id?"Sure?":"Delete"}</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px">No meal plans yet.</p>`}
+    <button class="btn primary" data-plannew="1" style="align-self:flex-start;margin-top:10px">+ New meal plan</button></section>`;
 }
 function numbersCard(){
   const c=me();if(!c||c.status!=="active")return "";const x=curCtx(),{log,wk}=x;if(x.dn<1)return "";
@@ -3355,11 +3426,34 @@ root.addEventListener("click",e=>{
   if(b.dataset.picktmr){S.pickTmr=!S.pickTmr;return render()}
   if(b.dataset.foodpick){const k=b.dataset.foodpick,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
   if(b.dataset.oxyplan){const k=b.dataset.oxyplan,it=b.dataset.item,cur=Array.isArray(curCtx().log[k])?curCtx().log[k]:[];edit(k,cur.includes(it)?cur.filter(x=>x!==it):[...cur,it]);return render()}
+  if(b.dataset.mseg){S.mseg=b.dataset.mseg;S.favDraft=null;S.planDraft=null;return render()}
+  if(b.dataset.gomeals){navPush();S.tab="meals";S.mseg="today";S.mealDraft=[];render();window.scrollTo(0,0);return}
+  if(b.dataset.favtoo){S.favToo=!S.favToo;return render()}
+  if(b.dataset.favlog){const f=favById(b.dataset.favlog);if(!f)return;const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:f.name,items:f.items,t:f.items.join(", "),at:nowHHMM(),protein:Number(f.protein)||0,fav:f.id}];edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;toast(`${f.name} logged: ${Number(f.protein)||0}g protein`);return render()}
+  if(b.dataset.plog){const l=curCtx().log,pl=mplansOf().find(p=>p.id===l.mplan),i=Number(b.dataset.plog),f=pl&&favById(pl.meals[i]);if(!f)return;const list=[...(l.food_entries||[]),{id:uid(),name:f.name,items:f.items,t:f.items.join(", "),at:nowHHMM(),protein:Number(f.protein)||0,fav:f.id,plan:pl.id,slot:i}];edit("food_entries",list);edit("protein",proteinOf(list));toast(`Meal ${i+1} logged: ${Number(f.protein)||0}g protein`);return render()}
+  if(b.dataset.favnew){S.favDraft={name:"",items:[],protein:null};return render()}
+  if(b.dataset.favedit){const f=favById(b.dataset.favedit);if(f)S.favDraft=JSON.parse(JSON.stringify(f));return render()}
+  if(b.dataset.favcancel){S.favDraft=null;return render()}
+  if(b.dataset.favdrop){S.favDraft.items.splice(Number(b.dataset.favdrop),1);return render()}
+  if(b.dataset.favdel){const id=b.dataset.favdel;if(S.favDelArm!==id){S.favDelArm=id;return render()}setPrefs(pr=>{pr.favs=(pr.favs||[]).filter(f=>f.id!==id)});S.favDelArm=null;toast("Favourite deleted");return render()}
+  if(b.dataset.favsave){const fd=S.favDraft,name=(fd.name||"").trim(),pv=fd.protein;if(!name){toast("Give it a name");return}if(!fd.items.length){toast("Add what's in it");return}if(pv===""||pv==null||isNaN(Number(pv))){toast("Add how much protein is in it");return}
+    const f={id:fd.id||uid(),name,items:fd.items,protein:Math.round(Number(pv))};setPrefs(pr=>{pr.favs=pr.favs||[];const i=pr.favs.findIndex(x=>x.id===f.id);if(i>=0)pr.favs[i]=f;else pr.favs.push(f)});S.favDraft=null;toast("Favourite saved");return render()}
+  if(b.dataset.plannew){S.planDraft={name:"",meals:[]};return render()}
+  if(b.dataset.planedit){const p=mplansOf().find(x=>x.id===b.dataset.planedit);if(p)S.planDraft=JSON.parse(JSON.stringify(p));return render()}
+  if(b.dataset.plancancel){S.planDraft=null;return render()}
+  if(b.dataset.planrm){S.planDraft.meals.splice(Number(b.dataset.planrm),1);return render()}
+  if(b.dataset.planup){const m=S.planDraft.meals,i=Number(b.dataset.planup);[m[i-1],m[i]]=[m[i],m[i-1]];return render()}
+  if(b.dataset.plandel){const id=b.dataset.plandel;if(S.planDelArm!==id){S.planDelArm=id;return render()}setPrefs(pr=>{pr.mplans=(pr.mplans||[]).filter(p=>p.id!==id)});S.planDelArm=null;toast("Meal plan deleted");return render()}
+  if(b.dataset.plansave){const pd=S.planDraft,name=(pd.name||"").trim();if(!name){toast("Give it a name");return}if(!pd.meals.length){toast("Add at least one meal");return}
+    const pl={id:pd.id||uid(),name,meals:pd.meals};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");return render()}
+  if(b.dataset.planuse){if(curCtx().dn<1){toast("Plans start on Day 1");return}edit("mplan",b.dataset.planuse);S.mseg="today";toast("Following this plan today");window.scrollTo(0,0);return render()}
   if(b.dataset.mnew){S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.mcancel){S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;return render()}
   if(b.dataset.mdrop){S.mealDraft.splice(Number(b.dataset.mdrop),1);return render()}
   if(b.dataset.msave){const d=S.mealDraft||[];if(!d.length)return;const pi=root.querySelector("#meal-protein"),pv=pi?pi.value.trim():"";if(pv===""||isNaN(Number(pv))){toast("Add how much protein was in this meal");if(pi)pi.focus();return}
-    const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),items:d,t:d.join(", "),at:nowHHMM(),from:S.mealFrom||"",protein:Math.round(Number(pv))}];edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;toast(`Meal logged: ${Math.round(Number(pv))}g protein`);return render()}
+    if(S.favToo&&!(S.favName||"").trim()){toast("Name your favourite, or untick it");return}
+    let fav="";if(S.favToo){fav=uid();const nm=S.favName.trim();setPrefs(pr=>{pr.favs=pr.favs||[];pr.favs.push({id:fav,name:nm,items:d,protein:Math.round(Number(pv))})})}
+    const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:S.favToo?S.favName.trim():"",items:d,t:d.join(", "),at:nowHHMM(),protein:Math.round(Number(pv)),fav}];S.favToo=false;S.favName="";edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;S.mealOther=false;S.mealFrom=null;S.mealProtein=null;toast(`Meal logged: ${Math.round(Number(pv))}g protein`);return render()}
   if(b.dataset.fdel){const l=curCtx().log,list=(l.food_entries||[]).filter(f=>f.id!==b.dataset.fdel);edit("food_entries",list);edit("protein",proteinOf(list));return render()}
   if(b.dataset.scrollmeal){if(!S.mealDraft){S.mealDraft=[];S.mealOther=false}render();const el=root.querySelector(".ml-draft");if(el)el.scrollIntoView({behavior:"smooth",block:"center"});return}
   if(b.dataset.wkopen){S.wkOpen=S.wkOpen===b.dataset.wkopen?null:b.dataset.wkopen;return render()}
@@ -3441,6 +3535,10 @@ root.addEventListener("keydown",e=>{if(e.target.id==="mpInput"&&e.key==="Enter")
 let timers={};
 root.addEventListener("input",e=>{
   if(e.target.id==="meal-protein"){S.mealProtein=e.target.value;return}
+  if(e.target.id==="mfav-name"){S.favName=e.target.value;return}
+  if(e.target.id==="fav-name"&&S.favDraft){S.favDraft.name=e.target.value;return}
+  if(e.target.id==="fav-protein"&&S.favDraft){S.favDraft.protein=e.target.value;return}
+  if(e.target.id==="plan-name"&&S.planDraft){S.planDraft.name=e.target.value;return}
   if(e.target.dataset.mpname){const k=e.target.dataset.mpname,pr=JSON.parse(JSON.stringify(PREFS()));if(pr.plans&&pr.plans[k]){pr.plans[k].name=e.target.value.slice(0,40);savePrefs(pr);const ch=root.querySelector(`[data-mpkind="${k}"] .sp-t b`);if(ch)ch.textContent=e.target.value||"Meal plan"}return}
   const pin=e.target.dataset.pin;if(pin){const x=curCtx(),pk=ymd(addDays(x.date,-1)),v=e.target.value===""?"":Number(e.target.value);clearTimeout(timers["p"+pin]);timers["p"+pin]=setTimeout(()=>saveEdit(x.c.id,pk,pin,v),300);return}
   const mt=e.target.dataset.mtext||e.target.dataset.mnote;if(mt){const f=e.target.dataset.mtext?"text":"note",v=e.target.value;clearTimeout(timers["m"+mt+f]);timers["m"+mt+f]=setTimeout(()=>setMeals(a=>a.map(m=>m.id===mt?{...m,[f]:v}:m)),300);return}
@@ -3451,6 +3549,9 @@ root.addEventListener("input",e=>{
 });
 root.addEventListener("change",e=>{
   if(e.target.id==="plan-pick"){const v=e.target.value;if(!v)return;const[k,i]=v.split("|"),pl=myPlan(k),m=pl&&pl.meals[Number(i)];if(m){S.mealDraft=[...new Set(planItems(m.foods))];S.mealFrom=planName(k,pl)+", Meal "+(Number(i)+1)}return render()}
+  if(e.target.id==="fav-food"&&S.favDraft){const v=e.target.value;if(v==="__other"){const t=prompt("What was it?");if(t&&t.trim())S.favDraft.items.push(t.trim())}else if(v&&!S.favDraft.items.includes(v))S.favDraft.items.push(v);return render()}
+  if(e.target.id==="plan-add"&&S.planDraft){if(e.target.value)S.planDraft.meals.push(e.target.value);return render()}
+  if(e.target.id==="plan-today"){edit("mplan",e.target.value);return render()}
   if(e.target.id==="food-pick"){const v=e.target.value;if(v==="__other"){S.mealOther=true}else if(v&&!(S.mealDraft||[]).includes(v)){S.mealDraft=[...(S.mealDraft||[]),v]}render();const n=document.getElementById(S.mealOther?"food-in":"food-pick");if(n)n.focus();return}
   const pin=e.target.dataset.pin;if(pin){const x=curCtx(),pk=ymd(addDays(x.date,-1)),v=e.target.value===""?"":Number(e.target.value);clearTimeout(timers["p"+pin]);timers["p"+pin]=setTimeout(()=>saveEdit(x.c.id,pk,pin,v),300);timers._nrender=setTimeout(render,400);return}
   // Time boxes save straight away but only redraw once the picker closes: iPhone fires "change" on every scroll of the wheel, and redrawing then closes it
