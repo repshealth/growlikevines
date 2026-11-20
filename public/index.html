@@ -722,6 +722,8 @@ body.has-bnav .col{max-width:560px}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
+.eat-remind.walk{background:#e4f3c8;color:#3c5a0a}
+.er-ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .er-ic{flex:0 0 36px;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:18px;background:rgba(255,255,255,.6)}
 .eat-ask{border:2px solid var(--fg)}
 .eat-ask .sk{border:0;text-align:left;cursor:pointer}
@@ -2309,6 +2311,7 @@ function mealsView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Meals</h1><p class="muted">Eat anything from your list, as much as you need. Log each meal with its protein: That's how your protein adds up.</p></div></div>
     <div class="eat-remind"><span class="er-ic" aria-hidden="true">↓</span><div><b>Eat in rest and digest</b><span>Before every meal, make sure you're calm and in a parasympathetic state. Feeling wired? Bring it down first.</span></div><button class="btn" data-guidepage="subconscious" data-scrollto="oxy-down">Bring it down</button></div>
+    <div class="eat-remind walk"><span class="er-ic" aria-hidden="true">${ICO.steps}</span><div><b>Walk after every meal</b><span>Go for a short, easy walk after you eat. It helps your body use the meal. Then update your steps in the Tracker.</span></div><button class="btn" data-guidepage="tracker">Update steps</button></div>
     <div class="seg seg3" role="tablist">${MSEG.map(([k,l])=>`<button role="tab" data-mseg="${k}" aria-selected="${seg===k}">${l}</button>`).join("")}</div>
     ${seg==="favs"?favsSection():seg==="plans"?plansSection():(x&&x.dn>0?todayMeals(x):`<p class="muted">Logging starts on Day 1. Have a look at your food list and save some favourites.</p>`)}
     <button class="btn" data-tab="food" style="align-self:flex-start">See the food list</button>
