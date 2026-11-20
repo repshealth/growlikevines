@@ -714,6 +714,7 @@ body.has-bnav .col{max-width:560px}
 
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
+.warn-eat{background:#fff4e0;border-color:#e8b04a}
 .meals-start{flex-direction:column;align-items:stretch}
 .golink.lime{background:var(--lime-dim);border-color:var(--lime)}
 .golink.done1 b{color:var(--green-ink)}
@@ -1201,10 +1202,10 @@ const MORNING=[
    asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"}]},
   {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
    asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
-  {id:"m3",title:"Meal 1",text:["Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
-   asks:[{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
-  {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Rate where you are"],
-   asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"am_state",type:"rating",arousal:true,aim:"centred",aimText:"to open the day: Balanced and ready to go.",label:"Rate your zone, 1 to 10"}]}
+  {id:"m3",title:"Meal 1",text:["Before you eat, rate your zone: You want to be in rest and digest","Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
+   asks:[{k:"am_state",type:"rating",arousal:true,aim:"calm",aimText:"before you eat: Rest and digest.",label:"Before you eat: Rate your zone, 1 to 10",req:l=>!!l.am_state,reqMsg:"Rate your zone before you eat"},{k:"_eatready",type:"eatready"},{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
+  {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new"],
+   asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"}]}
 ];
 const ML=MORNING.length;
 const TMR_ASKS=[
@@ -1349,7 +1350,7 @@ const HARD=["Cold therapy","Workout","The Reset","Yoga / Pilates"];
 const effort=t=>HARD.includes(t)?2:1;
 const bestEffort=(list,n)=>(Array.isArray(list)?list:[]).map(effort).sort((a,b)=>b-a).slice(0,n).reduce((a,b)=>a+b,0);
 // Zone ratings: up to 2 points, the closer to where you should be the more you score
-const ZONE_AIM={am_state_act:"wired",am_state_rel:"calm",am_state:"centred",d_state:"centred",pm_state:"calm"};
+const ZONE_AIM={am_state_act:"wired",am_state_rel:"calm",am_state:"calm",d_state:"centred",pm_state:"calm"};
 const zonePts=(v,aim)=>{v=Number(v);if(!v)return 0;if(aim==="wired")return Math.max(0,2-0.5*(10-v));if(aim==="calm")return Math.max(0,2-0.5*(v-1));return v>=4&&v<=6?2:v===3||v===7?1:0};
 function scoreOf(log,tg){
   const meals=mealsOf(log),pairs=dayPairs(log),yna=ynAsks(log),nn=yna.filter(a=>log[a.k]==="yes").length;
@@ -2164,7 +2165,7 @@ function subconsciousView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>${todoHtml("todos",log,true,false)}</section>`:""}
-    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${esc(G.d)}</p>${list(G)}</section>`).join("")}
+    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}" id="oxy-${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${esc(G.d)}</p>${list(G)}</section>`).join("")}
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
   </div>`;
 }
@@ -2283,7 +2284,7 @@ function clientView(){
   if(S.tab==="food")return backChip()+foodView();
   if(S.tab==="meals")return backChip()+mealsView();
   if(S.tab==="training")return trainingView();
-  if(S.tab==="subconscious")return subconsciousView();
+  if(S.tab==="subconscious")return backChip()+subconsciousView();
   if(S.tab==="nutrition")return nutritionView();
   if(S.tab==="workout")return workoutView();
   if(S.tab==="progress")return progressView(me());
@@ -2512,6 +2513,9 @@ function askHtml(a,log,wk,locked){
         ${mode==="favs"?`${tf.length?`<div class="plan-run">${tf.map((id,i)=>{const f=favById(id);return f?`<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></span><button class="x" data-tfrm="${i}" aria-label="Remove" ${dis}>×</button></div>`:""}).join("")}</div><small class="muted num" style="font-weight:600">${tf.reduce((t,id)=>t+(Number((favById(id)||{}).protein)||0),0)}g protein planned</small>`:""}
           <small class="muted" style="font-weight:600">Tap to add Meal ${tf.length+1}</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-tfadd="${f.id}" ${dis}><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`:""}
         <div class="opts"><button class="link" data-guidepage="meals" data-gomseg="favs" ${dis}>${favs.length?"Add more favourites":"Create favourites"}</button><button class="link" data-guidepage="meals" data-gomseg="plans" ${dis}>${plans.length?"Build another meal plan":"Build a meal plan"}</button></div></div>`}
+    case"eatready":{const v=Number(log.am_state);if(!v)return "";
+      if(v<=3)return `<div class="train-place ok"><span>${TICK} Good to eat.</span></div>`;
+      return `<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>You're at ${v}, so your body isn't ready to digest yet. Pick something from Bring yourself down in Subconscious, do it, then rate your zone again.</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Open Subconscious</button></div>`}
     case"bedcue":return log.tmr_wake?bedCue(log.tmr_wake):"";
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
@@ -3409,7 +3413,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpafter){const k=S.mpKind&&myPlan(S.mpKind)?S.mpKind:planKeys()[0],pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
-  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);return}
+  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);if(b.dataset.scrollto){const el=document.getElementById(b.dataset.scrollto);if(el)window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)}return}
   if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";S.mealDraft=[];S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
   if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
