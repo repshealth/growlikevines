@@ -728,6 +728,11 @@ body.has-bnav .col{max-width:560px}
 .er-ic{flex:0 0 36px;width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:18px;background:rgba(255,255,255,.6)}
 .eat-ask{border:2px solid var(--fg)}
 .eat-ask .sk{border:0;text-align:left;cursor:pointer}
+.golink.eat-lvl.lvl-6{background:#fff8e6;border-color:#f0d08a}
+.golink.eat-lvl.lvl-7{background:#fff0d9;border-color:#e8b04a}
+.golink.eat-lvl.lvl-8{background:#ffe2cc;border-color:#e08a4a;border-width:2px}
+.golink.eat-lvl.lvl-9{background:#fde0dc;border-color:#c8432f;border-width:2px}
+.golink.eat-lvl.lvl-9 b{color:#a3311f;font-size:17px}
 .golink.warn-eat{background:#fff4e0;border-color:#e8b04a}
 .nums.stacked{display:flex;flex-direction:column;gap:12px}
 .nums.stacked .input{max-width:220px}
@@ -1276,7 +1281,7 @@ const MORNING=[
   {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
    asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
   {id:"m3",title:"Meal 1",text:["Before you eat, rate your zone: You want to be in rest and digest","Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
-   asks:[{k:"am_state",type:"rating",arousal:true,aim:"calm",aimText:"before you eat: Rest and digest.",label:"Before you eat: Rate your zone, 1 to 10",req:l=>!!l.am_state,reqMsg:"Rate your zone before you eat"},{k:"_eatready",type:"eatready"},{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
+   asks:[{k:"am_state",type:"rating",arousal:true,eat:true,aim:"calm",label:"Before you eat: Rate your zone, 1 to 10",req:l=>!!l.am_state,reqMsg:"Rate your zone before you eat"},{k:"_eatready",type:"eatready"},{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
   {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"}]}
 ];
@@ -2564,10 +2569,10 @@ function askHtml(a,log,wk,locked){
   switch(a.type){
     case"rating":if(a.arousal){const z=zoneOf(v),aim=ZONES.find(q=>q[0]===a.aim);
       return `<div class="ask"><span class="ask-h">${a.label}${infoBtn("arousal","arousal")}</span>${infoBox("arousal")}
-        ${aim?`<small class="muted" style="font-weight:500">Aim for the <b>${aim[1]}</b> zone ${a.aimText||(a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day.")}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
+        ${a.eat?`<small class="muted" style="font-weight:500">Under 6 and you're good to eat. 6 or above, bring it down first.</small>`:aim?`<small class="muted" style="font-weight:500">Aim for the <b>${aim[1]}</b> zone ${a.aimText||(a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day.")}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
         <div class="rating arousal" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button class="z-${zoneOf(i+1)[0]}" data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div>
         <div class="zones">${ZONES.map(q=>`<div class="zone z-${q[0]}${z&&z[0]===q[0]?" on":""}" style="grid-column:span ${q[3]}"><b>${q[1]}</b><span>${q[2]}</span></div>`).join("")}</div>
-        ${z?`<div class="train-place${aim?(z[0]===aim[0]?" ok":""):" ok"}"><span>${aim&&z[0]===aim[0]?TICK+" ":""}You're in the <b>${z[1]}</b> zone. ${z[4].replace(/^[^:]*: /,"")}${aim&&z[0]!==aim[0]?` Aim for the ${aim[1]} zone: ${a.nudge?a.nudge:a.aim==="calm"?"try a low arousal task, dim the lights, slow nasal breathing.":z[0]==="wired"?"slow your breathing and take a few calm minutes before you start the day.":"get outside, move and get some bright light."}`:""}</span></div>`:""}</div>`}
+        ${z&&!a.eat?`<div class="train-place${aim?(z[0]===aim[0]?" ok":""):" ok"}"><span>${aim&&z[0]===aim[0]?TICK+" ":""}You're in the <b>${z[1]}</b> zone. ${z[4].replace(/^[^:]*: /,"")}${aim&&z[0]!==aim[0]?` Aim for the ${aim[1]} zone: ${a.nudge?a.nudge:a.aim==="calm"?"try a low arousal task, dim the lights, slow nasal breathing.":z[0]==="wired"?"slow your breathing and take a few calm minutes before you start the day.":"get outside, move and get some bright light."}`:""}</span></div>`:""}</div>`}
       return `<div class="ask"><span>${a.label}</span><div class="rating" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div></div>`;
     case"choice":return `<div class="ask">${a.yn&&INFO[a.k]?`<span class="ask-h">${a.label}${infoBtn(a.k,a.label)}</span>${infoBox(a.k)}`:`<span>${a.label}</span>`}<div class="opts">${a.options.map(([k,l])=>`<button class="chip" data-ask="${a.k}" data-val="${esc(k)}" aria-pressed="${v===k}" ${dis}>${esc(l)}</button>`).join("")}</div></div>`;
     case"number":{const tgt=a.target?wk[a.target]:null,hit=tgt!=null&&Number(v)>=tgt;
@@ -2655,8 +2660,13 @@ function askHtml(a,log,wk,locked){
           <small class="muted" style="font-weight:600">Tap to add Meal ${tf.length+1}</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-tfadd="${f.id}" ${dis}><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`:""}
         <div class="opts"><button class="link" data-guidepage="meals" data-gomseg="favs" ${dis}>${favs.length?"Add more favourites":"Create favourites"}</button><button class="link" data-guidepage="meals" data-gomseg="plans" ${dis}>${plans.length?"Build another meal plan":"Build a meal plan"}</button></div></div>`}
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
-      if(v<=3)return `<div class="train-place ok"><span>${TICK} Good to eat.</span></div>`;
-      return `<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>You're at ${v}, so your body isn't ready to digest yet. Pick something from Bring yourself down in Subconscious, do it, then rate your zone again.</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Open Subconscious</button></div>`}
+      if(v<6)return `<div class="train-place ok"><span>${TICK} You're good to eat.</span></div>`;
+      const M={6:["Nearly there","Take a few minutes to bring it down before you eat. A few slow breaths could be all it takes."],
+        7:["Bring it down before you eat","Your body isn't ready to digest properly yet. Pick something from Bring yourself down and do it first."],
+        8:["You need to bring it down first","You're too switched on to digest. Don't eat yet: Do something from Bring yourself down, then rate again."],
+        9:["Stop. You can't eat yet","You're in fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."],
+        10:["Stop. You can't eat yet","You're in full fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."]}[v];
+      return `<div class="golink eat-lvl lvl-${Math.min(v,9)}"><div><b>${M[0]}</b><span>You're at ${v}. ${M[1]}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Bring it down</button></div>`}
     case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=wkSummaryRows(log);
       const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
       return `<div class="overview">
