@@ -762,6 +762,42 @@ body.has-bnav .col{max-width:560px}
 .st-up .oxy-row .btn.primary{background:#f2c4a3;border-color:#f2c4a3;color:#5a2408}
 .st-down .oxy-row .btn.primary{background:#bcd3e5;border-color:#bcd3e5;color:#15344a}
 @media (max-width:420px){.state-key{grid-template-columns:1fr}}
+
+.wk-key{display:flex;flex-wrap:wrap;gap:6px}
+.wk-key span{font-size:12px;font-weight:700;border-radius:999px;padding:4px 10px}
+.tone-up{--tb:#e4f3c8;--tc:#3c5a0a;--ts:#8bc34a}
+.tone-centre{--tb:#fbe6cc;--tc:#8a4b0a;--ts:#e9a24d}
+.tone-down{--tb:#dfeaf3;--tc:#244e6b;--ts:#7fa8c6}
+.tone-mix{--tb:var(--surface-2,#eef0ec);--tc:var(--fg);--ts:var(--line)}
+.wk-key span{background:var(--tb);color:var(--tc)}
+.wk-card{padding:0;overflow:hidden}
+.wk-band{display:flex;align-items:center;gap:12px;width:100%;border:0;background:var(--tb);color:var(--tc);padding:14px 16px;text-align:left}
+.wk-num{flex:0 0 36px;width:36px;height:36px;border-radius:999px;display:grid;place-items:center;font-weight:800;background:rgba(255,255,255,.65)}
+.wk-num svg{width:16px;height:16px}
+.wk-bt{display:flex;flex-direction:column;flex:1}
+.wk-bt small{font-size:12px;font-weight:600;opacity:.85}
+.wk-bt b{font-size:18px}
+.wk-count{font-weight:800}
+.wk-card.all .wk-band{opacity:.75}
+.wk-intro{margin:12px 16px 0;font-size:14px}
+.wk-goals{margin:10px 16px 0;display:flex;flex-direction:column;gap:6px}
+.wk-goals b{font-size:13px}
+.wk-goals .chip{font-size:12.5px;cursor:default}
+.wk-steps2{display:flex;flex-direction:column;gap:8px;padding:12px 16px 16px}
+.wk-step{display:flex;gap:12px;align-items:flex-start;text-align:left;background:var(--bg);border:1px solid var(--line);border-left:5px solid var(--ts);border-radius:12px;padding:12px;color:var(--fg)}
+.wk-step.on{background:var(--tb)}
+.wk-box{flex:0 0 26px;width:26px;height:26px;border-radius:8px;border:2px solid var(--ts);display:grid;place-items:center;background:#fff}
+.wk-step.on .wk-box{background:var(--ts);border-color:var(--ts)}
+.wk-box svg{width:14px;height:14px}
+.wk-st{display:flex;flex-direction:column;gap:3px}
+.wk-st b{font-size:15px}
+.wk-st>span{font-size:13.5px;line-height:1.4;color:var(--muted)}
+.wk-tone{font-size:11.5px;font-weight:700;color:var(--tc)}
+.wk-why{display:flex;justify-content:space-between;width:100%;background:none;border:0;padding:0;color:var(--fg);font-size:16px}
+.wk-why span{text-decoration:underline;font-size:14px}
+.wk-whyb{margin-top:10px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+.wk-whyb p{margin:0}
+.wk-whyb ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2116,7 +2152,9 @@ function trackerView(){
       <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
       ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
       <button class="btn" data-tab="subconscious" style="align-self:flex-start;margin-top:8px">Open Subconscious</button></section>`})()}
-    <button class="trk-link" data-tab="training"><span class="trk-ic" aria-hidden="true">${ICO.dumbbell}</span><span><b>Workout</b><small>${log.train_done?"Trained at "+esc(log.train_done):log.wk_pre?"Getting set":"Log your session in Workout"}</small></span><span class="sp-go">Open</span></button>
+    ${(()=>{const rows=wkSummaryRows(log);return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Workout</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
+      ${rows.length?`<div class="review">${rows.map(r=>`<div class="rv"><span>${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span></span><span class="num muted">${esc(r.at)}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">No workout logged today.</p>`}
+      <button class="btn" data-tab="training" style="align-self:flex-start;margin-top:8px">${rows.length?"Open Workout":"Start your workout"}</button></section>`})()}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Meals</h2><span class="muted num">${food.length}</span></div>
       ${mealRows(food,false)||`<p class="muted" style="font-size:13px;margin:0">No meals logged yet.</p>`}
       <button class="btn${food.length?"":" primary"}" data-gomeals="1" style="align-self:flex-start;margin-top:8px">Log a meal in Meals</button>
@@ -2170,24 +2208,59 @@ function foodView(){
     <button class="btn" data-guidepage="nutrition" style="align-self:flex-start">Watch Ellis explain the food</button>
   </div>`;
 }
+// Ellis's Process: Training. Tone follows his key: up = arousal inducing (green), centre = centring (orange), down = arousal reducing (blue).
+const WORKOUT=[
+  {k:"pre",name:"Pre-training set up",when:"Before you get to the gym",steps:[
+    {k:"w_pre1",t:"Clear and set your mind",tone:"down",d:"Prep and eat your food in a relaxed environment, with no thought of the workout ahead at this point."},
+    {k:"w_pre2",t:"Set the workout",tone:"centre",d:"Whether it's pre-assigned or still to be written, write it out pen on paper before you arrive. Visualise yourself doing the movements as you write."},
+    {k:"w_pre3",t:"Action the set up",tone:"up",d:"Change of clothes, change of music, anything that moves you into the performance mindset. Change your environment: Travel to the gym or find a new space away from comfort and work. Even at home or driving, get a short walk in before you start."}]},
+  {k:"prep",name:"Movement prep",when:"Start of the workout, before your core workout",tone:"up",intro:"Cover proprioception and body balance, and connect with the body parts you're about to train by shifting load and engagement.",
+    goals:["Oxidise fat: Aerobic work","Heart rate change","Body temperature change","Proprioception work"],steps:[
+    {k:"w_prep1",t:"Oxidise fat",tone:"up",d:"5 to 10 minutes of easy cardio."},
+    {k:"w_prep2",t:"Set your breath cadence",tone:"centre",d:"Breathe in at the start of each movement and out at the point of contraction."},
+    {k:"w_prep3",t:"Proprioception work",tone:"up",d:"Anything that needs coordination, balance or shifting your body weight mid-rep."},
+    {k:"w_prep4",t:"Movement variation game",tone:"up",d:"A standard exercise with a different movement pattern to normal, so you have to rethink it."},
+    {k:"w_prep5",t:"Heart rate change",tone:"up",d:"Do all of the above with the intention of driving your heart rate up, with controlled focus."}]},
+  {k:"first",name:"First movement",when:"Arousal intensifier and glycogen driver",tone:"up",steps:[
+    {k:"w_first1",t:"Deep belly breaths",tone:"centre",d:"Breathe in and out deep into your belly, directed into the working body part. Visualise it."},
+    {k:"w_first2",t:"Max intensity first movement",tone:"up",d:"A powerful, max intensity effort on the first movement to signal stress and demand to the muscle."}]},
+  {k:"mid",name:"Mid workout",when:"Through the rest of your session",tone:"centre",steps:[
+    {k:"w_mid1",t:"Blood flow",tone:"centre",d:"Wear BFR straps whenever you can, and keep every rep under constant tension by never fully opening the joint."},
+    {k:"w_mid2",t:"Power your breath",tone:"centre",d:"During and between sets, use your breath to direct the rep and the muscle activation."},
+    {k:"w_mid3",t:"Visualisation",tone:"centre",d:"Eyes closed if it's easier. Every rep, keep the working muscle front of mind: Filling with blood and shaping to your ultimate look."}]},
+  {k:"close",name:"Close the workout",when:"Bring yourself back down",tone:"down",steps:[
+    {k:"w_close1",t:"Release tension",tone:"down",d:"Release any held muscle tension with calm decompression movement."},
+    {k:"w_close2",t:"Relaxed walk",tone:"down",d:"Steady, relaxed walking, breathing slow and deep into your stomach."},
+    {k:"w_close3",t:"Lower your body temperature",tone:"down",d:"As soon as possible."},
+    {k:"w_close4",t:"Reverse the set up",tone:"down",d:"Change of clothes, change of music, anything that moves you out of the performance mindset, and change your environment. Even at home or driving, get a short walk in before returning to your day."}]}
+];
+const TONE={up:["Arousal inducing","Stimulate"],centre:["Centring","Maintain balance"],down:["Arousal reducing","Calm"]};
+const wkDone=(log,ph)=>ph.steps.filter(s=>log[s.k]).length;
+const wkAny=log=>WORKOUT.some(ph=>wkDone(log,ph));
 function workoutCard(x){
-  const {log,wk}=x,ph=[["wk_pre","Before","Get set",PRE_STEPS],["train_done","Train","The session",MID_STEPS],["wk_down","Come down","Bring it down",CLOSE_STEPS]];
-  return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Today's session</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
-      ${askHtml({k:"workout_name",type:"text",label:"What are you training? (optional)",idp:"t-"},log,wk,false)}
-      <ol class="wk-flow">${ph.map(([k,t,sub,steps],i)=>{const on=log[k],open=S.wkOpen===k;return `<li class="wk-ph${on?" on":""}">
-        <div class="wk-top"><button class="wk-tick" data-ask="${k}" data-val="${on?"":nowHHMM()}" aria-pressed="${!!on}" aria-label="${on?"Untick":"Tick"} ${t}">${on?TICK:i+1}</button>
-        <button class="wk-name" data-wkopen="${k}" aria-expanded="${open}"><b>${t}</b><small>${on?"Done "+esc(on):sub} · ${open?"Hide":"How"}</small></button></div>
-        ${open?`<ol class="wk-steps">${steps.map(([,tt,d])=>`<li><b>${esc(tt)}.</b> ${esc(d)}</li>`).join("")}</ol>`:""}</li>`}).join("")}</ol>
-    </section>`;
+  const {log,wk}=x;
+  return `${askHtml({k:"workout_name",type:"text",label:"What are you training today? (optional)",idp:"t-"},log,wk,false)}
+    ${WORKOUT.map((ph,pi)=>{const n=wkDone(log,ph),all=n===ph.steps.length,open=S.wkPhase?S.wkPhase===ph.k:!all&&WORKOUT.findIndex(q=>wkDone(log,q)<q.steps.length)===pi;
+      return `<section class="card wk-card tone-${ph.tone||"mix"}${all?" all":""}"><button class="wk-band" data-wkphase="${ph.k}" aria-expanded="${open}"><span class="wk-num">${all?TICK:pi+1}</span><span class="wk-bt"><small>${esc(ph.when)}</small><b>${esc(ph.name)}</b></span><span class="wk-count num">${n}/${ph.steps.length}</span></button>
+        ${open?`${ph.intro?`<p class="wk-intro">${esc(ph.intro)}</p>`:""}${ph.goals?`<div class="wk-goals"><b>You're aiming for</b><div class="opts">${ph.goals.map(g=>`<span class="chip">${esc(g)}</span>`).join("")}</div></div>`:""}
+        <div class="wk-steps2">${ph.steps.map(s=>{const on=log[s.k];return `<button class="wk-step tone-${s.tone}${on?" on":""}" data-wtick="${s.k}" aria-pressed="${!!on}"><span class="wk-box">${on?TICK:""}</span><span class="wk-st"><b>${esc(s.t)}</b><span>${esc(s.d)}</span><small class="wk-tone">${TONE[s.tone][0]}${on?` · Done ${esc(on)}`:""}</small></span></button>`}).join("")}</div>`:""}
+      </section>`}).join("")}`;
 }
 function trainingView(){
   const v=INTRO_VIDEOS.find(x=>x.k==="workout"),x=curCtx();
   return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Train how you like, when you like. Tick each part as you go: The bits either side of the session are what make it count.</p></div></div>
-    ${x&&x.dn>0?dayNav(x)+workoutCard(x):""}
+    <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Tick each step as you go.</p></div></div>
+    ${x&&x.dn>0?dayNav(x):""}
+    <div class="wk-key"><span class="tone-up">Arousal inducing: Stimulate</span><span class="tone-centre">Centring: Maintain balance</span><span class="tone-down">Arousal reducing: Calm</span></div>
+    ${x&&x.dn>0?workoutCard(x):`<p class="muted">Workout logging starts on Day 1.</p>`}
+    <section class="card"><button class="wk-why" data-wkwhy="1" aria-expanded="${!!S.wkWhy}"><b>Why it works</b><span>${S.wkWhy?"Hide":"Show"}</span></button>
+      ${S.wkWhy?`<div class="wk-whyb"><b>Main body focus</b><p>All effort driven by glycogen-driven muscle. No wasted energy spent on your central nervous system from a lack of muscle connection, or from pushing beyond muscular failure.</p>
+      <b>Main brain focus</b><ol><li><b>Motor cortex:</b> Coordination, movement and physical readiness. Planning, intention, movement prep and judgement, like an F1 driver.</li><li><b>Basal ganglia:</b> Starting the action and reinforcing the habit.</li><li><b>Brainstem arousal:</b> Moving from a sleep state to a wake state.</li><li><b>Hypothalamus (SCN):</b> Shifting to daytime through light and your circadian rhythm.</li><li><b>Locus coeruleus:</b> Noradrenaline-driven attention and alertness.</li></ol></div>`:""}</section>
     ${v?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${esc(v.title)}</h2></div>${videoEmbed(v.url,v.title,"Ellis is recording this one. It'll appear here.")}</section>`:""}
   </div>`;
 }
+// Tracker and Day Close summary of the workout
+function wkSummaryRows(log){return WORKOUT.map(ph=>{const n=wkDone(log,ph);if(!n)return null;const last=ph.steps.map(s=>log[s.k]).filter(Boolean).sort().pop();return{name:ph.name,n,of:ph.steps.length,at:last}}).filter(Boolean)}
 function subconsciousView(){
   const x=curCtx(),log=x?x.log:{},ox=oxyOf(log);
   const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Did it</button>`:""}
@@ -2560,12 +2633,12 @@ function askHtml(a,log,wk,locked){
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
       if(v<=3)return `<div class="train-place ok"><span>${TICK} Good to eat.</span></div>`;
       return `<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>You're at ${v}, so your body isn't ready to digest yet. Pick something from Bring yourself down in Subconscious, do it, then rate your zone again.</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Open Subconscious</button></div>`}
-    case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=[["wk_pre","Before"],["train_done","Train"],["wk_down","Come down"]].filter(([k])=>log[k]);
+    case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=wkSummaryRows(log);
       const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
       return `<div class="overview">
         <div class="ov-sec"><b>Up and down</b>${ox.length?`<div class="review">${ox.map(o=>row(`${o.g==="up"?"↑":"↓"} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
         <div class="ov-sec"><b>Meals <span class="muted num" style="font-weight:600">${proteinOf(food)}g protein</span></b>${food.length?`<div class="review">${food.map((f,i)=>row(esc(f.name||"Meal "+(i+1)),f.at,`${esc(f.t)}${f.protein!=null?" · "+Number(f.protein)+"g protein":""}`)).join("")}</div>`:`<small class="muted">No meals logged today.</small>`}</div>
-        <div class="ov-sec"><b>Workout</b>${wks.length?`<div class="review">${wks.map(([k,l])=>row(`${TICK} ${l}${k==="train_done"&&log.workout_name?": "+esc(log.workout_name):""}`,log[k])).join("")}</div>`:`<small class="muted">No workout logged today.</small>`}</div>
+        <div class="ov-sec"><b>Workout</b>${wks.length?`${log.workout_name?`<small class="muted">${esc(log.workout_name)}</small>`:""}<div class="review">${wks.map(r=>row(`${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span>`,r.at)).join("")}</div>`:`<small class="muted">No workout logged today.</small>`}</div>
       </div>`}
     case"copytodos":{const open=todosOf(log,"todos").filter(t=>!t.done),have=new Set(todosOf(log,"tmr_todos").map(t=>t.t)),left=open.filter(t=>!have.has(t.t));
       return open.length?`<button class="btn" data-copytodos="1" style="align-self:flex-start" ${dis||!left.length?"disabled":""}>${left.length?`Copy ${left.length} unfinished ${left.length===1?"task":"tasks"} from today`:`${TICK} Today's unfinished tasks copied`}</button>`:""}
@@ -3543,6 +3616,11 @@ root.addEventListener("click",e=>{
   if(b.dataset.gomeals){navPush();S.tab="meals";S.mseg="today";S.mealDraft=[];render();window.scrollTo(0,0);return}
   if(b.dataset.favtoo){S.favToo=!S.favToo;return render()}
   if(b.dataset.favlog){const f=favById(b.dataset.favlog);if(!f)return;const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:f.name,items:f.items,t:f.items.join(", "),at:nowHHMM(),protein:Number(f.protein)||0,fav:f.id}];edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;toast(`${f.name} logged: ${Number(f.protein)||0}g protein`);if(backAfterMeal())return;return render()}
+  if(b.dataset.wtick){const k=b.dataset.wtick,l=curCtx().log,t=nowHHMM();edit(k,l[k]?"":t);
+    if(!l[k]&&/^w_(first|mid)/.test(k)&&!curCtx().log.train_done)edit("train_done",t);
+    const ph=WORKOUT.find(p=>p.steps.some(s=>s.k===k)),lg=curCtx().log;if(ph&&wkDone(lg,ph)===ph.steps.length){const nx=WORKOUT.find(p=>wkDone(lg,p)<p.steps.length);S.wkPhase=nx?nx.k:null;toast(nx?`${ph.name} done. Next: ${nx.name}`:"Workout complete")}return render()}
+  if(b.dataset.wkphase){S.wkPhase=S.wkPhase===b.dataset.wkphase?"__none":b.dataset.wkphase;return render()}
+  if(b.dataset.wkwhy){S.wkWhy=!S.wkWhy;return render()}
   if(b.dataset.copytodos){const l=curCtx().log,have=new Set(todosOf(l,"tmr_todos").map(t=>t.t)),add=todosOf(l,"todos").filter(t=>!t.done&&!have.has(t.t)).map(t=>({...t,id:uid(),done:""}));edit("tmr_todos",[...todosOf(l,"tmr_todos"),...add]);toast(`${add.length} ${add.length===1?"task":"tasks"} copied to tomorrow`);return render()}
   if(b.dataset.tmrmode){const m=b.dataset.tmrmode;edit("tmr_mmode",m);if(m!=="plan")edit("tmr_mplan","");if(m!=="favs")edit("tmr_favs",[]);return render()}
   if(b.dataset.tfadd){const l=curCtx().log;edit("tmr_favs",[...(l.tmr_favs||[]),b.dataset.tfadd]);return render()}
