@@ -2235,10 +2235,10 @@ function logPlanned(r){const l=curCtx().log,list=[...(l.food_entries||[]),{id:ui
 function eatAskHtml(log){
   const downs=(OXYGEN.find(G=>G.g==="down")||{items:[]}).items,ox=oxyOf(log);
   return `<section class="card eat-ask"><span class="eyebrow">Before you eat</span><h2 class="sec-title" style="font-size:20px;margin:2px 0 6px">Which state are you in right now?</h2>
-    ${S.eatSym?`<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>In a sympathetic state your body isn't ready to digest. Do one of these, tap it, then come back to your meal.</span></div></div>
-      <div class="opts">${downs.map(it=>{const d=ox.some(o=>o.item===it&&o.g==="down"&&o.from==="meal");return `<button class="chip${d?"":""}" data-oxy="${esc(it)}" data-oxyg="down" data-oxyfrom="meal" data-oxyadd="1" aria-pressed="${d}">${d?TICK+" ":""}${esc(it)}</button>`}).join("")}</div>
+    ${S.eatSym?`<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>In a sympathetic state your body isn't ready to digest. Do one of these and tap it (tap again to untick), then carry on to your meal.</span></div></div>
+      <div class="opts">${downs.map(it=>{const d=ox.some(o=>o.item===it&&o.g==="down"&&o.from==="meal");return `<button class="chip${d?"":""}" data-oxy="${esc(it)}" data-oxyg="down" data-oxyfrom="meal" aria-pressed="${d}">${d?TICK+" ":""}${esc(it)}</button>`}).join("")}</div>
       <button class="link" data-guidepage="subconscious" data-scrollto="oxy-down" style="align-self:flex-start">See how each one works in Subconscious</button>
-      <div class="opts"><button class="btn primary" data-eatstate="para">I'm in rest and digest now</button><button class="link" data-eatstate="skip">Log it anyway</button></div>`
+      <div class="opts"><button class="btn primary" data-eatstate="para">I'm in rest and digest now</button><button class="link" data-eatstate="skip">Log it anyway</button><button class="link" data-eatstate="back">Change my answer</button></div>`
     :`<div class="state-key"><button class="sk down" data-eatstate="para"><b>↓ Parasympathetic</b><span>Calm, rest and digest. Ready to eat.</span></button><button class="sk up" data-eatstate="sym"><b>↑ Sympathetic</b><span>Wired, heart rate up, fight or flight.</span></button></div>`}
     <button class="link" data-eatcancel="1" style="align-self:flex-start">Cancel</button></section>`;
 }
@@ -3010,8 +3010,8 @@ const planItems=f=>Object.values(f||{}).flat();
 // Protein only comes from logged meals: the day's total is the sum of each meal's protein
 // When a meal was logged from Day Open's Meal 1 step, return to Today where they left off
 function backAfterMeal(){if(S.guideFrom&&S.guideFrom.meal1){S.guideFrom=null;S.tab="today";S.mealDraft=null;if(!curCtx().log.m3)edit("m3",nowHHMM());toast("Meal 1 logged. Now finish your Day Open");S.scrollSel=".step.current";render();return true}return false}
-// A quick state check before eating; it holds for 45 minutes
-const eatFresh=()=>S.eatOk&&Date.now()-S.eatOk<45*60000;
+// A state check before every meal they log
+const eatFresh=()=>false;
 const proteinOf=list=>(list||[]).reduce((t,f)=>t+(Number(f.protein)||0),0);
 const mpCtx=(k,p,slot)=>{const ev=lastFilled(p.meals.map(m=>m.foods)),t=planIsTrain(k,p);return{pre:t&&p.after===slot,post:t&&!!p.after&&p.after+1===slot,eve:ev>1&&ev===slot}};
 function mpProblems(k,p){
@@ -3574,7 +3574,7 @@ root.addEventListener("click",e=>{
     const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count)};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");return render()}
   if(b.dataset.planuse){if(curCtx().dn<1){toast("Plans start on Day 1");return}edit("mplan",b.dataset.planuse);S.mseg="today";toast("Following this plan today");window.scrollTo(0,0);return render()}
   if(b.dataset.mnew){if(!eatFresh()){S.eatAsk={kind:"new"};S.eatSym=false;return render()}S.mealDraft=[];S.mealOther=false;return render()}
-  if(b.dataset.eatstate){const v=b.dataset.eatstate,ask=S.eatAsk;if(v==="sym"){S.eatSym=true;return render()}
+  if(b.dataset.eatstate){const v=b.dataset.eatstate,ask=S.eatAsk;if(v==="sym"){S.eatSym=true;return render()}if(v==="back"){S.eatSym=false;return render()}
     S.eatOk=Date.now();S.eatState=v==="para"?"para":"skip";S.eatAsk=null;S.eatSym=false;
     if(ask&&ask.kind==="planned"){const r=plannedMeals(curCtx())[ask.i];if(r){logPlanned(r);toast(`${r.m.name||"Meal "+(r.slot+1)} logged: ${Number(r.m.protein)||0}g protein`);if(backAfterMeal())return}return render()}
     S.mealDraft=[];S.mealOther=false;return render()}
