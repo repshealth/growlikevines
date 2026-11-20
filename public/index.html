@@ -733,6 +733,24 @@ body.has-bnav .col{max-width:560px}
 .sp-act{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .sp-item{flex-wrap:wrap}
 .sp-item .sp-act{flex-basis:100%;justify-content:flex-start;padding-left:52px;gap:16px}
+
+.state-key{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sk{display:flex;flex-direction:column;gap:2px;border-radius:14px;padding:12px}
+.sk b{font-size:15px}
+.sk span{font-size:12.5px;line-height:1.35}
+.sk.up,.st-up .st-band{background:#f8e4d4;color:#8a3d12}
+.sk.down,.st-down .st-band{background:#dfeaf3;color:#244e6b}
+.oxy-card{padding-top:0;overflow:hidden}
+.st-band{display:flex;align-items:center;gap:12px;margin:0 -18px 10px;padding:14px 18px}
+.st-band .sec-title{color:inherit}
+.st-arrow{flex:0 0 40px;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:22px;font-weight:800;background:rgba(255,255,255,.6)}
+.st-tag{display:block;font-size:12px;font-weight:700;opacity:.85}
+.st-when{font-size:13px;margin:0 0 6px;color:var(--muted)}
+.st-up .oxy-row{border-left:4px solid #e8a47a;padding-left:10px}
+.st-down .oxy-row{border-left:4px solid #7fa8c6;padding-left:10px}
+.st-up .oxy-row .btn.primary{background:#f2c4a3;border-color:#f2c4a3;color:#5a2408}
+.st-down .oxy-row .btn.primary{background:#bcd3e5;border-color:#bcd3e5;color:#15344a}
+@media (max-width:420px){.state-key{grid-template-columns:1fr}}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2170,7 +2188,9 @@ function subconsciousView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>${todoHtml("todos",log,true,false)}</section>`:""}
-    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}" id="oxy-${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${esc(G.d)}</p>${list(G)}</section>`).join("")}
+    <div class="state-key"><div class="sk up"><b>↑ Sympathetic</b><span>Fight or flight. Heart rate up, alert, switched on.</span></div><div class="sk down"><b>↓ Parasympathetic</b><span>Rest and digest. Heart rate down, calm, ready to eat, recover or sleep.</span></div></div>
+    ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${G.g==="up"?"↑":"↓"}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div></div>
+      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${list(G)}</section>`).join("")}
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
   </div>`;
 }
