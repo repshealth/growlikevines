@@ -714,6 +714,11 @@ body.has-bnav .col{max-width:560px}
 
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
+.fruit-dots{display:flex;gap:8px}
+.fruit-dots span{flex:1;height:12px;border-radius:999px;background:var(--line);display:grid;place-items:center}
+.fruit-dots span.on{background:var(--lime)}
+.fruit-dots svg{display:none}
+.rule-note{font-size:12.5px;font-weight:600;color:#8a4b0a}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
@@ -2147,6 +2152,8 @@ function trackerView(){
     <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
+    ${(()=>{const n=Math.min(3,(log.food_entries||[]).filter(f=>(f.items||[]).some(isFruit)).length),hit=n>=3;return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ICO.fruit}</span><b>Fruit</b><span class="trk-v num">${n}<small> / 3 meals</small></span></div>
+      <div class="fruit-dots">${[0,1,2].map(i=>`<span class="${i<n?"on":""}">${i<n?TICK:""}</span>`).join("")}</div><small class="muted" style="font-weight:600">${hit?`${TICK} Fruit in 3 meals today`:"Have fruit in at least 3 meals a day. It counts when you log a meal with fruit in it."}</small></section>`})()}
     ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious",meal:"Meals"};
       return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
       <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
@@ -2178,7 +2185,7 @@ const FOOD_ROWS=[
   {k:"protein",name:"Protein",d:"In every meal. This is the one that matters most."},
   {k:"fruit",name:"Fruit",d:"Any time. Feel like you need carbs? Have fruit."},
   {k:"veg",name:"Veg and other",d:"As much as you like."},
-  {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs."},
+  {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs. Never in the same meal as carbs."},
   {k:"ecarbs",name:"Carbs",d:"Only in the meal before you train, the meal after, and your evening meal if you want them."},
   {k:"pcarbs",name:"Before you train",d:"Carbs for the meal before a workout."}
 ];
@@ -2286,7 +2293,15 @@ const slotOf=m=>typeof m==="string"?{fav:m}:(m||{});
 const slotMeal=m=>{m=slotOf(m);if(m.fav){const f=favById(m.fav);return f?{name:f.name,items:f.items,protein:f.protein,fav:f.id}:null}return m.items&&m.items.length?{name:m.name||"",items:m.items,protein:m.protein,fav:""}:null};
 const hasProtein=items=>(items||[]).some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));
 function setPrefs(fn){const pr=JSON.parse(JSON.stringify(PREFS()));fn(pr);savePrefs(pr)}
-function foodOptions(x){return `<option value="">Add a food from your list</option>${x&&(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(n=>`<option>${esc(n)}</option>`).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option>`}
+// Ellis's one food rule: direct carbs and direct fats never go in the same meal
+const catsOf=n=>FOOD_CATS.filter(c=>c.items.includes(n)).map(c=>c.k);
+const isCarb=n=>catsOf(n).some(k=>k==="ecarbs"||k==="pcarbs");
+const isFat=n=>catsOf(n).includes("fat");
+const isFruit=n=>catsOf(n).includes("fruit");
+function foodClash(items,n){if(isCarb(n)&&items.some(isFat))return `Carbs and fats never go in the same meal. Take out the ${items.filter(isFat).join(" and ").toLowerCase()} to add ${n.toLowerCase()}.`;if(isFat(n)&&items.some(isCarb))return `Carbs and fats never go in the same meal. Take out the ${items.filter(isCarb).join(" and ").toLowerCase()} to add ${n.toLowerCase()}.`;return ""}
+function ruleNote(items){const c=items.some(isCarb),f=items.some(isFat);return c||f?`<small class="rule-note">${c?"This meal has carbs, so no fats in it.":"This meal has fats, so no carbs in it."} Carbs and fats never go in the same meal.</small>`:""}
+function foodOptions(x,items){items=items||[];const opt=n=>{const bad=foodClash(items,n);return `<option value="${esc(n)}" ${bad?"disabled":""}>${esc(n)}${bad?" (not with "+(isCarb(n)?"fats":"carbs")+")":""}</option>`};
+  return `<option value="">Add a food from your list</option>${x&&(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(opt).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(opt).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option>`}
 const chipsOf=(items,attr)=>items.length?`<div class="opts">${items.map((n,i)=>`<button class="chip" aria-pressed="true" ${attr}="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:"";
 const MSEG=[["today","Today's meals"],["favs","Favourites"],["plans","Meal plans"]];
 function mealsView(){
@@ -2333,7 +2348,7 @@ function todayMeals(x){
       ${d?`<div class="ml-draft">
         ${favs.length&&!d.length?`<div class="saved-pick"><b>Your favourites</b><small>Tap one to log it</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-favlog="${f.id}"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div></div><small class="muted" style="text-align:center;font-weight:600">or build it yourself from the food list</small>`:""}
         ${chipsOf(d,"data-mdrop")}
-        <select class="input" id="food-pick" aria-label="Add a food">${foodOptions(x)}</select>
+        <select class="input" id="food-pick" aria-label="Add a food">${foodOptions(x,d)}</select>${ruleNote(d)}
         ${S.mealOther?`<form class="food-add" data-foodform="1"><input class="input" id="food-in" placeholder="What was it?" autocomplete="off"><button class="btn" type="submit">Add</button></form>`:""}
         ${d.length&&!hasProtein(d)?`<small class="ml-hint">No protein in this meal yet. Add some from the Protein group.</small>`:""}
         ${d.length?`<label class="ask meal-pro" for="meal-protein"><span>How much protein was in this meal? (g)</span><input class="input num" type="number" inputmode="numeric" min="0" step="1" id="meal-protein" value="${S.mealProtein==null?"":esc(S.mealProtein)}" placeholder="e.g. 30"><small class="muted">Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g.</small></label>
@@ -2347,7 +2362,7 @@ function favsSection(){
   const favs=favsOf(),fd=S.favDraft;
   if(fd)return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${fd.id?"Edit favourite":"New favourite"}</h2></div>
     <label class="ask" for="fav-name"><span>Name</span><input class="input" id="fav-name" maxlength="40" value="${esc(fd.name||"")}" placeholder="e.g. Eggs on sourdough"></label>
-    <div class="ask"><span class="ask-h">What's in it</span>${chipsOf(fd.items,"data-favdrop")}<select class="input" id="fav-food" aria-label="Add a food">${foodOptions(null)}</select>
+    <div class="ask"><span class="ask-h">What's in it</span>${chipsOf(fd.items,"data-favdrop")}<select class="input" id="fav-food" aria-label="Add a food">${foodOptions(null,fd.items)}</select>${ruleNote(fd.items)}
       ${fd.items.length&&!hasProtein(fd.items)?`<small class="ml-hint">No protein in this meal yet.</small>`:""}</div>
     <label class="ask" for="fav-protein"><span>Protein in this meal (g)</span><input class="input num" type="number" inputmode="numeric" min="0" id="fav-protein" value="${fd.protein==null?"":esc(fd.protein)}" placeholder="e.g. 30"></label>
     <div style="display:flex;gap:8px"><button class="btn primary" data-favsave="1">Save favourite</button><button class="btn" data-favcancel="1">Cancel</button></div></section>`;
@@ -2366,7 +2381,7 @@ function plansSection(){
       const mode=favs.length?(S.slotMode||"fav"):"build",sd=S.slotDraft||{items:[]};
       return head+`<div class="slot-ed">${favs.length?`<div class="seg"><button data-slotmode="fav" aria-selected="${mode==="fav"}">From favourites</button><button data-slotmode="build" aria-selected="${mode==="build"}">Build it</button></div>`:""}
         ${mode==="fav"?`<div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-slotfav="${f.id}"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`
-        :`${chipsOf(sd.items,"data-slotdrop")}<select class="input" id="slot-food" aria-label="Add a food">${foodOptions(null)}</select>
+        :`${chipsOf(sd.items,"data-slotdrop")}<select class="input" id="slot-food" aria-label="Add a food">${foodOptions(null,sd.items)}</select>${ruleNote(sd.items)}
           ${sd.items.length&&!hasProtein(sd.items)?`<small class="ml-hint">No protein in this meal yet.</small>`:""}
           <label class="ask" for="slot-protein"><span>Protein in this meal (g)</span><input class="input num" type="number" inputmode="numeric" min="0" id="slot-protein" value="${sd.protein==null?"":esc(sd.protein)}" placeholder="e.g. 30"></label>
           <button class="confirm${S.slotFav?" on":""}" data-slotfavtoo="1" aria-pressed="${!!S.slotFav}"><span class="tick">${TICK}</span><span>Save it as a favourite too</span></button>
@@ -2608,8 +2623,8 @@ function askHtml(a,log,wk,locked){
       <li><b>${MEALS_GUIDE}.</b></li>
       <li><b>Protein in every meal.</b> It's the one thing that matters most. Hit your protein target every day.</li>
       <li><b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.</li>
-      <li><b>Fats</b> fill the gaps in every other meal.</li>
-      <li><b>Fruit and veg</b> any time. If you feel like you need carbs outside of training, have fruit.</li>
+      <li><b>Fats</b> fill the gaps in every other meal. <b>Carbs and fats never go in the same meal.</b></li>
+      <li><b>Fruit</b> in at least 3 meals a day, and <b>veg</b> any time. If you feel like you need carbs outside of training, have fruit.</li>
       <li><b>Water</b> with every meal.</li></ul></div>`;
     case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
     case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${G.items.map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`}
@@ -3764,6 +3779,7 @@ root.addEventListener("input",e=>{
 });
 root.addEventListener("change",e=>{
   if(e.target.id==="plan-pick"){const v=e.target.value;if(!v)return;const[k,i]=v.split("|"),pl=myPlan(k),m=pl&&pl.meals[Number(i)];if(m){S.mealDraft=[...new Set(planItems(m.foods))];S.mealFrom=planName(k,pl)+", Meal "+(Number(i)+1)}return render()}
+  if(["fav-food","slot-food","food-pick"].includes(e.target.id)){const v=e.target.value,arr=e.target.id==="fav-food"?(S.favDraft||{}).items:e.target.id==="slot-food"?(S.slotDraft||{}).items:S.mealDraft;const bad=v&&v!=="__other"&&foodClash(arr||[],v);if(bad){toast(bad);return render()}}
   if(e.target.id==="fav-food"&&S.favDraft){const v=e.target.value;if(v==="__other"){const t=prompt("What was it?");if(t&&t.trim())S.favDraft.items.push(t.trim())}else if(v&&!S.favDraft.items.includes(v))S.favDraft.items.push(v);return render()}
   if(e.target.id==="slot-food"&&S.slotDraft){const v=e.target.value;if(v==="__other"){const t=prompt("What was it?");if(t&&t.trim())S.slotDraft.items.push(t.trim())}else if(v&&!S.slotDraft.items.includes(v))S.slotDraft.items.push(v);return render()}
   if(e.target.id==="plan-add"&&S.planDraft){if(e.target.value)S.planDraft.meals.push(e.target.value);return render()}
