@@ -715,6 +715,11 @@ body.has-bnav .col{max-width:560px}
 .seg3{grid-template-columns:repeat(3,1fr)}
 .pr-t .role{white-space:nowrap;display:inline-block}
 .warn-eat{background:#fff4e0;border-color:#e8b04a}
+.nums.stacked{display:flex;flex-direction:column;gap:12px}
+.nums.stacked .input{max-width:220px}
+.overview{display:flex;flex-direction:column;gap:12px}
+.ov-sec{display:flex;flex-direction:column;gap:6px}
+.ov-sec>b{font-size:14px}
 .meals-start{flex-direction:column;align-items:stretch}
 .golink.lime{background:var(--lime-dim);border-color:var(--lime)}
 .golink.done1 b{color:var(--green-ink)}
@@ -1084,7 +1089,7 @@ const resetSenses=n=>(RESET_TOOLS.find(r=>r[0]===n)||[0,[]])[1];
 const PHASES=[
   {id:"morning",name:"Day Open",goal:"Be in this moment",intro:"Do this before anything else: Wake, switch on, eat, then review your list. Four steps."},
   {id:"day",name:"Your day",goal:"Eat from your list",intro:"Nothing to tick. Eat from your food list and move when you can."},
-  {id:"evening",name:"Day Close",goal:"Be in this moment",intro:"Do this once your active day is done, before you switch off for the evening. Five steps."}
+  {id:"evening",name:"Day Close",goal:"Be in this moment",intro:"Do this once your active day is done, before you switch off for the evening. Four steps."}
 ];
 // Morning brain targets (from Ellis's Loom: the morning action should hit all of these)
 const BRAIN=[["motor","Motor cortex"],["brainstem","Brainstem arousal"],["basal","Basal ganglia"],["circadian","Circadian rhythm"]];
@@ -1231,7 +1236,8 @@ const TMR_ASKS=[
   {k:"intentions",type:"textarea",label:"Set your intention",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
   {k:"tmr_hard",type:"text",label:"Set your hard thing: The one you'll start first",req:l=>!!String(l.tmr_hard||"").trim(),reqMsg:"Set your hard thing"},
   {k:"_tmrmeals",type:"tmrmeals",label:"What will you eat tomorrow?"},
-  {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list (optional)"},
+  {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list"},
+  {k:"_copytodos",type:"copytodos"},
   {k:"tmr_wake",type:"wake",label:"Set your alarm",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}
 ];
 const WIND_ASKS=[
@@ -1239,12 +1245,11 @@ const WIND_ASKS=[
   {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"}
 ];
 const EVENING=[
-  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Log your numbers so far, including any Oxygen you used","See your food list and build set meals, if you want to"],
-   asks:[{k:"_nums",type:"numsnow"},{k:"_oxyday",type:"oxyday"},{k:"_go_food2",type:"golink",go:"food",title:"Your approved foods",text:"See the list, and pick what you'll eat tomorrow if you want to.",btn:"See the list"},{k:"_go_meals2",type:"golink",go:"meals",title:"Want set meals?",text:"Build them from the list in Meals. Optional.",btn:"Open Meals"}]},
+  {id:"e1",title:"Admin",cue:["set","Close the day."],text:["Update your numbers if you need to","An overview of your day: What you did, what you ate and your workout"],
+   asks:[{k:"_nums",type:"numsnow"},{k:"_overview",type:"dayoverview"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
   {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Set your intention and your hard thing","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
-  {id:"e4",title:"Still to hit",text:["What's left on your numbers today"],asks:[{k:"_left",type:"remaining"}]},
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
@@ -2505,7 +2510,7 @@ function askHtml(a,log,wk,locked){
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
       const p=x.prev;return `<div class="ask"><span class="ask-h">Day ${x.dn-1}: Your final numbers</span><div class="nums">${[["steps","Steps",1],["protein","Protein (g)",1],["water","Water (L)",0.5]].map(([k,l,st])=>{const t=x.wk[k],v=p[k],hit=v!==undefined&&v!==""&&Number(v)>=t;return `<label class="ask" for="pn-${k}"><span class="num-lbl">${l}<small class="num-sub num">Target ${Number(t).toLocaleString("en-GB")}${hit?` · <b class="hitok">${TICK} Hit</b>`:""}</small></span><input class="input" type="number" inputmode="decimal" min="0" step="${st}" id="pn-${k}" data-pin="${k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}).join("")}</div></div>`}
     case"wake":{const bed=log.tmr_bed||"",w=log.tmr_wake||"",from=bed?mins(bed):(mins(nowHHMM())+30),h=w?((mins(w)-from+1440)%1440)/60:0;
-      return `<div class="ask"><div class="nums"><label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label>${a.nobed?"":`<label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label>`}</div>${a.nobed&&w?bedCue(w):""}
+      return `<div class="ask"><div class="nums stacked"><label class="ask" for="a-tmr_wake"><span>${a.label}</span><input class="input" type="time" id="a-tmr_wake" data-input="tmr_wake" value="${esc(w)}" ${dis}></label>${a.nobed?"":`<label class="ask" for="a-tmr_bed"><span>When will you be asleep?<span class="optional">Optional</span></span><input class="input" type="time" id="a-tmr_bed" data-input="tmr_bed" value="${esc(bed)}" ${dis}></label>`}</div>${a.nobed&&w?bedCue(w):""}
         ${w&&!a.nobed?`<div class="train-place${h>=7&&h<=9.5?" ok":""}"><span>${h>=7&&h<=9.5?TICK+" ":""}That's <b class="num">${Math.floor(h)}h ${pad(Math.round((h%1)*60))}m</b> of sleep${bed?"":" if you're asleep in 30 minutes"}. ${h<7?"Aim for 7 to 9 hours: Can you get to bed earlier, or set the alarm a little later?":h>9.5?"That's a long one. Check the alarm time is right.":"Right where you want it."}</span></div>`:""}</div>`}
     case"numsnow":{const x=curCtx(),wk=x.wk,f=k=>k==="water"?(Number(log.water)||0)+"L":k==="protein"?(Number(log.protein)||0)+"g":(Number(log.steps)||0).toLocaleString("en-GB");
       return `<div class="golink"><div><b>Your numbers so far</b><span>${["steps","protein","water"].map(k=>`${f(k)} ${k}`).join(" · ")}</span></div><button class="btn" data-guidepage="tracker" ${dis}>Update in Tracker</button></div>`}
@@ -2541,6 +2546,15 @@ function askHtml(a,log,wk,locked){
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
       if(v<=3)return `<div class="train-place ok"><span>${TICK} Good to eat.</span></div>`;
       return `<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>You're at ${v}, so your body isn't ready to digest yet. Pick something from Bring yourself down in Subconscious, do it, then rate your zone again.</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Open Subconscious</button></div>`}
+    case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=[["wk_pre","Before"],["train_done","Train"],["wk_down","Come down"]].filter(([k])=>log[k]);
+      const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
+      return `<div class="overview">
+        <div class="ov-sec"><b>Up and down</b>${ox.length?`<div class="review">${ox.map(o=>row(`${o.g==="up"?"↑":"↓"} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
+        <div class="ov-sec"><b>Meals <span class="muted num" style="font-weight:600">${proteinOf(food)}g protein</span></b>${food.length?`<div class="review">${food.map((f,i)=>row(esc(f.name||"Meal "+(i+1)),f.at,`${esc(f.t)}${f.protein!=null?" · "+Number(f.protein)+"g protein":""}`)).join("")}</div>`:`<small class="muted">No meals logged today.</small>`}</div>
+        <div class="ov-sec"><b>Workout</b>${wks.length?`<div class="review">${wks.map(([k,l])=>row(`${TICK} ${l}${k==="train_done"&&log.workout_name?": "+esc(log.workout_name):""}`,log[k])).join("")}</div>`:`<small class="muted">No workout logged today.</small>`}</div>
+      </div>`}
+    case"copytodos":{const open=todosOf(log,"todos").filter(t=>!t.done),have=new Set(todosOf(log,"tmr_todos").map(t=>t.t)),left=open.filter(t=>!have.has(t.t));
+      return open.length?`<button class="btn" data-copytodos="1" style="align-self:flex-start" ${dis||!left.length?"disabled":""}>${left.length?`Copy ${left.length} unfinished ${left.length===1?"task":"tasks"} from today`:`${TICK} Today's unfinished tasks copied`}</button>`:""}
     case"bedcue":return log.tmr_wake?bedCue(log.tmr_wake):"";
     case"numhead":return `<div class="numhead"><b>${esc(a.title)}</b><span>${esc(a.text)}</span></div>`;
     case"latenote":return `<div class="train-place"><span><b>Still got steps to go tonight?</b> Carry on. Once your Evening is done anything left will be waiting in <b>Still to do tonight</b>, and you can update your numbers any time with the gauges at the bottom.</span></div>`;
@@ -2619,6 +2633,7 @@ function stepSummary(s,log){
   if(log.zero&&s.id==="e1"){const pl=mplansOf().find(p=>p.id===log.tmr_mplan);return "You know how to eat: Anything from your list, protein in every meal. "+(pl?`Tomorrow: ${esc(pl.name)}.`:(log.tmr_favs||[]).length?`Tomorrow: ${log.tmr_favs.length} meals planned.`:"Tomorrow: Logging as you go.")}
   if(log.zero&&s.id==="e2")return zeroPlanSummary(log);
   const asks=s.asks.filter(a=>!a.when||a.when(log)),bits=[];
+  if(!log.zero&&s.id==="e1"){const f=log.food_entries||[],o=oxyOf(log);return [`${f.length} ${f.length===1?"meal":"meals"}, ${proteinOf(f)}g protein`,o.length?`${o.length} up and down`:"",log.train_done?"Workout done":""].filter(Boolean).join(" · ")}
   if(!log.zero&&s.id==="e3")return zeroPlanSummary(log,"Tomorrow is set.");
   if(s.id==="e4"&&!log.zero)return ["steps","protein","water"].filter(k=>Number(log[k])>=Number(curCtx().wk[k])).length+" of 3 targets hit";
   asks.forEach(a=>{const v=log[a.k];
@@ -3512,6 +3527,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.gomeals){navPush();S.tab="meals";S.mseg="today";S.mealDraft=[];render();window.scrollTo(0,0);return}
   if(b.dataset.favtoo){S.favToo=!S.favToo;return render()}
   if(b.dataset.favlog){const f=favById(b.dataset.favlog);if(!f)return;const l=curCtx().log,list=[...(l.food_entries||[]),{id:uid(),name:f.name,items:f.items,t:f.items.join(", "),at:nowHHMM(),protein:Number(f.protein)||0,fav:f.id}];edit("food_entries",list);edit("protein",proteinOf(list));S.mealDraft=null;toast(`${f.name} logged: ${Number(f.protein)||0}g protein`);if(backAfterMeal())return;return render()}
+  if(b.dataset.copytodos){const l=curCtx().log,have=new Set(todosOf(l,"tmr_todos").map(t=>t.t)),add=todosOf(l,"todos").filter(t=>!t.done&&!have.has(t.t)).map(t=>({...t,id:uid(),done:""}));edit("tmr_todos",[...todosOf(l,"tmr_todos"),...add]);toast(`${add.length} ${add.length===1?"task":"tasks"} copied to tomorrow`);return render()}
   if(b.dataset.tmrmode){const m=b.dataset.tmrmode;edit("tmr_mmode",m);if(m!=="plan")edit("tmr_mplan","");if(m!=="favs")edit("tmr_favs",[]);return render()}
   if(b.dataset.tfadd){const l=curCtx().log;edit("tmr_favs",[...(l.tmr_favs||[]),b.dataset.tfadd]);return render()}
   if(b.dataset.tfrm){const l=curCtx().log,t=[...(l.tmr_favs||[])];t.splice(Number(b.dataset.tfrm),1);edit("tmr_favs",t);return render()}
