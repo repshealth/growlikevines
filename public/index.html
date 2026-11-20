@@ -1271,7 +1271,7 @@ const OXYGEN=[
 const oxyOf=log=>Array.isArray(log.oxygen)?log.oxygen:[];
 const MORNING=[
   {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark the time you got out of bed"],
-   asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"}]},
+   asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_intent",type:"lastintent"}]},
   {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
    asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
   {id:"m3",title:"Meal 1",text:["Before you eat, rate your zone: You want to be in rest and digest","Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
@@ -1282,6 +1282,7 @@ const MORNING=[
 const ML=MORNING.length;
 const TMR_ASKS=[
   {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
+  {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
   {k:"_tmrmeals",type:"tmrmeals",label:"What will you eat tomorrow?"},
   {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list"},
   {k:"_copytodos",type:"copytodos"},
@@ -1296,7 +1297,7 @@ const EVENING=[
    asks:[{k:"_nums",type:"numsnow"},{k:"_overview",type:"dayoverview"}]},
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
-  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","What you'll eat, and your to-do list","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
+  {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Your intention, what you'll eat and your to-do list","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
   {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
@@ -1307,8 +1308,9 @@ const ZERO=[
      {k:"_go_food0",type:"golink",go:"food",title:"Your approved foods",text:"Everything you can eat, by food group.",btn:"See the list"},
      {k:"_tmrmeals",type:"tmrmeals",zero:true,label:"What will you eat tomorrow?"},
      {k:"targets_ok",type:"confirm",label:"Got it: I eat from the list and get protein in every meal",req:l=>!!l.targets_ok,reqMsg:"Tick to confirm"}]},
-  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your to-do list"],
+  {id:"e2",title:"Plan tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["What you'll do first thing to get your heart rate up","Your intention and your to-do list"],
    asks:[{k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
+     {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
      {k:"tmr_todos",type:"todolist",label:"Your to-do list for tomorrow",text:"Just for you. Anything you want to get done."}]},
   {id:"e3",title:"Tonight",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","This is about now. Bring it down for sleep."],text:["Set your alarm, then when you're going to sleep","Pick what you'll do to bring it down, then rate where you are"],
    asks:[{k:"tmr_wake",type:"wake",nobed:true,label:"Set your alarm: Now tomorrow's planned, what time do you need to get up to get it all done?",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"},{k:"tmr_bed",type:"time",label:"What time are you going to sleep?"},
@@ -2466,7 +2468,7 @@ function readyCard(x){
     <div class="ready-list">
       <div><span>Wake time</span><b class="num">${esc(log.tmr_wake||"Not set")}</b></div>
       <div><span>To-dos</span><b class="num">${todosOf(log,"tmr_todos").length}</b></div>
-      <div><span>Hard thing</span><b class="num">${log.tmr_hard?"Set":"Not set"}</b></div>
+      <div><span>Meals</span><b class="num">${(()=>{const p=mplansOf().find(q=>q.id===log.tmr_mplan);return p?esc(p.name):(log.tmr_favs||[]).length?log.tmr_favs.length+" planned":"As you go"})()}</b></div>
     </div>
     ${log.intentions?`<p>“${esc(log.intentions)}”</p>`:""}
     <p class="sytm">Today is complete. Tomorrow is set.<br>Your nervous system can settle &amp; regulate like it should.<br><b>Release. Recover. Reset.</b></p>
