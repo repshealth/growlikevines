@@ -718,7 +718,8 @@ body.has-bnav .col{max-width:560px}
 .fruit-dots span{flex:1;height:12px;border-radius:999px;background:var(--line);display:grid;place-items:center}
 .fruit-dots span.on{background:var(--lime)}
 .fruit-dots svg{display:none}
-.rule-note{font-size:12.5px;font-weight:600;color:#8a4b0a}
+.rule-note{font-size:12.5px;font-weight:600;color:var(--muted)}
+.rule-note.warn{color:#8a4b0a;background:#fff4e0;border:1px solid #e8b04a;border-radius:10px;padding:8px 10px;line-height:1.4}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
@@ -2189,7 +2190,7 @@ const FOOD_ROWS=[
   {k:"protein",name:"Protein",d:"In every meal. This is the one that matters most."},
   {k:"fruit",name:"Fruit",d:"Any time. Feel like you need carbs? Have fruit."},
   {k:"veg",name:"Veg and other",d:"As much as you like."},
-  {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs. Never in the same meal as carbs."},
+  {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs. Best kept out of meals with carbs."},
   {k:"ecarbs",name:"Carbs",d:"Only in the meal before you train, the meal after, and your evening meal if you want them."},
   {k:"pcarbs",name:"Before you train",d:"Carbs for the meal before a workout."}
 ];
@@ -2304,8 +2305,10 @@ const isFat=n=>catsOf(n).includes("fat");
 const isFruit=n=>catsOf(n).includes("fruit");
 const isVeg=n=>catsOf(n).includes("veg");
 function foodClash(items,n){if(isCarb(n)&&items.some(isFat))return `Carbs and fats never go in the same meal. Take out the ${items.filter(isFat).join(" and ").toLowerCase()} to add ${n.toLowerCase()}.`;if(isFat(n)&&items.some(isCarb))return `Carbs and fats never go in the same meal. Take out the ${items.filter(isCarb).join(" and ").toLowerCase()} to add ${n.toLowerCase()}.`;return ""}
-function ruleNote(items){const c=items.some(isCarb),f=items.some(isFat);return c||f?`<small class="rule-note">${c?"This meal has carbs, so no fats in it.":"This meal has fats, so no carbs in it."} Carbs and fats never go in the same meal.</small>`:""}
-function foodOptions(x,items){items=items||[];const opt=n=>{const bad=foodClash(items,n);return `<option value="${esc(n)}" ${bad?"disabled":""}>${esc(n)}${bad?" (not with "+(isCarb(n)?"fats":"carbs")+")":""}</option>`};
+function ruleNote(items){const c=items.some(isCarb),f=items.some(isFat);
+  if(c&&f)return `<small class="rule-note warn">We wouldn't normally put carbs and fats in the same meal. Your body uses carbs best around training, and fats fill the gaps in the meals without them. You can still save it.</small>`;
+  return c||f?`<small class="rule-note">${c?"This meal has carbs, so we'd keep fats out of it.":"This meal has fats, so we'd keep carbs out of it."}</small>`:""}
+function foodOptions(x,items){items=items||[];const opt=n=>`<option value="${esc(n)}">${esc(n)}</option>`;
   return `<option value="">Add a food from your list</option>${x&&(x.prev.tmr_foods||[]).length?`<optgroup label="Your foods for today">${x.prev.tmr_foods.map(opt).join("")}</optgroup>`:""}${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<optgroup label="${esc(r.name)}">${c.items.map(opt).join("")}</optgroup>`:""}).join("")}<option value="__other">Something else</option>`}
 const chipsOf=(items,attr)=>items.length?`<div class="opts">${items.map((n,i)=>`<button class="chip" aria-pressed="true" ${attr}="${i}" aria-label="Remove ${esc(n)}">${esc(n)} ×</button>`).join("")}</div>`:"";
 const MSEG=[["today","Today's meals"],["favs","Favourites"],["plans","Meal plans"]];
@@ -2629,7 +2632,7 @@ function askHtml(a,log,wk,locked){
       <li><b>${MEALS_GUIDE}.</b></li>
       <li><b>Protein in every meal.</b> It's the one thing that matters most. Hit your protein target every day.</li>
       <li><b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.</li>
-      <li><b>Fats</b> fill the gaps in every other meal. <b>Carbs and fats never go in the same meal.</b></li>
+      <li><b>Fats</b> fill the gaps in every other meal. <b>We wouldn't normally put carbs and fats in the same meal.</b></li>
       <li><b>Fruit</b> in at least 3 meals a day, and <b>veg</b> in at least 3 meals a day. If you feel like you need carbs outside of training, have fruit.</li>
       <li><b>Water</b> with every meal.</li></ul></div>`;
     case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
@@ -3785,7 +3788,6 @@ root.addEventListener("input",e=>{
 });
 root.addEventListener("change",e=>{
   if(e.target.id==="plan-pick"){const v=e.target.value;if(!v)return;const[k,i]=v.split("|"),pl=myPlan(k),m=pl&&pl.meals[Number(i)];if(m){S.mealDraft=[...new Set(planItems(m.foods))];S.mealFrom=planName(k,pl)+", Meal "+(Number(i)+1)}return render()}
-  if(["fav-food","slot-food","food-pick"].includes(e.target.id)){const v=e.target.value,arr=e.target.id==="fav-food"?(S.favDraft||{}).items:e.target.id==="slot-food"?(S.slotDraft||{}).items:S.mealDraft;const bad=v&&v!=="__other"&&foodClash(arr||[],v);if(bad){toast(bad);return render()}}
   if(e.target.id==="fav-food"&&S.favDraft){const v=e.target.value;if(v==="__other"){const t=prompt("What was it?");if(t&&t.trim())S.favDraft.items.push(t.trim())}else if(v&&!S.favDraft.items.includes(v))S.favDraft.items.push(v);return render()}
   if(e.target.id==="slot-food"&&S.slotDraft){const v=e.target.value;if(v==="__other"){const t=prompt("What was it?");if(t&&t.trim())S.slotDraft.items.push(t.trim())}else if(v&&!S.slotDraft.items.includes(v))S.slotDraft.items.push(v);return render()}
   if(e.target.id==="plan-add"&&S.planDraft){if(e.target.value)S.planDraft.meals.push(e.target.value);return render()}
