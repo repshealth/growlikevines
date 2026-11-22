@@ -834,11 +834,15 @@ body.has-bnav .col{max-width:560px}
 .pri.high{background:#fbe6cc;color:#8a4b0a}
 .pri-cycle{border:0;background:none;color:var(--muted);font-size:16px;padding:2px 6px;cursor:pointer}
 .todo-add select.input{width:auto;min-width:0;flex:0 0 auto;padding-right:8px}
-.todo-add{display:grid!important;grid-template-columns:1fr auto auto;gap:8px;align-items:stretch}
+.todo-add{display:flex!important;flex-wrap:nowrap!important;gap:8px;align-items:stretch}
+.todo-add>.input{flex:1 1 auto!important}
+.todo-add>.btn{flex:none!important}
 .todo-add>.input{width:100%;min-width:0}
-.todo-add select.input{width:auto;font-size:14px;padding:0 28px 0 12px}
-.todo-add .btn{min-width:0;padding-inline:16px}
-@media (max-width:420px){.todo-add{grid-template-columns:1fr auto}.todo-add>.input:first-child{grid-column:1/-1}}
+.todo-add .pri-pick{width:max-content!important;min-width:0!important;max-width:none;flex:none!important;padding:0 12px!important;justify-self:start}
+.pri-pick{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:0 10px;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;min-width:0}
+.pri-pick.high{background:#fbe6cc;border-color:#fbe6cc;color:#8a4b0a}
+.pri-pick.hard{background:var(--night);border-color:var(--night);color:var(--lime)}
+.todo-add .btn{min-width:0;padding-inline:14px}
 .sched{display:flex;flex-direction:column}
 .sc-row{display:grid;grid-template-columns:52px 16px 1fr;align-items:center;gap:8px;padding:6px 0;font-size:14px;position:relative}
 .sc-dot{width:10px;height:10px;border-radius:999px;background:var(--line);justify-self:center}
@@ -2438,7 +2442,7 @@ function planAheadHtml(x){
     <div class="ask"><span class="ask-h">Training on Day ${sel}?</span><div class="opts"><button class="chip" data-aheadtrain="yes" aria-pressed="${tp.on==="yes"}">Yes</button><button class="chip" data-aheadtrain="no" aria-pressed="${tp.on==="no"}">Rest day</button></div>
       ${tp.on==="yes"?`<div class="nums"><label class="ask"><span>What?</span><input class="input" data-aheadw="what" value="${esc(tp.what||"")}" placeholder="e.g. Upper body"></label><label class="ask"><span>Time</span><input class="input" type="time" data-aheadw="time" value="${esc(tp.time||"")}"></label></div>`:""}</div>
     <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
-      <div class="todo-add"><input class="input" id="ahead-t" placeholder="Add a task" autocomplete="off"><select class="input" id="ahead-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-aheadadd="1">Add</button></div>
+      <div class="todo-add"><input class="input" id="ahead-t" placeholder="Add a task" autocomplete="off">${priBtn("ahead-p")}<button class="btn" data-aheadadd="1">Add</button></div>
       <small class="muted">These land on your to-do list on Day ${sel}.</small></div>`;
 }
 function subconsciousView(){
@@ -3129,10 +3133,13 @@ function readyQ(id,v){
 const waterQ_=id=>`<div class="fu"><span>Did you have water with it & add salt?</span><div class="opts"><button class="chip" data-water="${id}" data-val="1">Yes</button><button class="chip" data-water="${id}" data-val="0">No</button></div></div>`;
 // The client's own to-do list (optional). Planned when closing the day, reviewed in the morning, ticked in the Day.
 const todosOf=(log,k)=>Array.isArray(log[k])?log[k]:[];
+// A small tap-to-change importance button for new tasks: Normal, Important, Hard
+const PRI_L={"":"Normal",high:"Important",hard:"Hard"};
+const priBtn=id=>{const v=(S.newPri||{})[id]||"";return `<button type="button" class="pri-pick${v?" "+v:""}" id="${id}" data-newpri="${id}" value="${v}" aria-label="Importance: ${PRI_L[v]}. Tap to change">${v==="hard"?"Hard thing":PRI_L[v]}</button>`};
 function todoHtml(k,log,tick,dis){
   const PR={hard:0,high:1},L=[...todosOf(log,k)].sort((a,b)=>((PR[a.pri]??2)-(PR[b.pri]??2))||(a.time||"99").localeCompare(b.time||"99"));
   return `<div class="todo">${L.length?`<ul class="todo-list">${L.map(it=>`<li class="todo-row${it.done?" done":""}">${tick?`<button class="item-tick" data-todotick="${k}|${it.id}" aria-pressed="${!!it.done}" aria-label="Tick ${esc(it.t)}"><span class="tick">${it.done?TICK:""}</span></button>`:""}<span class="todo-t">${it.pri==="hard"?`<span class="pri hard">Hard thing</span>`:it.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(it.t)}</span>${dis?"":`<button class="pri-cycle" data-todopri="${k}|${it.id}" aria-label="Change importance of ${esc(it.t)}" title="Change importance">★</button>`}${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${dis?"":`<button class="x" data-todorm="${k}|${it.id}" aria-label="Remove ${esc(it.t)}">×</button>`}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Nothing on it yet.</p>`}
-  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task"><select class="input" id="todo-${k}-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
+  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task">${priBtn("todo-"+k+"-p")}<button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
 }
 function pairHtml(p,ta,lockedBy,log,isNext){
   log=log||{};const waterQ=p.done&&(p.water===undefined||p.water===null),protAsk=p.done&&(p.prot===undefined||p.prot===null),isPre=mealRole(p.slot,ta)==="Pre-workout",readyAsk=p.done&&readyApplies(log,p.slot)&&(p.ready===undefined||p.ready===null);
@@ -3821,14 +3828,15 @@ root.addEventListener("click",e=>{
   if(b.dataset.meal1log){const l=curCtx().log;if(l.train==="yes"&&dayTrainAfter(l)===1&&!l.train_p1)edit("train_p1",nowHHMM())}
   if(b.dataset.meal1log){const l=curCtx().log,t=nowHHMM(),yes=l.meal1_water==="yes";edit("mm",t);setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:l.meal1_water?yes:null}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}{const m1=mealsOf(curCtx().log).find(q=>q.slot===1);if(m1&&l.meal1_prot!=null&&l.meal1_prot!=="")applyProt(m1.id,l.meal1_prot)}toast("Meal 1 logged "+t);S.scrollSel=".step.current";return render()}
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
-  if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),pi=root.querySelector("#todo-"+k+"-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:pi&&pi.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
+  if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),pi=root.querySelector("#todo-"+k+"-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:(()=>{const v=pi&&pi.value||"";if(S.newPri&&pi)S.newPri[pi.id]="";return v})(),done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
   if(b.dataset.mkplan){navPush();S.guideFrom={y:window.scrollY,tab:S.tab,mkplan:true};S.tab="meals";S.mseg="plans";S.favDraft=null;S.planDraft={name:"",count:0,kind:"",after:0,meals:[]};S.slotOpen=null;render();window.scrollTo(0,0);return}
   if(b.dataset.tmrtrain){const l=curCtx().log;edit("tmr_workout",{...(l.tmr_workout||{}),on:b.dataset.tmrtrain});return render()}
   if(b.dataset.aheadday){S.aheadDay=Number(b.dataset.aheadday);return render()}
   if(b.dataset.aheadtrain){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{};saveEdit(x.c.id,dk,"train_plan",{...(L.train_plan||{}),on:b.dataset.aheadtrain});return render()}
   if(b.dataset.aheadadd){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{},inp=root.querySelector("#ahead-t"),ti=root.querySelector("#ahead-time"),pi=root.querySelector("#ahead-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");
-    saveEdit(x.c.id,dk,"ahead_todos",[...(L.ahead_todos||[]),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:pi&&pi.value||"",done:""}]);toast("Added to Day "+d);return render()}
+    saveEdit(x.c.id,dk,"ahead_todos",[...(L.ahead_todos||[]),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:(()=>{const v=pi&&pi.value||"";if(S.newPri&&pi)S.newPri[pi.id]="";return v})(),done:""}]);toast("Added to Day "+d);return render()}
   if(b.dataset.aheadrm){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{};saveEdit(x.c.id,dk,"ahead_todos",(L.ahead_todos||[]).filter(t=>t.id!==b.dataset.aheadrm));return render()}
+  if(b.dataset.newpri){const id=b.dataset.newpri,nx={"":"high",high:"hard",hard:""};S.newPri=S.newPri||{};const v=nx[S.newPri[id]||""];S.newPri[id]=v;b.value=v;b.className="pri-pick"+(v?" "+v:"");b.textContent=v==="hard"?"Hard thing":PRI_L[v];return}
   if(b.dataset.todopri){const [k,id]=b.dataset.todopri.split("|"),L=todosOf(curCtx().log,k),nx={"":"high",high:"hard",hard:""};edit(k,L.map(t=>t.id===id?{...t,pri:nx[t.pri||""]}:t));return render()}
   if(b.dataset.todotick||b.dataset.todorm){const [k,id]=(b.dataset.todotick||b.dataset.todorm).split("|"),L=todosOf(curCtx().log,k);edit(k,b.dataset.todorm?L.filter(t=>t.id!==id):L.map(t=>t.id===id?{...t,done:t.done?"":nowHHMM()}:t));return render()}
   if(b.dataset.startblk){const id=b.dataset.startblk;edit(id+"_started",nowHHMM());S.scrollTo=id;return render()}
