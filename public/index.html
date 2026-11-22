@@ -896,6 +896,10 @@ body.has-bnav .col{max-width:560px}
 .ad-ic{position:absolute;top:-6px;right:-4px;width:22px;height:22px;border-radius:999px;background:var(--night);color:var(--lime);display:grid;place-items:center}
 .ad-ic svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .ad-ic.inline{position:static;width:20px;height:20px}
+.ad-under{display:flex;justify-content:center;height:16px;margin-top:3px}
+.ad-ic.sm{position:static;width:16px;height:16px}
+.ad-ic.sm svg{width:10px;height:10px}
+.ahead-d{display:flex;flex-direction:column;align-items:center}
 .ad-ic.rest{background:#dfeaf3;color:#244e6b}
 .ad-key{display:flex;gap:16px;font-size:12.5px;color:var(--muted);font-weight:600;margin:-2px 0 10px}
 .ad-key>span{display:flex;align-items:center;gap:6px}
@@ -2445,7 +2449,7 @@ function planAheadHtml(x){
   const {c,dn,today}=x,max=PROGRAMME_DAYS,days=[];for(let d=Math.max(dn,today)+1;d<=Math.min(max,Math.max(dn,today)+7);d++)days.push(d);
   if(!days.length)return `<p class="muted" style="font-size:13px;margin:0">You're on the last day.</p>`;
   const sel=days.includes(S.aheadDay)?S.aheadDay:days[0];S.aheadDay=sel;const dk=ymd(dateOf(c,sel)),L=(DATA.logs[c.id]||{})[dk]||{},tp=L.train_plan||{},td=L.ahead_todos||[];
-  return `<div class="ad-key"><span><span class="ad-ic inline" aria-hidden="true">${ICO.dumbbell}</span>Training day</span><span><span class="ad-ic inline rest" aria-hidden="true">${ICO.moon}</span>Rest day</span></div><div class="opts">${days.map(d=>{const tp=((DATA.logs[c.id]||{})[ymd(dateOf(c,d))]||{}).train_plan||{},tr=tp.on==="yes",rs=tp.on==="no";return `<button class="chip ahead-d${tr?" train":""}" data-aheadday="${d}" aria-pressed="${d===sel}" aria-label="Day ${d}${tr?", training day":rs?", rest day":""}">${tr?`<span class="ad-ic" aria-hidden="true">${ICO.dumbbell}</span>`:rs?`<span class="ad-ic rest" aria-hidden="true">${ICO.moon}</span>`:""}Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small></button>`}).join("")}</div>
+  return `<div class="ad-key"><span><span class="ad-ic inline" aria-hidden="true">${ICO.dumbbell}</span>Training day</span><span><span class="ad-ic inline rest" aria-hidden="true">${ICO.moon}</span>Rest day</span></div><div class="opts">${days.map(d=>{const tp=((DATA.logs[c.id]||{})[ymd(dateOf(c,d))]||{}).train_plan||{},tr=tp.on==="yes",rs=tp.on==="no";return `<button class="chip ahead-d${tr?" train":""}" data-aheadday="${d}" aria-pressed="${d===sel}" aria-label="Day ${d}${tr?", training day":rs?", rest day":""}">Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small><span class="ad-under">${tr?`<span class="ad-ic sm" aria-hidden="true">${ICO.dumbbell}</span>`:rs?`<span class="ad-ic sm rest" aria-hidden="true">${ICO.moon}</span>`:""}</span></button>`}).join("")}</div>
     <div class="ask"><span class="ask-h">Training on Day ${sel}?</span><div class="opts"><button class="chip" data-aheadtrain="yes" aria-pressed="${tp.on==="yes"}">Yes</button><button class="chip" data-aheadtrain="no" aria-pressed="${tp.on==="no"}">Rest day</button></div>
       ${tp.on==="yes"?`<div class="nums"><label class="ask"><span>What?</span><input class="input" data-aheadw="what" value="${esc(tp.what||"")}" placeholder="e.g. Upper body"></label><label class="ask"><span>Time</span><input class="input" type="time" data-aheadw="time" value="${esc(tp.time||"")}"></label></div>`:""}</div>
     <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
