@@ -730,6 +730,8 @@ body.has-bnav .col{max-width:560px}
 .in-sec h3{font-size:16px;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
 .in-sec p{margin:0;font-size:14.5px;line-height:1.5}
 .in-sec ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px;line-height:1.45}
+.own-form{display:flex;gap:8px}
+.own-form .input{flex:1;min-width:0}
 .eat-remind{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#dfeaf3;color:#244e6b;border-radius:16px;padding:12px 14px}
 .eat-remind>div{display:flex;flex-direction:column;gap:2px;flex:1;min-width:180px}
 .eat-remind span{font-size:13px;line-height:1.35}
@@ -1284,6 +1286,9 @@ const OXYGEN=[
   {g:"up",name:"Switch up",d:"Oxygenate the body: Something physical that gets your heart rate up.",items:[...MOVE]},
   {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight"]}
 ];
+// Anything the client types in themselves, not on Ellis's lists
+const ALL_OXY=()=>OXYGEN.flatMap(G=>G.items);
+const ownForm=(mode,k,g,from,ph)=>`<form class="own-form" data-ownform="${mode}" data-k="${k}" data-g="${g}" data-from="${from||""}"><input class="input" name="own" maxlength="40" placeholder="${ph}" autocomplete="off"><button class="btn" type="submit">Add</button></form>`;
 const oxyOf=log=>Array.isArray(log.oxygen)?log.oxygen:[];
 const MORNING=[
   {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark the time you got out of bed"],
@@ -2649,9 +2654,9 @@ function askHtml(a,log,wk,locked){
     case"actplan":{const pl=(Array.isArray(log.m_action)?log.m_action:[]).filter(a=>MOVE.includes(a));return `<div class="numhead"><b>Your action this morning</b><span>${pl.length?`Planned last night: <b>${esc(pl.join(", "))}</b>. It's ticked below. Untick anything you didn't do, or tick anything else you did instead.`:"You didn't plan one last night. Do at least one of these, then tick what you've done."}</span></div>`}
     case"walknote":return `<div class="numhead"><b>Tomorrow morning: Action, then release</b><span>Your action is your switch up: Pick at least one for the morning. Then pick how you'll bring it back down.</span></div>`;
     case"lastintent":{const p=curCtx().prev;return p.intentions?`<div class="direction"><span class="eyebrow">Your intention, from last night</span><p>${esc(p.intentions)}</p></div>`:`<div class="numhead"><b>Your intention</b><span>You didn't set one last night. Set it tonight in Day Close, so it's waiting for you tomorrow.</span></div>`}
-    case"oxypick":{const pl=a.plan?(curCtx().prev[a.plan]||[]):[],mine=oxyOf(log).filter(o=>o.from===a.from),planOnly=pl.length&&!(S.oxyAll||{})[a.k],groups=(a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN).map(G=>planOnly?{...G,items:[...new Set([...pl.filter(x=>G.items.includes(x)),...mine.map(o=>o.item)])]}:G);
+    case"oxypick":{const pl=a.plan?(curCtx().prev[a.plan]||[]):[],mine=oxyOf(log).filter(o=>o.from===a.from),planOnly=pl.length&&!(S.oxyAll||{})[a.k],groups=(a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN).map(G=>{const own=[...pl.filter(x=>!ALL_OXY().includes(x)&&(a.only?G.g===a.only:G.g==="up")),...mine.filter(o=>o.g===G.g&&!G.items.includes(o.item)).map(o=>o.item)];return planOnly?{...G,items:[...new Set([...pl.filter(x=>G.items.includes(x)||own.includes(x)),...mine.filter(o=>o.g===G.g).map(o=>o.item)])]}:{...G,items:[...new Set([...G.items,...own])]}});
       return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?(planOnly?"What you planned last night. Tap it once you've done it.":"Tap what you did instead."):"Tap it once you've done it."}</small>
-        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">${planOnly?"Did something else? Change it":"Back to what you planned"}</button>`:""}</div>`}
+        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length&&planOnly?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Did something else? Change it</button>`:`${dis?"":`<small class="muted" style="font-weight:600">Did something else? Type it in</small>${ownForm("pick",a.k,a.only||"up",a.from,"e.g. Swim, skipping, bike ride")}`}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Back to what you planned</button>`:""}`}</div>`}
     case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
     case"golink":{const t=typeof a.text==="function"?a.text(log):a.text;return `<div class="golink"><div><b>${esc(a.title)}</b><span>${esc(t)}</span></div><button class="btn" data-guidepage="${a.go}" ${dis}>${esc(a.btn)}</button></div>`}
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
@@ -2672,7 +2677,7 @@ function askHtml(a,log,wk,locked){
       <li><b>Fruit</b> in at least 3 meals a day, and <b>veg</b> in at least 3 meals a day. If you feel like you need carbs outside of training, have fruit.</li>
       <li><b>Water</b> with every meal.</li></ul></div>`;
     case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
-    case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${G.items.map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`}
+    case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[],own=cur.filter(x=>!G.items.includes(x));return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${[...G.items,...own].map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div><small class="muted" style="font-weight:600">Doing something else? Type it in</small>${dis?"":ownForm("plan",a.k,a.g,"",a.g==="up"?"e.g. Swim, skipping, bike ride":"e.g. Stretching")}</div>`}
     case"foodpick":{const cur=Array.isArray(log[a.k])?log[a.k]:[];return `<div class="ask"><span class="ask-h">${a.label}${cur.length?` <span class="muted num">${cur.length}</span>`:""}</span><small class="muted" style="font-weight:500">${esc(a.text)}</small>
       ${FOOD_ROWS.map(r=>{const c=FOOD_CATS.find(f=>f.k===r.k);return c?`<div class="fp-g"><b>${esc(r.name)}</b><div class="opts">${c.items.map(it=>`<button class="chip" data-foodpick="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div></div>`:""}).join("")}</div>`}
     case"logmeal1":{const f=(log.food_entries||[])[0],nx=f?null:plannedMeals(curCtx()).findIndex(r=>!r.done),pr=nx!=null&&nx>=0?plannedMeals(curCtx())[nx]:null;
@@ -3556,6 +3561,10 @@ root.addEventListener("submit",e=>{
   e.preventDefault();
   if(e.target.id==="loginForm"){const f=e.target,err=root.querySelector("#loginErr"),fd=new FormData(f);busy(f,true);
     api("/login",{method:"POST",body:{email:fd.get("email"),password:fd.get("password")}}).then(afterLogin).catch(x=>{err.textContent=x.message;busy(f,false)});return}
+  if(e.target.dataset.ownform){e.preventDefault();const f=e.target,v=f.own.value.trim().slice(0,40);if(!v)return;const k=f.dataset.k,l=curCtx().log;
+    if(f.dataset.ownform==="plan"){const cur=Array.isArray(l[k])?l[k]:[];if(!cur.includes(v))edit(k,[...cur,v])}
+    else{const t=nowHHMM();edit("oxygen",[...oxyOf(l),{id:uid(),item:v,g:f.dataset.g,from:f.dataset.from,at:t}]);toast(v+" logged "+t)}
+    return render()}
   if(e.target.id==="inviteForm"){e.preventDefault();const f=e.target,er=root.querySelector("#inviteErr"),fd=new FormData(f);busy(f,true);
     api("/invites",{method:"POST",body:{name:fd.get("name"),email:fd.get("email"),send:!!fd.get("send")}}).then(r=>{S.inviteMade=r;toast(r.emailed&&r.emailed.ok?"Invite emailed":"Invite link ready");return api("/invites").then(x=>{S.invites=x.invites;render()})}).catch(x=>{busy(f,false);if(er)er.textContent=x.message});return}
   if(e.target.id==="testForm"){const f=e.target,err=root.querySelector("#testErr"),fd=new FormData(f);busy(f,true);
