@@ -892,6 +892,10 @@ body.has-bnav .col{max-width:560px}
 .skey-row.up{background:#f8e4d4;color:#8a3d12}
 .skey-row.centre{background:#fbe6cc;color:#8a4b0a}
 .skey-row.down{background:#dfeaf3;color:#244e6b}
+.ahead-d{position:relative}
+.ad-ic{position:absolute;top:-6px;right:-4px;width:22px;height:22px;border-radius:999px;background:var(--night);color:var(--lime);display:grid;place-items:center}
+.ad-ic svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ad-ic.inline{position:static}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2438,7 +2442,8 @@ function planAheadHtml(x){
   const {c,dn,today}=x,max=PROGRAMME_DAYS,days=[];for(let d=Math.max(dn,today)+1;d<=Math.min(max,Math.max(dn,today)+7);d++)days.push(d);
   if(!days.length)return `<p class="muted" style="font-size:13px;margin:0">You're on the last day.</p>`;
   const sel=days.includes(S.aheadDay)?S.aheadDay:days[0];S.aheadDay=sel;const dk=ymd(dateOf(c,sel)),L=(DATA.logs[c.id]||{})[dk]||{},tp=L.train_plan||{},td=L.ahead_todos||[];
-  return `<div class="opts">${days.map(d=>`<button class="chip" data-aheadday="${d}" aria-pressed="${d===sel}">Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small></button>`).join("")}</div>
+  return `<div class="opts">${days.map(d=>{const tp=((DATA.logs[c.id]||{})[ymd(dateOf(c,d))]||{}).train_plan||{},tr=tp.on==="yes";return `<button class="chip ahead-d${tr?" train":""}" data-aheadday="${d}" aria-pressed="${d===sel}" aria-label="Day ${d}${tr?", training day":tp.on==="no"?", rest day":""}">${tr?`<span class="ad-ic" aria-hidden="true">${ICO.dumbbell}</span>`:""}Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small></button>`}).join("")}
+    <small class="muted" style="display:flex;align-items:center;gap:6px"><span class="ad-ic inline" aria-hidden="true">${ICO.dumbbell}</span>Training day</small></div>
     <div class="ask"><span class="ask-h">Training on Day ${sel}?</span><div class="opts"><button class="chip" data-aheadtrain="yes" aria-pressed="${tp.on==="yes"}">Yes</button><button class="chip" data-aheadtrain="no" aria-pressed="${tp.on==="no"}">Rest day</button></div>
       ${tp.on==="yes"?`<div class="nums"><label class="ask"><span>What?</span><input class="input" data-aheadw="what" value="${esc(tp.what||"")}" placeholder="e.g. Upper body"></label><label class="ask"><span>Time</span><input class="input" type="time" data-aheadw="time" value="${esc(tp.time||"")}"></label></div>`:""}</div>
     <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
