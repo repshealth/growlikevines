@@ -834,9 +834,11 @@ body.has-bnav .col{max-width:560px}
 .pri.high{background:#fbe6cc;color:#8a4b0a}
 .pri-cycle{border:0;background:none;color:var(--muted);font-size:16px;padding:2px 6px;cursor:pointer}
 .todo-add select.input{width:auto;min-width:0;flex:0 0 auto;padding-right:8px}
-.todo-add{flex-wrap:wrap}
-.todo-add>.input:first-child{flex:1 1 100%}
-.todo-add>input[type=time]{flex:1 1 110px}
+.todo-add{display:grid!important;grid-template-columns:1fr auto auto;gap:8px;align-items:stretch}
+.todo-add>.input{width:100%;min-width:0}
+.todo-add select.input{width:auto;font-size:14px;padding:0 28px 0 12px}
+.todo-add .btn{min-width:0;padding-inline:16px}
+@media (max-width:420px){.todo-add{grid-template-columns:1fr auto}.todo-add>.input:first-child{grid-column:1/-1}}
 .sched{display:flex;flex-direction:column}
 .sc-row{display:grid;grid-template-columns:52px 16px 1fr;align-items:center;gap:8px;padding:6px 0;font-size:14px;position:relative}
 .sc-dot{width:10px;height:10px;border-radius:999px;background:var(--line);justify-self:center}
@@ -876,6 +878,16 @@ body.has-bnav .col{max-width:560px}
 .bn-main[aria-current="page"] .bn-fab::after{animation:none}
 @keyframes fabPulse{0%{transform:scale(1);opacity:.75}70%{transform:scale(1.45);opacity:0}100%{transform:scale(1.45);opacity:0}}
 @media (prefers-reduced-motion:reduce){.bn-fab::after{animation:none}}
+.skey{display:flex;flex-direction:column;gap:8px}
+.skey-row{display:flex;gap:12px;align-items:center;border-radius:14px;padding:10px 12px}
+.skey-row>div{display:flex;flex-direction:column;gap:1px}
+.skey-row b{font-size:15px}
+.skey-row b small{font-size:12px;font-weight:700;opacity:.75;margin-left:4px}
+.skey-row span:not(.skey-ic){font-size:13px;line-height:1.35}
+.skey-ic{flex:0 0 34px;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:17px;background:rgba(255,255,255,.65)}
+.skey-row.up{background:#f8e4d4;color:#8a3d12}
+.skey-row.centre{background:#fbe6cc;color:#8a4b0a}
+.skey-row.down{background:#dfeaf3;color:#244e6b}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2411,12 +2423,12 @@ function rulesView(){
 function scheduleHtml(x){
   const {log}=x,items=[];
   if(log.woke_at||x.prev.tmr_wake)items.push({t:log.woke_at||x.prev.tmr_wake,l:log.woke_at?"Woke up":"Alarm",k:"wake"});
-  todosOf(log,"todos").filter(t=>t.time).forEach(t=>items.push({t:t.time,l:t.t,k:t.pri==="hard"?"hard":"todo",done:t.done}));
+  todosOf(log,"todos").filter(t=>t.time&&false).forEach(t=>items.push({t:t.time,l:t.t,k:t.pri==="hard"?"hard":"todo",done:t.done}));
   const tp=log.train_plan;if(tp&&tp.on==="yes"&&tp.time)items.push({t:tp.time,l:"Workout"+(tp.what?": "+tp.what:""),k:"train",done:log.train_done});
   (log.food_entries||[]).forEach(f=>items.push({t:f.at,l:f.name||"Meal",k:"meal",done:f.at}));
   if(log.tmr_bed)items.push({t:log.tmr_bed,l:"Asleep",k:"bed"});
   items.sort((a,b)=>a.t.localeCompare(b.t));
-  return items.length?`<div class="sched">${items.map(i=>`<div class="sc-row sc-${i.k}${i.done?" done":""}"><span class="num">${esc(i.t)}</span><span class="sc-dot"></span><span>${esc(i.l)}${i.done&&i.k!=="meal"?" "+TICK:""}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Add times to your tasks and they'll show here in order.</p>`;
+  return items.length?`<div class="sched">${items.map(i=>`<div class="sc-row sc-${i.k}${i.done?" done":""}"><span class="num">${esc(i.t)}</span><span class="sc-dot"></span><span>${esc(i.l)}${i.done&&i.k!=="meal"?" "+TICK:""}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Your alarm, workout and meals will show here in order.</p>`;
 }
 function planAheadHtml(x){
   const {c,dn,today}=x,max=PROGRAMME_DAYS,days=[];for(let d=Math.max(dn,today)+1;d<=Math.min(max,Math.max(dn,today)+7);d++)days.push(d);
@@ -2425,8 +2437,8 @@ function planAheadHtml(x){
   return `<div class="opts">${days.map(d=>`<button class="chip" data-aheadday="${d}" aria-pressed="${d===sel}">Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small></button>`).join("")}</div>
     <div class="ask"><span class="ask-h">Training on Day ${sel}?</span><div class="opts"><button class="chip" data-aheadtrain="yes" aria-pressed="${tp.on==="yes"}">Yes</button><button class="chip" data-aheadtrain="no" aria-pressed="${tp.on==="no"}">Rest day</button></div>
       ${tp.on==="yes"?`<div class="nums"><label class="ask"><span>What?</span><input class="input" data-aheadw="what" value="${esc(tp.what||"")}" placeholder="e.g. Upper body"></label><label class="ask"><span>Time</span><input class="input" type="time" data-aheadw="time" value="${esc(tp.time||"")}"></label></div>`:""}</div>
-    <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${t.time?`<b class="num">${esc(t.time)}</b> · `:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
-      <div class="todo-add"><input class="input" id="ahead-t" placeholder="Add a task" autocomplete="off"><input class="input" type="time" id="ahead-time" aria-label="Time (optional)"><select class="input" id="ahead-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-aheadadd="1">Add</button></div>
+    <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
+      <div class="todo-add"><input class="input" id="ahead-t" placeholder="Add a task" autocomplete="off"><select class="input" id="ahead-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-aheadadd="1">Add</button></div>
       <small class="muted">These land on your to-do list on Day ${sel}.</small></div>`;
 }
 function subconsciousView(){
@@ -2438,7 +2450,10 @@ function subconsciousView(){
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div><small class="muted" style="margin:-4px 0 8px;display:block">Tap ★ to mark a task Important or your Hard thing. Hard things go to the top.</small>${todoHtml("todos",log,true,false)}</section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your day</h2></div>${scheduleHtml(x)}</section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Plan ahead</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">Add tasks and workouts for the days coming up.</p>${planAheadHtml(x)}</section>`:""}
-    <div class="state-key three"><div class="sk up"><b>↑ Sympathetic</b><span>Fight or flight. Heart rate up, alert, switched on.</span></div><div class="sk centre"><b>→ Centred</b><span>Balanced. Steady, focused and in control.</span></div><div class="sk down"><b>↓ Parasympathetic</b><span>Rest and digest. Calm, ready to eat, recover or sleep.</span></div></div>
+    <section class="card skey"><h2 class="sec-title" style="font-size:20px;margin:0 0 8px">Your three states</h2>
+      <div class="skey-row up"><span class="skey-ic">↑</span><div><b>Sympathetic <small class="num">7 to 10</small></b><span>Fight or flight. Heart rate up, alert, switched on.</span></div></div>
+      <div class="skey-row centre"><span class="skey-ic">→</span><div><b>Centred <small class="num">4 to 6</small></b><span>Balanced. Steady, focused and in control.</span></div></div>
+      <div class="skey-row down"><span class="skey-ic">↓</span><div><b>Parasympathetic <small class="num">1 to 3</small></b><span>Rest and digest. Calm, ready to eat, recover or sleep.</span></div></div></section>
     ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${oxyArrow(G.g)}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":G.g==="centre"?"Keeps you centred":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":G.g==="centre"?"Hold your centre":"Bring yourself down"}</h2></div></div>
       <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":G.g==="centre"?"Use these to hold a balanced state through your day.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${list(G)}</section>`).join("")}
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
@@ -3116,8 +3131,8 @@ const waterQ_=id=>`<div class="fu"><span>Did you have water with it & add salt?<
 const todosOf=(log,k)=>Array.isArray(log[k])?log[k]:[];
 function todoHtml(k,log,tick,dis){
   const PR={hard:0,high:1},L=[...todosOf(log,k)].sort((a,b)=>((PR[a.pri]??2)-(PR[b.pri]??2))||(a.time||"99").localeCompare(b.time||"99"));
-  return `<div class="todo">${L.length?`<ul class="todo-list">${L.map(it=>`<li class="todo-row${it.done?" done":""}">${tick?`<button class="item-tick" data-todotick="${k}|${it.id}" aria-pressed="${!!it.done}" aria-label="Tick ${esc(it.t)}"><span class="tick">${it.done?TICK:""}</span></button>`:""}<span class="todo-t">${it.pri==="hard"?`<span class="pri hard">Hard thing</span>`:it.pri==="high"?`<span class="pri high">Important</span>`:""}${it.time?`<b class="num">${esc(it.time)}</b> · `:""}${esc(it.t)}</span>${dis?"":`<button class="pri-cycle" data-todopri="${k}|${it.id}" aria-label="Change importance of ${esc(it.t)}" title="Change importance">★</button>`}${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${dis?"":`<button class="x" data-todorm="${k}|${it.id}" aria-label="Remove ${esc(it.t)}">×</button>`}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Nothing on it yet.</p>`}
-  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task"><input class="input" type="time" id="todo-${k}-t" aria-label="Time (optional)"><select class="input" id="todo-${k}-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
+  return `<div class="todo">${L.length?`<ul class="todo-list">${L.map(it=>`<li class="todo-row${it.done?" done":""}">${tick?`<button class="item-tick" data-todotick="${k}|${it.id}" aria-pressed="${!!it.done}" aria-label="Tick ${esc(it.t)}"><span class="tick">${it.done?TICK:""}</span></button>`:""}<span class="todo-t">${it.pri==="hard"?`<span class="pri hard">Hard thing</span>`:it.pri==="high"?`<span class="pri high">Important</span>`:""}${esc(it.t)}</span>${dis?"":`<button class="pri-cycle" data-todopri="${k}|${it.id}" aria-label="Change importance of ${esc(it.t)}" title="Change importance">★</button>`}${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${dis?"":`<button class="x" data-todorm="${k}|${it.id}" aria-label="Remove ${esc(it.t)}">×</button>`}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Nothing on it yet.</p>`}
+  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task"><select class="input" id="todo-${k}-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
 }
 function pairHtml(p,ta,lockedBy,log,isNext){
   log=log||{};const waterQ=p.done&&(p.water===undefined||p.water===null),protAsk=p.done&&(p.prot===undefined||p.prot===null),isPre=mealRole(p.slot,ta)==="Pre-workout",readyAsk=p.done&&readyApplies(log,p.slot)&&(p.ready===undefined||p.ready===null);
