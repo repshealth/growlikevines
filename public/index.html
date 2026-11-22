@@ -823,6 +823,52 @@ body.has-bnav .col{max-width:560px}
 .wk-whyb{margin-top:10px;font-size:14px;display:flex;flex-direction:column;gap:6px}
 .wk-whyb p{margin:0}
 .wk-whyb ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px}
+
+.state-key.three{grid-template-columns:1fr 1fr 1fr}
+.sk.centre,.st-centre .st-band{background:#fbe6cc;color:#8a4b0a}
+.st-centre .oxy-row{border-left:4px solid #e9a24d;padding-left:10px}
+.st-centre .oxy-row .btn.primary{background:#f6c98f;border-color:#f6c98f;color:#5a3005}
+@media (max-width:420px){.state-key.three{grid-template-columns:1fr}}
+.pri{display:inline-block;font-size:10.5px;font-weight:800;border-radius:999px;padding:1px 7px;margin-right:6px;vertical-align:1px}
+.pri.hard{background:var(--night);color:var(--lime)}
+.pri.high{background:#fbe6cc;color:#8a4b0a}
+.pri-cycle{border:0;background:none;color:var(--muted);font-size:16px;padding:2px 6px;cursor:pointer}
+.todo-add select.input{width:auto;min-width:0;flex:0 0 auto;padding-right:8px}
+.todo-add{flex-wrap:wrap}
+.todo-add>.input:first-child{flex:1 1 100%}
+.todo-add>input[type=time]{flex:1 1 110px}
+.sched{display:flex;flex-direction:column}
+.sc-row{display:grid;grid-template-columns:52px 16px 1fr;align-items:center;gap:8px;padding:6px 0;font-size:14px;position:relative}
+.sc-dot{width:10px;height:10px;border-radius:999px;background:var(--line);justify-self:center}
+.sc-row.done .sc-dot,.sc-meal .sc-dot{background:var(--lime)}
+.sc-hard .sc-dot{background:var(--night)}
+.sc-train .sc-dot{background:#8bc34a}
+.sc-row.done span:last-child{color:var(--muted)}
+.step-cue{margin-right:8px;font-style:normal}
+.hd-btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:600;color:var(--fg);white-space:nowrap}
+.streak{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.streak div{background:var(--night);color:var(--on-night);border-radius:16px;padding:14px;display:flex;flex-direction:column}
+.streak b{font-size:32px;color:var(--lime);line-height:1}
+.streak span{font-size:12px;opacity:.85}
+.days-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.dg{display:flex;flex-direction:column;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:6px 2px;color:var(--fg)}
+.dg small{font-size:9px;color:var(--muted)}
+.dg b{font-size:16px}
+.dg span{font-size:12px;height:14px}
+.dg span svg{width:12px;height:12px}
+.dg.full{background:var(--lime);border-color:var(--lime)}
+.dg.half{background:var(--lime-dim)}
+.dg.cur{outline:2px solid var(--fg)}
+.dg.fut{opacity:.45}
+.dg-key{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.dg-key i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;background:var(--surface);border:1px solid var(--line)}
+.dg-key i.full{background:var(--lime);border-color:var(--lime)}
+.dg-key i.half{background:var(--lime-dim)}
+.rule-list{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:14.5px}
+.faq{border-top:1px solid var(--line);padding:10px 0}
+.faq summary{font-weight:700;cursor:pointer}
+.faq p{margin:6px 0 0;font-size:14px;color:var(--muted)}
+@media (max-width:420px){.hd-btn{padding:4px 8px;font-size:11px}.who .avatar{display:none}}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1166,6 +1212,10 @@ const WALK=ACTIONS[0][0]; // older logs only: the morning walk used to be ticked
 const MOVE=["Walk or cardio (over 100 BPM)","Cold therapy","Sauna","Workout","Breath work"];
 const SOON="Ellis's guide (PDF or video) for this is coming soon.";
 const INFO={
+  "Cooking":"Calm, hands-on and present. Cooking your own food brings you down and gets your body ready to digest.",
+  "Tidying":"Steady, simple movement with a clear finish. Good for holding your centre when you need to stay switched on but calm.",
+  "Journalling":"Get what's in your head onto paper. It settles your thinking without switching you off completely.",
+  "Admin":"Emails, planning, life admin. Focused but calm work that keeps you centred.",
   "Morning sunlight":"Get daylight on your face this morning, ideally 10 minutes or more outside without sunglasses. Morning light is one of the strongest signals for your body clock.",
   "Walk after a meal":"An easy walk within 30 minutes of eating. It helps your body use the meal and keeps your energy steady.",
   "Evening moonlight":"Step outside for a few minutes this evening. Low, natural evening light tells your body the day is ending and helps you wind down.",
@@ -1284,11 +1334,13 @@ const WORKOUTS=[["Your workout",["My own workout"]]];
 // Ellis's Process (18/11): Day Open and Day Close, five steps each. The bit in between is theirs, with the Tracker.
 const OXYGEN=[
   {g:"up",name:"Switch up",d:"Oxygenate the body: Something physical that gets your heart rate up.",items:[...MOVE]},
-  {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight"]}
+  {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight","Cooking"]},
+  {g:"centre",name:"Hold your centre",d:"Balanced energy: Steady, focused and in control.",items:["Tidying","Journalling","Admin"]}
 ];
 // Anything the client types in themselves, not on Ellis's lists
 const ALL_OXY=()=>OXYGEN.flatMap(G=>G.items);
 const ownForm=(mode,k,g,from,ph)=>`<form class="own-form" data-ownform="${mode}" data-k="${k}" data-g="${g}" data-from="${from||""}"><input class="input" name="own" maxlength="40" placeholder="${ph}" autocomplete="off"><button class="btn" type="submit">Add</button></form>`;
+const oxyArrow=g=>g==="up"?"↑":g==="centre"?"→":"↓";
 const oxyOf=log=>Array.isArray(log.oxygen)?log.oxygen:[];
 const MORNING=[
   {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark the time you got out of bed"],
@@ -1297,14 +1349,17 @@ const MORNING=[
    asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
   {id:"m3",title:"Meal 1",text:["Before you eat, rate your zone: You want to be in rest and digest","Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
    asks:[{k:"am_state",type:"rating",arousal:true,eat:true,aim:"calm",label:"Before you eat: Rate your zone, 1 to 10",req:l=>!!l.am_state,reqMsg:"Rate your zone before you eat"},{k:"_eatready",type:"eatready"},{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
-  {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new"],
-   asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"}]}
+  {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Check where you are before you start your day"],
+   asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"am_state2",type:"rating",arousal:true,eat:true,label:"Now, where are you? Rate your zone, 1 to 10",req:l=>!!l.am_state2,reqMsg:"Rate your zone"},{k:"_startstate",type:"startstate"}]}
 ];
 const ML=MORNING.length;
+// Visual cues for each step
+const STEP_CUE={m1:"⏰",m2:"🫀",m3:"🍽️",m4:"📝",e1:"📊",e2:"🧠",e3:"📅",e5:"📵"};
 const TMR_ASKS=[
   {k:"tmr_up",type:"oxyplan",g:"up",label:"First thing: What will you do to oxygenate your body and get your heart rate up?",req:l=>(l.tmr_up||[]).length>0,reqMsg:"Pick how you'll get your heart rate up"},
   {k:"intentions",type:"textarea",label:"Set your intention for tomorrow",info:"intentions",req:l=>!!String(l.intentions||"").trim(),reqMsg:"Set your intention"},
   {k:"_tmrmeals",type:"tmrmeals",label:"What will you eat tomorrow?"},
+  {k:"_tmrwk",type:"tmrworkout"},
   {k:"tmr_todos",type:"todolist",label:"Tomorrow's to-do list"},
   {k:"_copytodos",type:"copytodos"},
   {k:"tmr_wake",type:"wake",label:"Set your alarm",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}
@@ -1319,7 +1374,7 @@ const EVENING=[
   {id:"e2",title:"Clear your subconscious",region:"Prefrontal cortex",text:["Review your to-do list","Summarise your day, or mark it done if you journal elsewhere"],
    asks:[{k:"todos",type:"todolist",tick:true,label:"Today's to-do list"},{k:"day_summary",type:"textarea",label:"Summarise your day",info:"day_summary"},{k:"journal_else",type:"confirm",label:"Journalled elsewhere"}]},
   {id:"e3",title:"Tomorrow",region:"Prefrontal cortex",cue:["set","Plan for when you wake."],text:["How you'll get your heart rate up first thing","Your intention, what you'll eat and your to-do list","Set your alarm, then see what time to be in bed by"],asks:TMR_ASKS},
-  {id:"e5",title:"Be present",region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Pick something from Oxygen, then be fully present for the rest of your evening","Rate where you are"],asks:WIND_ASKS}
+  {id:"e5",title:"Be present",phone:true,region:"Amygdala · Insula · Locus coeruleus · Hypothalamus",cue:["down","Bring it down for the evening."],text:["Phone away 📵 Be fully present for the rest of your evening","Pick something to bring it down, then rate where you are"],asks:WIND_ASKS}
 ];
 // Day 0: the setup night after a new client signs up.
 const bothPlanned=l=>(l.tmr_up||[]).length>0;
@@ -2159,7 +2214,7 @@ function topBar(){
   return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
     <img class="logo sm" src="/logo.webp" alt="Project Reset" width="800" height="580">
     <nav class="tabs" aria-label="Sections">${tabs.map(([k,l])=>`<button class="tab" data-tab="${k}" ${cur===k?'aria-current="page"':""}>${l}</button>`).join("")}</nav>
-    <div class="who"><span class="avatar" title="${esc(name)}">${initials(name)}</span><button class="link" data-act="logout">Log out</button></div>
+    <div class="who">${navOn()?`<button class="hd-btn" data-tab="days" aria-label="Your 21 days">${S.tab==="days"?"<b>21 days</b>":"21 days"}</button><button class="hd-btn" data-tab="rules" aria-label="Rules and FAQs">${S.tab==="rules"?"<b>Rules & FAQs</b>":"Rules & FAQs"}</button>`:""}<span class="avatar" title="${esc(name)}">${initials(name)}</span><button class="link" data-act="logout">Log out</button></div>
   </div></header>${navOn()?bottomNav():""}`;
 }
 
@@ -2170,9 +2225,9 @@ function topBar(){
 const SPINE_VIDEOS={numbers:"",tomorrow:""};
 const ICO={dumbbell:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.36a2 2 0 1 1 2.82 2.83l-1.76 1.76a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></svg>',brain:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a3 3 0 1 0-6 .13 4 4 0 0 0-2.52 5.77 4 4 0 0 0 .55 6.59A4 4 0 1 0 12 18z"/><path d="M12 5a3 3 0 1 1 6 .13 4 4 0 0 1 2.52 5.77 4 4 0 0 1-.55 6.59A4 4 0 1 1 12 18z"/><path d="M12 5v13M15 13a4.5 4.5 0 0 1-3-4M9 13a4.5 4.5 0 0 0 3-4"/></svg>',today:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18M9 15.5l2 2 4-4"/></svg>',tracker:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',food:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',meals:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2M6 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/></svg>',progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>',steps:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-2.4C4 11.5 3 10.5 3 8c0-2.7 1.5-6 4.5-6C9.4 2 10 3.8 10 5.5c0 3.1-2 5.7-2 8.7V16a2 2 0 1 1-4 0z"/><path d="M20 20v-2.4c0-2.1 1-3.1 1-5.6 0-2.7-1.5-6-4.5-6C14.6 6 14 7.8 14 9.5c0 3.1 2 5.7 2 8.7V20a2 2 0 1 0 4 0zM16 17h4M4 13h4"/></svg>',protein:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12.5" cy="8.5" r="2.5"/><path d="M12.5 2a6.5 6.5 0 0 0-6.2 4.6c-1.1 3.1-.8 3.9-3.2 6.1A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3A6.5 6.5 0 0 0 12.5 2z"/><path d="M18.5 6l2.2 4.5a6.5 6.5 0 0 1-2.3 7.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.7-1.7L2.4 16.5"/></svg>',water:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z"/></svg>',fruit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',veg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.3 21.7s9.9-3.5 12.7-6.4a4.5 4.5 0 0 0-6.4-6.4C5.8 11.8 2.3 21.7 2.3 21.7zM8.6 14l-2-2M15.3 15l-2.4-2.4"/><path d="M22 9s-1.3-2-3.5-2C16.9 7 15 9 15 9s1.3 2 3.5 2S22 9 22 9zM15 2s-2 1.3-2 3.5S15 9 15 9s2-1.8 2-3.5C17 3.3 15 2 15 2z"/></svg>',fat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7c3 3.3 6 6.6 6 10.3a6 6 0 0 1-12 0c0-3.7 3-7 6-10.3z"/><path d="M12 18a3 3 0 0 1-3-3"/></svg>',ecarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22 16 8M3.5 12.5 5 11l1.5 1.5a3.5 3.5 0 0 1 0 5L5 19l-1.5-1.5a3.5 3.5 0 0 1 0-5zM7.5 8.5 9 7l1.5 1.5a3.5 3.5 0 0 1 0 5L9 15l-1.5-1.5a3.5 3.5 0 0 1 0-5zM11.5 4.5 13 3l1.5 1.5a3.5 3.5 0 0 1 0 5L13 11l-1.5-1.5a3.5 3.5 0 0 1 0-5z"/></svg>',pcarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>'};
 const NAV_IC={today:ICO.today,tracker:ICO.tracker,food:ICO.food,meals:ICO.meals,progress:ICO.progress,training:ICO.dumbbell,workout:ICO.dumbbell,oxygen:ICO.water,subconscious:ICO.brain};
-const CLIENT_TABS=[["today","Today"],["meals","Meals"],["tracker","Tracker"],["training","Workout"],["subconscious","Subconscious"]];
+const CLIENT_TABS=[["today","The Process"],["meals","Meals"],["tracker","Tracker"],["training","Workout"],["subconscious","Subconscious"]];
 // which bottom tab lights up for pages that sit under another one
-const NAV_OF={food:"meals",nutrition:"meals",workout:"training",oxygen:"subconscious",progress:"tracker"};
+const NAV_OF={days:"today",rules:"today",food:"meals",nutrition:"meals",workout:"training",oxygen:"subconscious",progress:"tracker"};
 const navOn=()=>{if(!S.session||S.session.role==="coach")return false;const m=me();return m.status==="active"&&introDone(m)&&!S.checkin};
 function bottomNav(){
   return `<nav class="bnav" aria-label="Sections"><div class="bnav-in">${CLIENT_TABS.map(([k,l])=>`<button class="bn${k==="tracker"?" bn-main":""}" data-tab="${k}" ${(NAV_OF[S.tab]||S.tab)===k?'aria-current="page"':""}>${k==="tracker"?`<span class="bn-fab">${NAV_IC[k]}</span>`:NAV_IC[k]}<span>${l}</span></button>`).join("")}</div></nav>`;
@@ -2203,7 +2258,7 @@ function trackerView(){
     ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious",meal:"Meals"};
       return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
       <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
-      ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
+      ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${oxyArrow(o.g)} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
       <button class="btn" data-tab="subconscious" style="align-self:flex-start;margin-top:8px">Open Subconscious</button></section>`})()}
     ${(()=>{const rows=wkSummaryRows(log);return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Workout</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
       ${rows.length?`<div class="review">${rows.map(r=>`<div class="rv"><span>${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span></span><span class="num muted">${esc(r.at)}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">No workout logged today.</p>`}
@@ -2219,11 +2274,11 @@ function oxygenView(){
   const cnt=(it,g)=>ox.filter(o=>o.item===it&&o.g===g).length;
   return `<div class="stack">
     ${tabHead("Oxygen","Everything that moves your nervous system. Switch it up to get going, bring it down to recover. Tap Log when you've done one.",x)}
-    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${G.g==="up"?"↑":"↓"} ${G.name}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${G.d}</p>
+    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${oxyArrow(G.g)} ${G.name}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${G.d}</p>
       <div class="oxy-list">${G.items.map(it=>{const n=cnt(it,G.g),open=S.oxyOpen===G.g+it;return `<div class="oxy-row${n?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n?`<small>${TICK} Logged ${n>1?n+" times":"at "+esc(ox.filter(o=>o.item===it&&o.g===G.g).pop().at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button><button class="btn${n?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Log</button>
         ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div></section>`).join("")}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Logged today</h2><span class="muted num">${ox.length}</span></div>
-      ${ox.length?`<div class="review">${ox.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(o.at)}</span><button class="x" data-oxydel="${o.id}" aria-label="Remove ${esc(o.item)}">×</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet. Tap Log on anything you've done.</p>`}</section>
+      ${ox.length?`<div class="review">${ox.map(o=>`<div class="rv"><span>${oxyArrow(o.g)} ${esc(o.item)}</span><span style="display:flex;gap:8px;align-items:center"><span class="num muted">${esc(o.at)}</span><button class="x" data-oxydel="${o.id}" aria-label="Remove ${esc(o.item)}">×</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet. Tap Log on anything you've done.</p>`}</section>
   </div>`;
 }
 const MEALS_GUIDE="3 to 7 meals a day";
@@ -2304,6 +2359,7 @@ function trainingView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Tick each step as you go.</p></div></div>
     ${x&&x.dn>0?dayNav(x):""}
+    ${x&&x.dn>0&&x.log.train_plan&&x.log.train_plan.on?`<div class="golink lime"><div><b>${x.log.train_plan.on==="yes"?`Planned: ${esc(x.log.train_plan.what||"Training")}${x.log.train_plan.time?" at "+esc(x.log.train_plan.time):""}`:"Planned: Rest day"}</b><span>From your plan. Change it in Subconscious, Plan ahead.</span></div></div>`:""}
     <div class="wk-key"><span class="tone-up">Arousal inducing: Stimulate</span><span class="tone-centre">Centring: Maintain balance</span><span class="tone-down">Arousal reducing: Calm</span></div>
     ${x&&x.dn>0?workoutCard(x):`<p class="muted">Workout logging starts on Day 1.</p>`}
     <section class="card"><button class="wk-why" data-wkwhy="1" aria-expanded="${!!S.wkWhy}"><b>Why it works</b><span>${S.wkWhy?"Hide":"Show"}</span></button>
@@ -2314,16 +2370,70 @@ function trainingView(){
 }
 // Tracker and Day Close summary of the workout
 function wkSummaryRows(log){return WORKOUT.map(ph=>{const n=wkDone(log,ph);if(!n)return null;const last=ph.steps.map(s=>log[s.k]).filter(Boolean).sort().pop();return{name:ph.name,n,of:ph.steps.length,at:last}}).filter(Boolean)}
+function daysView(){
+  const c=me(),today=clientDayNum(c),logs=logsFor(c),st=d=>{const l=logs[ymd(dateOf(c,d))]||{},o=MORNING.every(s=>l[s.id]),cl=EVENING.filter(s=>!s.zero).every(s=>l[s.id]);return o&&cl?"full":o||cl?"half":""};
+  let streak=0;for(let d=today-(st(today)==="full"?0:1);d>=1&&st(d)==="full";d--)streak++;
+  let best=0,run=0;for(let d=1;d<=Math.min(today,PROGRAMME_DAYS);d++){if(st(d)==="full"){run++;best=Math.max(best,run)}else run=0}
+  const full=Array.from({length:PROGRAMME_DAYS},(_,i)=>i+1).filter(d=>st(d)==="full").length;
+  return `<div class="stack"><div class="tab-head"><div><h1 class="display">Your 21 days</h1><p class="muted">Open and close every day. Each full day builds your streak.</p></div></div>
+    <section class="streak"><div><b class="num">${streak}</b><span>day streak</span></div><div><b class="num">${full}</b><span>full days</span></div><div><b class="num">${best}</b><span>best streak</span></div></section>
+    <div class="days-grid">${Array.from({length:PROGRAMME_DAYS},(_,i)=>i+1).map(d=>{const s=d<=today?st(d):"",cur=d===today;return `<button class="dg ${s}${cur?" cur":""}${d>today?" fut":""}" ${d<=today?`data-act="day" data-d="${d}"`:"disabled"}><small>Day</small><b class="num">${d}</b><span>${s==="full"?TICK:s==="half"?"½":d>today?"":"·"}</span></button>`}).join("")}</div>
+    <div class="dg-key"><span><i class="full"></i>Opened and closed</span><span><i class="half"></i>One of the two</span><span><i></i>Missed</span></div>
+    <button class="btn" data-tab="progress" style="align-self:flex-start">See your progress</button></div>`;
+}
+const RULES=[
+  ["The non-negotiables",["Hit your steps, protein and water every day, rain or shine."]],
+  ["Food",["Eat anything from your approved list, as much as you need. 3 to 7 meals a day.","Protein in every meal.","Carbs only around training: The meal before and after. Your evening meal too, if you want.","Fats fill the gaps. We wouldn't normally put carbs and fats in the same meal.","Fruit in at least 3 meals a day, and veg in at least 3 meals a day.","Water with every meal.","Eat in rest and digest: Under 6 on the scale. Walk after every meal."]],
+  ["Your states",["↑ Sympathetic (7 to 10): Fight or flight. Switched on.","→ Centred (4 to 6): Balanced. Where you want to be for your day.","↓ Parasympathetic (1 to 3): Rest and digest. For eating, recovering and sleep."]],
+  ["Every day",["Day Open first thing: Wake, switch on, Meal 1, your to-do list.","Day Close when your active day is done: Look back, clear your head, plan tomorrow, be present.","Phone away for the evening 📵"]]
+];
+const FAQS=[
+  ["What if I miss a step?","Carry on. Nothing locks. Fill in what you can, and pick it back up tomorrow."],
+  ["Can I eat something that isn't on the list?","Stick to the list for the 21 days. If you do have something else, log it with \"Something else\" so you can see it."],
+  ["How do I know how much protein is in a meal?","Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g."],
+  ["What counts as my morning action?","Anything physical that gets your heart rate up: A walk, cardio, cold therapy, breath work. Doing something else? Type it in."],
+  ["What if I'm not training today?","That's fine. Skip the Workout tab and keep hitting your steps."],
+  ["What if I rate 6 or above before eating?","Do something from Bring yourself down in Subconscious first, then rate again."],
+  ["Who do I ask if I'm stuck?","Message Ellis."]
+];
+function rulesView(){
+  return `<div class="stack"><div class="tab-head"><div><h1 class="display">Rules & FAQs</h1><p class="muted">Everything you need to know, in one place.</p></div></div>
+    ${RULES.map(([h,l])=>`<section class="card"><h2 class="sec-title" style="font-size:20px">${esc(h)}</h2><ul class="rule-list">${l.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></section>`).join("")}
+    <section class="card"><h2 class="sec-title" style="font-size:20px">FAQs</h2>${FAQS.map(([q,a])=>`<details class="faq"><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</section></div>`;
+}
+function scheduleHtml(x){
+  const {log}=x,items=[];
+  if(log.woke_at||x.prev.tmr_wake)items.push({t:log.woke_at||x.prev.tmr_wake,l:log.woke_at?"Woke up":"Alarm",k:"wake"});
+  todosOf(log,"todos").filter(t=>t.time).forEach(t=>items.push({t:t.time,l:t.t,k:t.pri==="hard"?"hard":"todo",done:t.done}));
+  const tp=log.train_plan;if(tp&&tp.on==="yes"&&tp.time)items.push({t:tp.time,l:"Workout"+(tp.what?": "+tp.what:""),k:"train",done:log.train_done});
+  (log.food_entries||[]).forEach(f=>items.push({t:f.at,l:f.name||"Meal",k:"meal",done:f.at}));
+  if(log.tmr_bed)items.push({t:log.tmr_bed,l:"Asleep",k:"bed"});
+  items.sort((a,b)=>a.t.localeCompare(b.t));
+  return items.length?`<div class="sched">${items.map(i=>`<div class="sc-row sc-${i.k}${i.done?" done":""}"><span class="num">${esc(i.t)}</span><span class="sc-dot"></span><span>${esc(i.l)}${i.done&&i.k!=="meal"?" "+TICK:""}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Add times to your tasks and they'll show here in order.</p>`;
+}
+function planAheadHtml(x){
+  const {c,dn,today}=x,max=PROGRAMME_DAYS,days=[];for(let d=Math.max(dn,today)+1;d<=Math.min(max,Math.max(dn,today)+7);d++)days.push(d);
+  if(!days.length)return `<p class="muted" style="font-size:13px;margin:0">You're on the last day.</p>`;
+  const sel=days.includes(S.aheadDay)?S.aheadDay:days[0];S.aheadDay=sel;const dk=ymd(dateOf(c,sel)),L=(DATA.logs[c.id]||{})[dk]||{},tp=L.train_plan||{},td=L.ahead_todos||[];
+  return `<div class="opts">${days.map(d=>`<button class="chip" data-aheadday="${d}" aria-pressed="${d===sel}">Day ${d}<small style="display:block;font-weight:500;font-size:11px">${fmtShort(dateOf(c,d))}</small></button>`).join("")}</div>
+    <div class="ask"><span class="ask-h">Training on Day ${sel}?</span><div class="opts"><button class="chip" data-aheadtrain="yes" aria-pressed="${tp.on==="yes"}">Yes</button><button class="chip" data-aheadtrain="no" aria-pressed="${tp.on==="no"}">Rest day</button></div>
+      ${tp.on==="yes"?`<div class="nums"><label class="ask"><span>What?</span><input class="input" data-aheadw="what" value="${esc(tp.what||"")}" placeholder="e.g. Upper body"></label><label class="ask"><span>Time</span><input class="input" type="time" data-aheadw="time" value="${esc(tp.time||"")}"></label></div>`:""}</div>
+    <div class="ask"><span class="ask-h">Tasks for Day ${sel}</span>${td.length?`<ul class="todo-list">${td.map(t=>`<li class="todo-row"><span class="todo-t">${t.pri==="hard"?`<span class="pri hard">Hard thing</span>`:t.pri==="high"?`<span class="pri high">Important</span>`:""}${t.time?`<b class="num">${esc(t.time)}</b> · `:""}${esc(t.t)}</span><button class="x" data-aheadrm="${t.id}" aria-label="Remove">×</button></li>`).join("")}</ul>`:""}
+      <div class="todo-add"><input class="input" id="ahead-t" placeholder="Add a task" autocomplete="off"><input class="input" type="time" id="ahead-time" aria-label="Time (optional)"><select class="input" id="ahead-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-aheadadd="1">Add</button></div>
+      <small class="muted">These land on your to-do list on Day ${sel}.</small></div>`;
+}
 function subconsciousView(){
   const x=curCtx(),log=x?x.log:{},ox=oxyOf(log);
   const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Did it</button>`:""}
     ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div>`;
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
-    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div>${todoHtml("todos",log,true,false)}</section>`:""}
-    <div class="state-key"><div class="sk up"><b>↑ Sympathetic</b><span>Fight or flight. Heart rate up, alert, switched on.</span></div><div class="sk down"><b>↓ Parasympathetic</b><span>Rest and digest. Heart rate down, calm, ready to eat, recover or sleep.</span></div></div>
-    ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${G.g==="up"?"↑":"↓"}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":"Bring yourself down"}</h2></div></div>
-      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${list(G)}</section>`).join("")}
+    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div><small class="muted" style="margin:-4px 0 8px;display:block">Tap ★ to mark a task Important or your Hard thing. Hard things go to the top.</small>${todoHtml("todos",log,true,false)}</section>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your day</h2></div>${scheduleHtml(x)}</section>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Plan ahead</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">Add tasks and workouts for the days coming up.</p>${planAheadHtml(x)}</section>`:""}
+    <div class="state-key three"><div class="sk up"><b>↑ Sympathetic</b><span>Fight or flight. Heart rate up, alert, switched on.</span></div><div class="sk centre"><b>→ Centred</b><span>Balanced. Steady, focused and in control.</span></div><div class="sk down"><b>↓ Parasympathetic</b><span>Rest and digest. Calm, ready to eat, recover or sleep.</span></div></div>
+    ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${oxyArrow(G.g)}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":G.g==="centre"?"Keeps you centred":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":G.g==="centre"?"Hold your centre":"Bring yourself down"}</h2></div></div>
+      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":G.g==="centre"?"Use these to hold a balanced state through your day.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${list(G)}</section>`).join("")}
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
   </div>`;
 }
@@ -2462,6 +2572,8 @@ function clientView(){
   {const m=me();if(m.status!=="active")return waitingView(m);if(!introDone(m))return `<div class="stack">${introView(m)}</div>`}
   if(S.checkin&&S.tab==="today")return weeklyView(S.checkin);
   if(S.tab==="tracker")return backChip()+trackerView();
+  if(S.tab==="days")return daysView();
+  if(S.tab==="rules")return rulesView();
   if(S.tab==="oxygen")return oxygenView();
   if(S.tab==="food")return backChip()+foodView();
   if(S.tab==="meals")return backChip()+mealsView();
@@ -2549,7 +2661,8 @@ function todayView(){
   if(x.dn===0&&!x.log.zero){saveEdit(x.c.id,x.dk,"zero",true);x=curCtx()}
   // Carry last night's plan into today
   if(x.dn>0&&x.log.train===undefined&&x.prev.tmr_train){saveEdit(x.c.id,x.dk,"train",x.prev.tmr_train);if(x.prev.tmr_train==="yes"){saveEdit(x.c.id,x.dk,"train_time",x.prev.tmr_train_time||"");saveEdit(x.c.id,x.dk,"workout_name",x.prev.tmr_workout_name||"")}x=curCtx()}
-  if(x.dn>0&&x.log.todos===undefined&&todosOf(x.prev,"tmr_todos").length){saveEdit(x.c.id,x.dk,"todos",todosOf(x.prev,"tmr_todos").map(t=>({...t,done:""})));x=curCtx()}
+  if(x.dn>0&&!x.log.todos_in){const have=todosOf(x.log,"todos"),seen=new Set(have.map(t=>t.t)),add=[...todosOf(x.prev,"tmr_todos"),...(x.log.ahead_todos||[])].filter(t=>!seen.has(t.t)&&seen.add(t.t)).map(t=>({...t,id:uid(),done:""}));if(add.length||x.log.todos===undefined){saveEdit(x.c.id,x.dk,"todos",[...have,...add]);saveEdit(x.c.id,x.dk,"todos_in",1);x=curCtx()}}
+  if(x.dn>0&&!x.log.train_plan&&x.prev.tmr_workout&&x.prev.tmr_workout.on){saveEdit(x.c.id,x.dk,"train_plan",x.prev.tmr_workout);x=curCtx()}
   if(x.dn>0&&x.log.mplan===undefined&&x.prev.tmr_mplan&&mplansOf().some(p=>p.id===x.prev.tmr_mplan)){saveEdit(x.c.id,x.dk,"mplan",x.prev.tmr_mplan);x=curCtx()}
   if(x.dn>0&&x.log.hard===undefined&&x.prev.tmr_hard){saveEdit(x.c.id,x.dk,"hard",x.prev.tmr_hard);x=curCtx()}
   const {c,today,dn,date,wk,log}=x;
@@ -2605,7 +2718,7 @@ function askHtml(a,log,wk,locked){
   switch(a.type){
     case"rating":if(a.arousal){const z=zoneOf(v),aim=ZONES.find(q=>q[0]===a.aim);
       return `<div class="ask"><span class="ask-h">${a.label}${infoBtn("arousal","arousal")}</span>${infoBox("arousal")}
-        ${a.eat?`<small class="muted" style="font-weight:500">Under 6 and you're good to eat. 6 or above, bring it down first.</small>`:aim?`<small class="muted" style="font-weight:500">Aim for the <b>${aim[1]}</b> zone ${a.aimText||(a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day.")}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
+        ${a.eat&&a.k==="am_state"?`<small class="muted" style="font-weight:500">Under 6 and you're good to eat. 6 or above, bring it down first.</small>`:a.eat?`<small class="muted" style="font-weight:500">Aim for centred, 4 to 6, to start your day.</small>`:aim?`<small class="muted" style="font-weight:500">Aim for the <b>${aim[1]}</b> zone ${a.aimText||(a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day.")}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
         <div class="rating arousal" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button class="z-${zoneOf(i+1)[0]}" data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div>
         <div class="zones">${ZONES.map(q=>`<div class="zone z-${q[0]}${z&&z[0]===q[0]?" on":""}" style="grid-column:span ${q[3]}"><b>${q[1]}</b><span>${q[2]}</span></div>`).join("")}</div>
         ${z&&!a.eat?`<div class="train-place${aim?(z[0]===aim[0]?" ok":""):" ok"}"><span>${aim&&z[0]===aim[0]?TICK+" ":""}You're in the <b>${z[1]}</b> zone. ${z[4].replace(/^[^:]*: /,"")}${aim&&z[0]!==aim[0]?` Aim for the ${aim[1]} zone: ${a.nudge?a.nudge:a.aim==="calm"?"try a low arousal task, dim the lights, slow nasal breathing.":z[0]==="wired"?"slow your breathing and take a few calm minutes before you start the day.":"get outside, move and get some bright light."}`:""}</span></div>`:""}</div>`}
@@ -2656,8 +2769,8 @@ function askHtml(a,log,wk,locked){
     case"lastintent":{const p=curCtx().prev;return p.intentions?`<div class="direction"><span class="eyebrow">Your intention, from last night</span><p>${esc(p.intentions)}</p></div>`:`<div class="numhead"><b>Your intention</b><span>You didn't set one last night. Set it tonight in Day Close, so it's waiting for you tomorrow.</span></div>`}
     case"oxypick":{const pl=a.plan?(curCtx().prev[a.plan]||[]):[],mine=oxyOf(log).filter(o=>o.from===a.from),planOnly=pl.length&&!(S.oxyAll||{})[a.k],groups=(a.only?OXYGEN.filter(G=>G.g===a.only):a.first==="down"?[...OXYGEN].reverse():OXYGEN).map(G=>{const own=[...pl.filter(x=>!ALL_OXY().includes(x)&&(a.only?G.g===a.only:G.g==="up")),...mine.filter(o=>o.g===G.g&&!G.items.includes(o.item)).map(o=>o.item)];return planOnly?{...G,items:[...new Set([...pl.filter(x=>G.items.includes(x)||own.includes(x)),...mine.filter(o=>o.g===G.g).map(o=>o.item)])]}:{...G,items:[...new Set([...G.items,...own])]}});
       return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?(planOnly?"What you planned last night. Tap it once you've done it.":"Tap what you did instead."):"Tap it once you've done it."}</small>
-        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${G.g==="up"?"↑":"↓"} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length&&planOnly?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Did something else? Change it</button>`:`${dis?"":`<small class="muted" style="font-weight:600">Did something else? Type it in</small>${ownForm("pick",a.k,a.only||"up",a.from,"e.g. Swim, skipping, bike ride")}`}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Back to what you planned</button>`:""}`}</div>`}
-    case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${o.g==="up"?"↑":"↓"} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
+        ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${oxyArrow(G.g)} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length&&planOnly?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Did something else? Change it</button>`:`${dis?"":`<small class="muted" style="font-weight:600">Did something else? Type it in</small>${ownForm("pick",a.k,a.only||"up",a.from,"e.g. Swim, skipping, bike ride")}`}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Back to what you planned</button>`:""}`}</div>`}
+    case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${oxyArrow(o.g)} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
     case"golink":{const t=typeof a.text==="function"?a.text(log):a.text;return `<div class="golink"><div><b>${esc(a.title)}</b><span>${esc(t)}</span></div><button class="btn" data-guidepage="${a.go}" ${dis}>${esc(a.btn)}</button></div>`}
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
       const p=x.prev;return `<div class="ask"><span class="ask-h">Day ${x.dn-1}: Your final numbers</span><div class="nums">${[["steps","Steps",1],["protein","Protein (g)",1],["water","Water (L)",0.5]].map(([k,l,st])=>{const t=x.wk[k],v=p[k],hit=v!==undefined&&v!==""&&Number(v)>=t;return `<label class="ask" for="pn-${k}"><span class="num-lbl">${l}<small class="num-sub num">Target ${Number(t).toLocaleString("en-GB")}${hit?` · <b class="hitok">${TICK} Hit</b>`:""}</small></span><input class="input" type="number" inputmode="decimal" min="0" step="${st}" id="pn-${k}" data-pin="${k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}).join("")}</div></div>`}
@@ -2687,14 +2800,19 @@ function askHtml(a,log,wk,locked){
       :`<div class="golink lime"><div><b>Log your meal here</b><span>Pick a favourite or build it from your list, add the protein, and you'll come straight back to finish your Day Open.</span></div><button class="btn primary" data-logmeal1="1" ${dis}>Log Meal 1</button></div>`}
     case"tmrmeals":{const plans=mplansOf(),favs=favsOf(),mode=log.tmr_mmode||(log.tmr_mplan?"plan":(log.tmr_favs||[]).length?"favs":""),tf=log.tmr_favs||[];
       const start=`<div class="golink lime meals-start"><div><b>Start by creating your meals</b><span>Save the meals you eat on repeat as favourites, and build a meal plan if you want one. Then come back here and choose what you'll eat tomorrow.</span></div><div class="opts"><button class="btn primary" data-guidepage="meals" data-gomseg="favs" ${dis}>Create favourites</button><button class="btn" data-guidepage="meals" data-gomseg="plans" ${dis}>Build a meal plan</button></div></div>`;
-      if(!plans.length&&!favs.length)return `<div class="ask"><span class="ask-h">${a.label}</span>${start}<div class="opts"><button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div></div>`;
+      if(!plans.length&&!favs.length)return `<div class="ask"><span class="ask-h">${a.label}</span>${start}<div class="opts"><button class="chip" data-mkplan="1" ${dis}>+ Make my meal plan</button><button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div></div>`;
       return `<div class="ask"><span class="ask-h">${a.label}<span class="optional">Optional</span></span><small class="muted" style="font-weight:500">It'll be waiting for you in the morning, ready to log.</small>
-        <div class="opts">${plans.length?`<button class="chip" data-tmrmode="plan" aria-pressed="${mode==="plan"}" ${dis}>Follow a meal plan</button>`:""}${favs.length?`<button class="chip" data-tmrmode="favs" aria-pressed="${mode==="favs"}" ${dis}>Pick from favourites</button>`:""}<button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div>
+        <div class="opts">${plans.length?`<button class="chip" data-tmrmode="plan" aria-pressed="${mode==="plan"}" ${dis}>Follow a meal plan</button>`:""}${favs.length?`<button class="chip" data-tmrmode="favs" aria-pressed="${mode==="favs"}" ${dis}>Pick from favourites</button>`:""}<button class="chip" data-mkplan="1" ${dis}>+ Make my meal plan</button><button class="chip" data-tmrmode="none" aria-pressed="${mode==="none"}" ${dis}>Not planning: I'll log as I go</button></div>
         ${mode==="plan"?`<select class="input" id="tmr-plan" aria-label="Meal plan for tomorrow" ${dis}><option value="">Choose a meal plan</option>${plans.map(p=>`<option value="${p.id}" ${log.tmr_mplan===p.id?"selected":""}>${esc(p.name)} (${p.count||p.meals.length} meals${p.kind==="train"?", training day":p.kind==="rest"?", non-training day":""})</option>`).join("")}</select>
           ${(()=>{const p=plans.find(q=>q.id===log.tmr_mplan);return p?`<div class="plan-run">${p.meals.map((sl,i)=>{const m=slotMeal(sl);return m?`<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(m.name||"Meal "+(i+1))}</b><small>${esc(m.items.join(", "))} · ${Number(m.protein)||0}g protein</small></span></div>`:""}).join("")}</div>`:""})()}`:""}
         ${mode==="favs"?`${tf.length?`<div class="plan-run">${tf.map((id,i)=>{const f=favById(id);return f?`<div class="pr-row"><span class="plan-n">${i+1}</span><span class="pr-t"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></span><button class="x" data-tfrm="${i}" aria-label="Remove" ${dis}>×</button></div>`:""}).join("")}</div><small class="muted num" style="font-weight:600">${tf.reduce((t,id)=>t+(Number((favById(id)||{}).protein)||0),0)}g protein planned</small>`:""}
           <small class="muted" style="font-weight:600">Tap to add Meal ${tf.length+1}</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-tfadd="${f.id}" ${dis}><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div>`:""}
         <div class="opts"><button class="link" data-guidepage="meals" data-gomseg="favs" ${dis}>${favs.length?"Add more favourites":"Create favourites"}</button><button class="link" data-guidepage="meals" data-gomseg="plans" ${dis}>${plans.length?"Build another meal plan":"Build a meal plan"}</button></div></div>`}
+    case"tmrworkout":{const w=log.tmr_workout||{};return `<div class="ask"><span class="ask-h">Are you training tomorrow?</span><div class="opts"><button class="chip" data-tmrtrain="yes" aria-pressed="${w.on==="yes"}" ${dis}>Yes</button><button class="chip" data-tmrtrain="no" aria-pressed="${w.on==="no"}" ${dis}>Rest day</button></div>
+      ${w.on==="yes"?`<div class="nums"><label class="ask" for="tw-what"><span>What are you training?</span><input class="input" id="tw-what" data-tmrw="what" value="${esc(w.what||"")}" placeholder="e.g. Legs" ${dis}></label><label class="ask" for="tw-time"><span>What time?</span><input class="input" type="time" id="tw-time" data-tmrw="time" value="${esc(w.time||"")}" ${dis}></label></div>`:""}</div>`}
+    case"startstate":{const v=Number(log.am_state2);if(!v)return "";
+      const [cls,h,t,go,btn]=v>=7?["lvl-8","Bring it down before you start","You're in a sympathetic state. Do something from Bring yourself down, then get on with your day.","oxy-down","Bring it down"]:v>=4?["ok","Hold it there","You're centred. Do something from Hold your centre to keep it through the day.","oxy-centre","Hold your centre"]:["lvl-6","Bring yourself up to centre","You're in rest and digest: Great for eating, but you want to be centred to start your day. Do something from Hold your centre.","oxy-centre","Get centred"];
+      return `<div class="golink eat-lvl ${cls}"><div><b>${h}</b><span>You're at ${v}. ${t}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="${go}" ${dis}>${btn}</button></div>`}
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
       if(v<6)return `<div class="train-place ok"><span>${TICK} You're good to eat.</span></div>`;
       const M={6:["Nearly there","Take a few minutes to bring it down before you eat. A few slow breaths could be all it takes."],
@@ -2706,7 +2824,7 @@ function askHtml(a,log,wk,locked){
     case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=wkSummaryRows(log);
       const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
       return `<div class="overview">
-        <div class="ov-sec"><b>Up and down</b>${ox.length?`<div class="review">${ox.map(o=>row(`${o.g==="up"?"↑":"↓"} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
+        <div class="ov-sec"><b>Up and down</b>${ox.length?`<div class="review">${ox.map(o=>row(`${oxyArrow(o.g)} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
         <div class="ov-sec"><b>Meals <span class="muted num" style="font-weight:600">${proteinOf(food)}g protein</span></b>${food.length?`<div class="review">${food.map((f,i)=>row(esc(f.name||"Meal "+(i+1)),f.at,`${esc(f.t)}${f.protein!=null?" · "+Number(f.protein)+"g protein":""}`)).join("")}</div>`:`<small class="muted">No meals logged today.</small>`}</div>
         <div class="ov-sec"><b>Workout</b>${wks.length?`${log.workout_name?`<small class="muted">${esc(log.workout_name)}</small>`:""}<div class="review">${wks.map(r=>row(`${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span>`,r.at)).join("")}</div>`:`<small class="muted">No workout logged today.</small>`}</div>
       </div>`}
@@ -2841,7 +2959,7 @@ function stepsView(ph,x,only){
     // Day 0: finished set-up steps fold away, so tonight is what's left on screen
     if(done&&!(S.openStep||{})[s.id]){
       html+=`<div class="step done folded"><div class="step-num">${TICK}</div><div class="step-body">
-        <div class="step-head"><h3>${s.title}</h3></div>
+        <div class="step-head"><h3>${STEP_CUE[s.id]&&!(log.zero&&s.id==="e1")?`<span class="step-cue" aria-hidden="true">${log.zero&&s.id==="e3"?"📵":log.zero&&s.id==="e2"?"📅":STEP_CUE[s.id]}</span>`:""}${s.title}</h3></div>
         <p class="fold-sum">${stepSummary(s,log)}</p>
         <div class="step-foot"><span class="stamp">Done ${esc(done)}</span><button class="link" data-openstep="${s.id}">View or change</button>${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}</div>
       </div></div>`;
@@ -2854,7 +2972,7 @@ function stepsView(ph,x,only){
       <div class="step-num">${done?TICK:num}</div>
       <div class="step-body">
         ${s.cue?`<div class="cueband ${s.cue[0]}">${s.cue[0]==="up"?"↑ ":s.cue[0]==="down"?"↓ ":""}${esc(s.cue[1])}</div>`:""}
-        <div class="step-head"><h3>${s.title}</h3></div>
+        <div class="step-head"><h3>${STEP_CUE[s.id]&&!(log.zero&&s.id==="e1")?`<span class="step-cue" aria-hidden="true">${log.zero&&s.id==="e3"?"📵":log.zero&&s.id==="e2"?"📅":STEP_CUE[s.id]}</span>`:""}${s.title}</h3></div>
         ${Array.isArray(s.text)?`<ul class="step-list">${s.text.map(t=>`<li>${esc(t)}</li>`).join("")}</ul>`:`<p>${s.text}</p>`}
         ${s.asks.filter(a=>!a.when||a.when(log)).map(a=>askHtml(a,log,wk,locked)).join("")}
         <div class="step-foot">${done?`<span class="stamp">Done ${esc(done)}</span>${extra}${(S.openStep||{})[s.id]?`<button class="link" data-openstep="${s.id}">Fold away</button>`:""}${lastDone?`<button class="link" data-undo="${s.id}">Undo</button>`:""}`
@@ -2990,9 +3108,9 @@ const waterQ_=id=>`<div class="fu"><span>Did you have water with it & add salt?<
 // The client's own to-do list (optional). Planned when closing the day, reviewed in the morning, ticked in the Day.
 const todosOf=(log,k)=>Array.isArray(log[k])?log[k]:[];
 function todoHtml(k,log,tick,dis){
-  const L=[...todosOf(log,k)].sort((a,b)=>(a.time||"99").localeCompare(b.time||"99"));
-  return `<div class="todo">${L.length?`<ul class="todo-list">${L.map(it=>`<li class="todo-row${it.done?" done":""}">${tick?`<button class="item-tick" data-todotick="${k}|${it.id}" aria-pressed="${!!it.done}" aria-label="Tick ${esc(it.t)}"><span class="tick">${it.done?TICK:""}</span></button>`:""}<span class="todo-t">${it.time?`<b class="num">${esc(it.time)}</b> · `:""}${esc(it.t)}</span>${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${dis?"":`<button class="x" data-todorm="${k}|${it.id}" aria-label="Remove ${esc(it.t)}">×</button>`}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Nothing on it yet.</p>`}
-  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task"><input class="input" type="time" id="todo-${k}-t" aria-label="Time (optional)"><button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
+  const PR={hard:0,high:1},L=[...todosOf(log,k)].sort((a,b)=>((PR[a.pri]??2)-(PR[b.pri]??2))||(a.time||"99").localeCompare(b.time||"99"));
+  return `<div class="todo">${L.length?`<ul class="todo-list">${L.map(it=>`<li class="todo-row${it.done?" done":""}">${tick?`<button class="item-tick" data-todotick="${k}|${it.id}" aria-pressed="${!!it.done}" aria-label="Tick ${esc(it.t)}"><span class="tick">${it.done?TICK:""}</span></button>`:""}<span class="todo-t">${it.pri==="hard"?`<span class="pri hard">Hard thing</span>`:it.pri==="high"?`<span class="pri high">Important</span>`:""}${it.time?`<b class="num">${esc(it.time)}</b> · `:""}${esc(it.t)}</span>${dis?"":`<button class="pri-cycle" data-todopri="${k}|${it.id}" aria-label="Change importance of ${esc(it.t)}" title="Change importance">★</button>`}${it.done?`<span class="stamp">${esc(it.done)}</span>`:""}${dis?"":`<button class="x" data-todorm="${k}|${it.id}" aria-label="Remove ${esc(it.t)}">×</button>`}</li>`).join("")}</ul>`:`<p class="muted" style="font-size:13px;margin:0">Nothing on it yet.</p>`}
+  ${dis?"":`<div class="todo-add"><input class="input" id="todo-${k}" placeholder="Add a task" autocomplete="off" aria-label="New task"><input class="input" type="time" id="todo-${k}-t" aria-label="Time (optional)"><select class="input" id="todo-${k}-p" aria-label="Importance"><option value="">Normal</option><option value="high">Important</option><option value="hard">Hard thing</option></select><button class="btn" data-todoadd="${k}">Add</button></div>`}</div>`;
 }
 function pairHtml(p,ta,lockedBy,log,isNext){
   log=log||{};const waterQ=p.done&&(p.water===undefined||p.water===null),protAsk=p.done&&(p.prot===undefined||p.prot===null),isPre=mealRole(p.slot,ta)==="Pre-workout",readyAsk=p.done&&readyApplies(log,p.slot)&&(p.ready===undefined||p.ready===null);
@@ -3643,7 +3761,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.collapse){S.open[b.dataset.collapse]=false;S.scrollTo=b.dataset.collapse;return render()}
   if(b.dataset.finishday){edit("day_done",nowHHMM());S.open.day=false;S.scrollTo="evening";toast("Day finished "+nowHHMM());return render()}
   if(b.dataset.unfinishday){edit("day_done","");S.open.day=true;return render()}
-  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,c.fresh?0:1,t);S.phase=null;S.open={};return render()}
+  if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,c.fresh?0:1,t);S.phase=null;S.open={};if(S.tab==="days"){S.tab="today";window.scrollTo(0,0)}return render()}
   if(b.dataset.client){S.detail=b.dataset.client;S.detailDay=null;render();window.scrollTo(0,0);return}
   if(act==="back"){S.detail=null;return render()}
   if(b.dataset.hday){S.detailDay=Number(b.dataset.hday);return render()}
@@ -3681,7 +3799,15 @@ root.addEventListener("click",e=>{
   if(b.dataset.meal1log){const l=curCtx().log;if(l.train==="yes"&&dayTrainAfter(l)===1&&!l.train_p1)edit("train_p1",nowHHMM())}
   if(b.dataset.meal1log){const l=curCtx().log,t=nowHHMM(),yes=l.meal1_water==="yes";edit("mm",t);setMeals(a=>a.map(m=>m.slot===1?{...m,done:t,fu:l.meal1_water?yes:null}:m));if(yes){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10)}{const m1=mealsOf(curCtx().log).find(q=>q.slot===1);if(m1&&l.meal1_prot!=null&&l.meal1_prot!=="")applyProt(m1.id,l.meal1_prot)}toast("Meal 1 logged "+t);S.scrollSel=".step.current";return render()}
   if(b.dataset.gochk){const el=document.getElementById("chk-"+b.dataset.gochk);if(el){el.scrollIntoView({behavior:"smooth",block:"center"});el.classList.remove("flash");void el.offsetWidth;el.classList.add("flash");const i=el.querySelector("input");if(i)setTimeout(()=>i.focus({preventScroll:true}),400)}return}
-  if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
+  if(b.dataset.todoadd){const k=b.dataset.todoadd,inp=root.querySelector("#todo-"+k),ti=root.querySelector("#todo-"+k+"-t"),pi=root.querySelector("#todo-"+k+"-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:pi&&pi.value||"",done:""}]);render();const n=root.querySelector("#todo-"+k);if(n)n.focus();return}
+  if(b.dataset.mkplan){navPush();S.guideFrom={y:window.scrollY,tab:S.tab,mkplan:true};S.tab="meals";S.mseg="plans";S.favDraft=null;S.planDraft={name:"",count:0,kind:"",after:0,meals:[]};S.slotOpen=null;render();window.scrollTo(0,0);return}
+  if(b.dataset.tmrtrain){const l=curCtx().log;edit("tmr_workout",{...(l.tmr_workout||{}),on:b.dataset.tmrtrain});return render()}
+  if(b.dataset.aheadday){S.aheadDay=Number(b.dataset.aheadday);return render()}
+  if(b.dataset.aheadtrain){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{};saveEdit(x.c.id,dk,"train_plan",{...(L.train_plan||{}),on:b.dataset.aheadtrain});return render()}
+  if(b.dataset.aheadadd){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{},inp=root.querySelector("#ahead-t"),ti=root.querySelector("#ahead-time"),pi=root.querySelector("#ahead-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");
+    saveEdit(x.c.id,dk,"ahead_todos",[...(L.ahead_todos||[]),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:pi&&pi.value||"",done:""}]);toast("Added to Day "+d);return render()}
+  if(b.dataset.aheadrm){const x=curCtx(),d=S.aheadDay,dk=ymd(dateOf(x.c,d)),L=(DATA.logs[x.c.id]||{})[dk]||{};saveEdit(x.c.id,dk,"ahead_todos",(L.ahead_todos||[]).filter(t=>t.id!==b.dataset.aheadrm));return render()}
+  if(b.dataset.todopri){const [k,id]=b.dataset.todopri.split("|"),L=todosOf(curCtx().log,k),nx={"":"high",high:"hard",hard:""};edit(k,L.map(t=>t.id===id?{...t,pri:nx[t.pri||""]}:t));return render()}
   if(b.dataset.todotick||b.dataset.todorm){const [k,id]=(b.dataset.todotick||b.dataset.todorm).split("|"),L=todosOf(curCtx().log,k);edit(k,b.dataset.todorm?L.filter(t=>t.id!==id):L.map(t=>t.id===id?{...t,done:t.done?"":nowHHMM()}:t));return render()}
   if(b.dataset.startblk){const id=b.dataset.startblk;edit(id+"_started",nowHHMM());S.scrollTo=id;return render()}
   if(b.dataset.openday){S.openDay=!S.openDay;return render()}
@@ -3746,7 +3872,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.planup){const m=S.planDraft.meals,i=Number(b.dataset.planup);[m[i-1],m[i]]=[m[i],m[i-1]];return render()}
   if(b.dataset.plandel){const id=b.dataset.plandel;if(S.planDelArm!==id){S.planDelArm=id;return render()}setPrefs(pr=>{pr.mplans=(pr.mplans||[]).filter(p=>p.id!==id)});S.planDelArm=null;toast("Meal plan deleted");return render()}
   if(b.dataset.plansave){const pd=S.planDraft,name=(pd.name||"").trim();if(!name){toast("Give it a name");return}if(!pd.count||!pd.kind){toast("Pick how many meals and the type of day");return}const miss=Array.from({length:pd.count},(_,i)=>i).filter(i=>!slotMeal(pd.meals[i]));if(miss.length){toast(`Add Meal ${miss[0]+1}, or pick fewer meals`);return}
-    const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count)};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");return render()}
+    const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count)};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");if(S.guideFrom&&S.guideFrom.mkplan){const y=S.guideFrom.y;S.guideFrom=null;S.tab="today";edit("tmr_mmode","plan");edit("tmr_mplan",pl.id);render();window.scrollTo(0,y);return}return render()}
   if(b.dataset.planuse){if(curCtx().dn<1){toast("Plans start on Day 1");return}edit("mplan",b.dataset.planuse);S.mseg="today";toast("Following this plan today");window.scrollTo(0,0);return render()}
   if(b.dataset.mnew){if(!eatFresh()){S.eatAsk={kind:"new"};S.eatSym=false;return render()}S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.eatstate){const v=b.dataset.eatstate,ask=S.eatAsk;if(v==="sym"){S.eatSym=true;return render()}if(v==="back"){S.eatSym=false;return render()}
@@ -3841,6 +3967,8 @@ root.addEventListener("keydown",e=>{if(e.target.id==="mpInput"&&e.key==="Enter")
 let timers={};
 root.addEventListener("input",e=>{
   if(e.target.id==="meal-protein"){S.mealProtein=e.target.value;return}
+  if(e.target.dataset.tmrw){const l=curCtx().log;edit("tmr_workout",{...(l.tmr_workout||{}),[e.target.dataset.tmrw]:e.target.value});return}
+  if(e.target.dataset.aheadw){const x=curCtx(),dk=ymd(dateOf(x.c,S.aheadDay)),L=(DATA.logs[x.c.id]||{})[dk]||{};saveEdit(x.c.id,dk,"train_plan",{...(L.train_plan||{}),[e.target.dataset.aheadw]:e.target.value});return}
   if(e.target.id==="mfav-name"){S.favName=e.target.value;return}
   if(e.target.id==="fav-name"&&S.favDraft){S.favDraft.name=e.target.value;return}
   if(e.target.id==="fav-protein"&&S.favDraft){S.favDraft.protein=e.target.value;return}
