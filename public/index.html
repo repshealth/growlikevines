@@ -869,6 +869,13 @@ body.has-bnav .col{max-width:560px}
 .faq summary{font-weight:700;cursor:pointer}
 .faq p{margin:6px 0 0;font-size:14px;color:var(--muted)}
 @media (max-width:420px){.hd-btn{padding:4px 8px;font-size:11px}.who .avatar{display:none}}
+
+/* Tracker button: a soft pulse ring so it reads as the main thing to check */
+.bn-fab{position:relative}
+.bn-fab::after{content:"";position:absolute;inset:-4px;border-radius:999px;border:3px solid var(--lime);opacity:0;animation:fabPulse 2.4s ease-out infinite;pointer-events:none}
+.bn-main[aria-current="page"] .bn-fab::after{animation:none}
+@keyframes fabPulse{0%{transform:scale(1);opacity:.75}70%{transform:scale(1.45);opacity:0}100%{transform:scale(1.45);opacity:0}}
+@media (prefers-reduced-motion:reduce){.bn-fab::after{animation:none}}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
