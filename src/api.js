@@ -155,14 +155,10 @@ const publicUser = u => ({
 // The three intro videos, watched in order after the onboarding form
 const INTRO_VIDEOS = ["overview", "meals", "workout"];
 
-async function getSettings(db, role) {
+async function getSettings(db) {
   const row = await db.prepare("SELECT value FROM settings WHERE key = 'weeks'").first();
   const q = await db.prepare("SELECT value FROM settings WHERE key = 'quote'").first();
-  const t = await db.prepare("SELECT value FROM settings WHERE key = 'training'").first();
-  let training = t ? JSON.parse(t.value) : { movements: [], workouts: [] };
-  // Clients only ever see what Ellis has approved
-  if (role !== "coach") training = { movements: (training.movements || []).filter(m => m.status === "APPROVED"), workouts: (training.workouts || []).filter(w => w.status === "APPROVED") };
-  return { weeks: row ? JSON.parse(row.value) : null, quote: q ? JSON.parse(q.value) : null, training };
+  return { weeks: row ? JSON.parse(row.value) : null, quote: q ? JSON.parse(q.value) : null };
 }
 async function extrasFor(db, userId) {
   const q = userId ? " WHERE user_id = ?" : "";
@@ -314,7 +310,7 @@ export async function onRequest(context) {
     if (!me) return err(401, "Not logged in");
 
     if (path === "/state" && method === "GET") {
-      const settings = await getSettings(db, me.role);
+      const settings = await getSettings(db);
       if (me.role === "client") {
         const n = await db.prepare("SELECT text, at FROM notes WHERE client_id = ?").bind(me.id).first();
         const x = await extrasFor(db, me.id);
@@ -534,16 +530,7 @@ export async function onRequest(context) {
     }
 
     if (path === "/settings" && method === "PUT") {
-      const b = await readBody(request, 450000);
-      // The training library: approved movements and workouts (Project Reset Training v4)
-      if (b.training !== undefined) {
-        const t = b.training;
-        if (!t || !Array.isArray(t.movements) || !Array.isArray(t.workouts)) return err(400, "Bad training library");
-        const text = JSON.stringify({ movements: t.movements, workouts: t.workouts });
-        if (text.length > 400000) return err(413, "The library is too large.");
-        await db.prepare("INSERT INTO settings (key, value) VALUES ('training', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value").bind(text).run();
-        return json({ ok: true });
-      }
+      const b = await readBody(request);
       // The quote at the top of every client's Morning
       if (b.quote !== undefined) {
         const text = String((b.quote && b.quote.text) || "").trim().slice(0, 1000), by = String((b.quote && b.quote.by) || "").trim().slice(0, 200);
