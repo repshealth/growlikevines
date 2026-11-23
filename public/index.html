@@ -655,7 +655,11 @@ body.has-bnav .col{max-width:560px}
 .ml-pro{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--muted);display:inline-flex;align-items:center;gap:4px}
 .ml-pro.ok{background:var(--lime);color:var(--ink)}
 .ml-pro svg{width:11px;height:11px}
-.ml-draft{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--fg);border-radius:14px;background:var(--bg);margin-bottom:10px}
+.ml-draft{display:flex;flex-direction:column;gap:8px;padding:0 12px 12px;border:2px solid var(--lime,#a3e635);border-radius:14px;background:var(--bg);margin:14px 0 10px;overflow:hidden}
+.ml-head{display:flex;align-items:center;gap:10px;margin:0 -12px 4px;padding:10px 12px;background:var(--fg);color:var(--bg)}
+.ml-head b{display:block;font-size:16px}
+.ml-head small{display:block;font-size:12px;opacity:.75;font-weight:500}
+.ml-num{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:800;background:var(--lime,#a3e635);color:#111;flex:none}
 .ml-hint{color:var(--amber-ink,#8a5a00);font-weight:600}
 .shelf .food-tile:not(.wide){width:auto;min-width:0;padding:12px 16px;white-space:nowrap}
 .bn[aria-current="page"]::before{top:-6px}
@@ -2569,7 +2573,7 @@ function todayMeals(x){
     </section>`:""}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Logged today</h2><span class="muted num">${food.length}</span></div>
       ${mealRows(food,true)||`<p class="muted" style="font-size:13px;margin:0 0 8px">Nothing logged yet.</p>`}
-      ${d?`<div class="ml-draft">
+      ${d?`<div class="ml-draft"><div class="ml-head"><span class="ml-num">${food.length+1}</span><span><b>Logging Meal ${food.length+1}</b><small>${d.length?esc(d.length+(d.length===1?" food":" foods")+" added"):"Add what you ate"}</small></span></div>
         ${favs.length&&!d.length?`<div class="saved-pick"><b>Your favourites</b><small>Tap one to log it</small><div class="fav-grid">${favs.map(f=>`<button class="fav-tile" data-favlog="${f.id}"><b>${esc(f.name)}</b><small>${Number(f.protein)||0}g protein</small></button>`).join("")}</div></div><small class="muted" style="text-align:center;font-weight:600">or build it yourself from the food list</small>`:""}
         ${chipsOf(d,"data-mdrop")}
         <select class="input" id="food-pick" aria-label="Add a food">${foodOptions(x,d)}</select>${ruleNote(d)}
@@ -2578,7 +2582,7 @@ function todayMeals(x){
         ${d.length?`<label class="ask meal-pro" for="meal-protein"><span>How much protein was in this meal? (g)</span><input class="input num" type="number" inputmode="numeric" min="0" step="1" id="meal-protein" value="${S.mealProtein==null?"":esc(S.mealProtein)}" placeholder="e.g. 30"><small class="muted">Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g.</small></label>
           <button class="confirm${S.favToo?" on":""}" data-favtoo="1" aria-pressed="${!!S.favToo}"><span class="tick">${TICK}</span><span>Save this as a favourite too</span></button>
           ${S.favToo?`<label class="ask" for="mfav-name"><span>Name it</span><input class="input" id="mfav-name" maxlength="40" value="${esc(S.favName||"")}" placeholder="e.g. Chicken &amp; rice"></label>`:""}`:""}
-        <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${d.length?"":"disabled"}>Log meal</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
+        <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${d.length?"":"disabled"}>Log Meal ${food.length+1}</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
       :`<button class="btn primary" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
     </section>`;
 }
