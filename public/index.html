@@ -2513,7 +2513,22 @@ const mealsSeg=()=>`<div class="seg" role="tablist"><button role="tab" data-tab=
 /* ---------- Meals: today's meals, favourites and meal plans ---------- */
 // Favourites are meals a client eats on repeat (foods + protein). Meal plans put favourites in order for a whole day.
 const favsOf=()=>Array.isArray(PREFS().favs)?PREFS().favs:[];
-const mplansOf=()=>Array.isArray(PREFS().mplans)?PREFS().mplans:[];
+// Ellis's own meal plans (23/11), ready for clients to use
+const ELLIS_MEALS={
+  mud:{name:"Mud Pudding",items:["Whey isolate","Greek yogurt","Banana","100% pure honey","80% or higher dark chocolate","Nut butter"],protein:65},
+  chickenRest:{name:"Chicken & nuts",items:["Chicken","Berries","Green beans","Onions","Carrots","Nuts"],protein:100},
+  chickenTrain:{name:"Chicken & nuts",items:["Chicken","Broth","Nuts","Spinach","Carrots","Onions","Berries"],protein:120},
+  prePump:{name:"Pre Pump",items:["Condensed milk","Whey isolate","100% pure honey","80% or higher dark chocolate","Banana"],protein:30},
+  mudOats:{name:"Mud Pudding with oats",items:["Whey isolate","80% or higher dark chocolate","Banana","Gluten free oats","100% pure honey","Greek yogurt"],protein:65},
+  steakEggs:{name:"Steak & Eggs",items:["Beef","Eggs","Organic butter","Spinach","Onions","Mushrooms","Carrots","Cheese"],protein:75}
+};
+const ELLIS_PLANS={
+  train:{name:"Ellis's training day",kind:"train",after:3,meals:["mud","chickenTrain","prePump","mudOats","steakEggs"]},
+  rest:{name:"Ellis's rest day",kind:"rest",after:0,meals:["mud","chickenRest","mud","chickenRest","mud"]}
+};
+const ellisPlan=k=>{const e=ELLIS_PLANS[k];return{name:e.name,count:e.meals.length,kind:e.kind,after:e.after,from:k,ev:2,meals:e.meals.map(m=>JSON.parse(JSON.stringify(ELLIS_MEALS[m])))}};
+// Copies of the old Ellis plans that the client never filled in are swapped for the new ones
+const mplansOf=()=>Array.isArray(PREFS().mplans)?PREFS().mplans.map(p=>p.from&&ELLIS_PLANS[p.from]&&p.ev!==2&&(p.meals||[]).every(m=>m.protein==null||m.protein==="")?{...ellisPlan(p.from),id:p.id}:p):[];
 const favById=id=>favsOf().find(f=>f.id===id);
 // A plan slot is a favourite ({fav}) or a meal built in the plan ({items, protein, name}). Older plans stored favourite ids.
 const slotOf=m=>typeof m==="string"?{fav:m}:(m||{});
@@ -2659,7 +2674,7 @@ function plansSection(){
     ${plans.length?`<div class="sp-list">${plans.map(p=>`<div class="sp-item"><span class="sp-ic" aria-hidden="true">${ICO.today}</span><span class="sp-t"><b>${esc(p.name)}</b><small>${(p.count||p.meals.length)} meals · ${p.kind==="train"?"Training day":p.kind==="rest"?"Non-training day":""}${p.kind?" · ":""}${total(p.meals)}g protein</small></span><span class="sp-act"><button class="link" data-planuse="${p.id}">Use today</button><button class="link" data-planedit="${p.id}">Edit</button><button class="link" data-plandel="${p.id}" style="color:var(--bad)">${S.planDelArm===p.id?"Sure?":"Delete"}</button></span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px">No meal plans yet.</p>`}
     <button class="btn primary" data-plannew="1" style="align-self:flex-start;margin-top:10px">+ New meal plan</button></section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Ellis's meal plans</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 10px">Ready-made days you can use as they are, or change to suit you.</p>
-      <div class="sp-list">${[["train","Ellis's training day"],["rest","Ellis's rest day"]].map(([k,n])=>{const ex=EXAMPLE_PLANS[k],ms=ex.meals.filter(m=>foodsCount(m.foods)),have=plans.some(p=>p.from===k);return `<div class="sp-item"><span class="sp-ic" aria-hidden="true">${ICO.meals}</span><span class="sp-t"><b>${n}</b><small>${ms.length} meals · ${esc(ms.map(m=>planItems(m.foods)[0]).join(", "))}</small></span><span class="sp-act">${have?`<span class="pill ok">Added</span>`:`<button class="link" data-useellis="${k}">Use this plan</button>`}</span></div>`}).join("")}</div></section>`;
+      <div class="sp-list">${[["train","Ellis's training day"],["rest","Ellis's rest day"]].map(([k,n])=>{const ep=ellisPlan(k),have=plans.some(p=>p.from===k);return `<div class="sp-item"><span class="sp-ic" aria-hidden="true">${ICO.meals}</span><span class="sp-t"><b>${n}</b><small>${ep.meals.length} meals · ${esc([...new Set(ep.meals.map(m=>m.name))].join(", "))}</small></span><span class="sp-act">${have?`<span class="pill ok">Added</span>`:`<button class="link" data-useellis="${k}">Use this plan</button>`}</span></div>`}).join("")}</div></section>`;
 }
 function numbersCard(){
   const c=me();if(!c||c.status!=="active")return "";const x=curCtx(),{log,wk}=x;if(x.dn<1)return "";
@@ -3923,8 +3938,8 @@ root.addEventListener("click",e=>{
   if(b.dataset.snackdel){edit("snacks",(curCtx().log.snacks||[]).filter(x=>x.id!==b.dataset.snackdel));return render()}
   if(b.dataset.extra){const k=b.dataset.extra,l=curCtx().log;edit(k,(Number(l[k])||0)+1);toast("Added");return render()}
   if(b.dataset.extraminus){const k=b.dataset.extraminus,l=curCtx().log;edit(k,Math.max(0,(Number(l[k])||0)-1));return render()}
-  if(b.dataset.useellis){const k=b.dataset.useellis,ex=EXAMPLE_PLANS[k],ms=ex.meals.filter(m=>foodsCount(m.foods)).map(m=>({items:[...new Set(planItems(m.foods))],protein:null,name:""}));const pl={id:uid(),name:k==="train"?"Ellis's training day":"Ellis's rest day",count:ms.length,kind:k,after:k==="train"?ex.after:0,meals:ms,from:k};
-    setPrefs(pr=>{pr.mplans=pr.mplans||[];pr.mplans.push(pl)});if(S.tab==="meals"){S.planDraft=JSON.parse(JSON.stringify(pl));S.slotOpen=null;toast("Added. Put in the protein for each meal, then save")}else{edit("tmr_mmode","plan");edit("tmr_mplan",pl.id);toast("Ellis's plan added for tomorrow")}return render()}
+  if(b.dataset.useellis){const k=b.dataset.useellis,pl={id:uid(),...ellisPlan(k)};
+    setPrefs(pr=>{pr.mplans=pr.mplans||[];pr.mplans.push(pl)});if(S.tab==="meals"){toast("Added to your meal plans")}else{edit("tmr_mmode","plan");edit("tmr_mplan",pl.id);toast("Ellis's plan added for tomorrow")}return render()}
   if(b.dataset.shop){const l=curCtx().log,n=b.dataset.shop,d=l.shop_done||[];edit("shop_done",d.includes(n)?d.filter(x=>x!==n):[...d,n]);return render()}
   if(b.dataset.shopcopy2){const t=shopItems(curCtx().log).join("\n");(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("List copied")).catch(()=>toast("Couldn't copy on this device"));return}
   if(b.dataset.tmrtrain){const l=curCtx().log;edit("tmr_workout",{...(l.tmr_workout||{}),on:b.dataset.tmrtrain});return render()}
@@ -3999,7 +4014,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.planup){const m=S.planDraft.meals,i=Number(b.dataset.planup);[m[i-1],m[i]]=[m[i],m[i-1]];return render()}
   if(b.dataset.plandel){const id=b.dataset.plandel;if(S.planDelArm!==id){S.planDelArm=id;return render()}setPrefs(pr=>{pr.mplans=(pr.mplans||[]).filter(p=>p.id!==id)});S.planDelArm=null;toast("Meal plan deleted");return render()}
   if(b.dataset.plansave){const pd=S.planDraft,name=(pd.name||"").trim();if(!name){toast("Give it a name");return}if(!pd.count||!pd.kind){toast("Pick how many meals and the type of day");return}const miss=Array.from({length:pd.count},(_,i)=>i).filter(i=>!slotMeal(pd.meals[i]));if(miss.length){toast(`Add Meal ${miss[0]+1}, or pick fewer meals`);return}
-    const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count)};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");if(S.guideFrom&&S.guideFrom.mkplan){const y=S.guideFrom.y;S.guideFrom=null;S.tab="today";edit("tmr_mmode","plan");edit("tmr_mplan",pl.id);render();window.scrollTo(0,y);return}return render()}
+    const pl={id:pd.id||uid(),name,count:pd.count,kind:pd.kind,after:pd.after||0,meals:pd.meals.slice(0,pd.count),...(pd.from?{from:pd.from,ev:2}:{})};setPrefs(pr=>{pr.mplans=pr.mplans||[];const i=pr.mplans.findIndex(x=>x.id===pl.id);if(i>=0)pr.mplans[i]=pl;else pr.mplans.push(pl)});S.planDraft=null;toast("Meal plan saved");if(S.guideFrom&&S.guideFrom.mkplan){const y=S.guideFrom.y;S.guideFrom=null;S.tab="today";edit("tmr_mmode","plan");edit("tmr_mplan",pl.id);render();window.scrollTo(0,y);return}return render()}
   if(b.dataset.planuse){if(curCtx().dn<1){toast("Plans start on Day 1");return}edit("mplan",b.dataset.planuse);S.mseg="today";toast("Following this plan today");window.scrollTo(0,0);return render()}
   if(b.dataset.mnew){if(!eatFresh()){S.eatAsk={kind:"new"};S.eatSym=false;return render()}S.mealDraft=[];S.mealOther=false;return render()}
   if(b.dataset.eatstate){const v=b.dataset.eatstate,ask=S.eatAsk;if(v==="sym"){S.eatSym=true;return render()}if(v==="back"){S.eatSym=false;return render()}
