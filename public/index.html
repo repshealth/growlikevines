@@ -923,6 +923,13 @@ body.has-bnav .col{max-width:560px}
 .music-cue{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:9px 12px;font-size:13px;margin:4px 0 8px}
 .music-cue>span:first-child{font-size:18px;line-height:1.2}
 .music-cue b{display:block;font-size:13.5px}
+
+.ox-lead{font-weight:800;font-size:16px;margin:6px 0 2px}
+.ox-att{font-size:13px;margin:0 0 6px}
+.ox-g p{margin:0 0 6px}.ox-g ul{margin:4px 0 6px;padding-left:18px}.ox-g b{margin-right:4px}
+.ox-resp{padding:8px 0 4px;display:flex;flex-direction:column;gap:6px}.ox-resp b{font-size:13px}
+.ox-resp-done{display:block;font-size:12px;color:var(--muted);padding:2px 0 6px}
+a.skey-row{text-decoration:none;color:inherit}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1394,11 +1401,33 @@ const MUSIC={
   train:["Your workout soundtrack","Switch your music as you start your set up: Whatever drives you. Then switch it again when you close the workout."]
 };
 const musicCue=k=>MUSIC[k]?`<div class="music-cue"><span aria-hidden="true">🎵</span><span><b>${esc(MUSIC[k][0])}</b>${esc(MUSIC[k][1])}</span></div>`:"";
+// Oxygen (Ellis, 23/11): a library of real-world sensory experiences, by the state they take you into
 const OXYGEN=[
-  {g:"up",name:"Switch up",d:"Oxygenate the body: Something physical that gets your heart rate up.",items:[...MOVE]},
-  {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight","Cooking"]},
-  {g:"centre",name:"Hold your centre",d:"Balanced energy: Steady, focused and in control.",items:["Tidying","Journalling","Admin"]}
+  {g:"up",name:"High arousal",d:"Intense sensory immersion: Switch up.",items:["Cardio (outdoor based)","Gym workout","Bodyweight workout","Fitness class","Hyrox","CrossFit","Cold therapy","Interval training","Inspirational video content"]},
+  {g:"down",name:"Low arousal",d:"Calming sensory immersion: Bring it down.",items:["Soup, broth, a warm drink or a fruit snack","Relaxing reading","Subconscious clearing walk","Calming breath work","Sensory grounding","Sleep, or eyes shut lying down","Screen free time out","Yoga","Therapeutic relaxation and bodywork","Social bonding and physical connection","Meditation and mindfulness","Nature and sound immersion","Therapy","Single sense immersion","Outdoor panoramic vision or closed eye relaxation","Physiological sigh","Non sleep deep rest (NSDR)","Heat therapy (sauna)","Slow walking and visual flow","Cooking and food prep","Moonlight and night sky immersion"]},
+  {g:"centre",name:"Centred",d:"Controlled sensory immersion: Hold your centre.",items:["Proprioception work and coordination","Educational reading or study","Logic and problem solving","Balance and body awareness drill","To-do list review","Walking brainstorm","Journalling","Sunlight and outdoor daylight","Focus breath work"]}
 ];
+// Ellis's copy for each state. Every activity opens its state's What / How / Why until it has its own (OX_GUIDE).
+const OX_STATES={
+  up:{band:"Sympathetic",sub:"Activation and physical demand. High breath rate.",title:"High arousal: Intense sensory immersion",tag:"Feel the demand and build the tension.",
+    d:"The physical sensation is so demanding that it captures your attention and triggers a sympathetic response from your nervous system.",ex:"Cold therapy, hard training, intense physical effort.",att:"Your attention is dominated by the immediate physical demand, which increases your breath rate and heart rate.",
+    what:"Deliberately challenge your body to increase physiological arousal.",how:"Immerse yourself in the physical demand. Feel the effort, temperature or breath. Give that sensation your full attention.",why:"Cut through mental noise, take control of your energy and learn to switch up when YOU choose. Build resilience to health-benefiting stress through what your body can do."},
+  centre:{band:"Centred",sub:"Steady energy. Controlled breath.",title:"Centred: Controlled sensory immersion",tag:"Hold the focus and settle the tension.",
+    d:"The experience is engaging and needs your full focus on something new, without creating too much physical stress.",ex:"Lacrosse ball bouncing, Sudoku, challenging reading, purposeful observation of nature.",att:"Your attention is held by a single manageable task.",
+    what:"Maintain stable energy through controlled sensory engagement.",how:"Give your brain ONE thing to focus on: A rhythm, movement, problem or sensation. Challenging and new enough to engage you, not overwhelm you.",why:"Quiet the distractions, sharpen your attention and stay in control without pushing your arousal up or down, so you build a steady state that carries on past the task. It teaches you to take control of a situation, especially under pressure, through problem solving."},
+  down:{band:"Parasympathetic",sub:"Rest and recovery. Low breath rate.",title:"Low arousal: Calming sensory immersion",tag:"Let it go and release the tension.",
+    d:"The experience is so comfortable or absorbing that unnecessary thoughts can settle.",ex:"Calming breath work, massage, Reiki sessions, meditation, listening to natural sounds.",att:"Your attention rests on a calming experience, with no demand to perform.",
+    what:"Allow your body and mind to settle through calming sensory experiences.",how:"Remove the pressure. Immerse yourself in something comforting. Feel it, hear it, breathe naturally and just be present.",why:"Let your arousal come down, release unnecessary tension and make space for real recovery of body and mind, so you meet the next demand fully recovered."}
+};
+// Per-activity What / How / Why. The sympathetic default is Ellis's "Sympathetic: Activate" guide.
+const OX_DEFAULT_GUIDE={
+  up:{what:"Raise your heart and breath rate through purposeful, consistent, muscle-driven movement. Challenge your body with a rhythmic cadence of effort.",
+    how:["A physical stress that forces your full attention and puts all of your energy into every inch of the movement.","Push past your mental limits.","Feel the connection through touch, and immerse yourself in the environment.","Breathe into the muscles and parts driving your effort.","Find a breathing pattern to focus on. Imagine the route the breath takes from your lips to the parts of you working hardest."],
+    why:"Turn repeated physical effort into ONE clear physical focus. Along the way, you learn to tap into your full physical potential and override your mind by clearing subconscious thought."}
+};
+const OX_GUIDE={};
+const oxGuide=(it,g)=>OX_GUIDE[it]||OX_DEFAULT_GUIDE[g]||{what:OX_STATES[g].what,how:[OX_STATES[g].how],why:OX_STATES[g].why};
+const OX_RESP=[["up","Switched up"],["centre","Centred"],["down","Settled"]];
 // Anything the client types in themselves, not on Ellis's lists
 const ALL_OXY=()=>OXYGEN.flatMap(G=>G.items);
 const ownForm=(mode,k,g,from,ph)=>`<form class="own-form" data-ownform="${mode}" data-k="${k}" data-g="${g}" data-from="${from||""}"><input class="input" name="own" maxlength="40" placeholder="${ph}" autocomplete="off"><button class="btn" type="submit">Add</button></form>`;
@@ -2059,7 +2088,7 @@ const INTRO_NOTES={
     ["What Project Reset is","21 days to reset your nervous system. You'll learn to switch on when you need to and switch off when you need to, through how you wake, eat, move and sleep. Simple things, done every day, without having to think about them."],
     ["Your three non-negotiables",["<b>Steps, protein and water.</b> Ellis sets your targets. Hit them every day, rain or shine. They come before everything else."]],
     ["How each day works",["<b>Day Open:</b> First thing. Log when you got up, do your action to get your heart rate up, eat Meal 1 in a calm state, then review your to-do list. Four quick steps.","<b>Your day:</b> Live it. Log your steps, water, meals and workout as you go, and keep an eye on the Tracker.","<b>Day Close:</b> Once your active day is done. A quick look back at your day, clear your head, plan tomorrow (your intention, morning action, meals, to-do list and alarm), then bring it down for the evening."]],
-    ["The app",["<b>Today:</b> Your Day Open and Day Close.","<b>Meals:</b> Log your meals, save favourites and build meal plans.","<b>Tracker:</b> How your day is going: Steps, protein, water, fruit, veg, workout.","<b>Workout:</b> The steps before, during and after your session.","<b>Subconscious:</b> Your to-do list, and everything you can do to bring yourself up or down."]],
+    ["The app",["<b>Today:</b> Your Day Open and Day Close.","<b>Meals:</b> Log your meals, save favourites and build meal plans.","<b>Tracker:</b> How your day is going: Steps, protein, water, fruit, veg, workout.","<b>Workout:</b> The steps before, during and after your session.","<b>Oxygen:</b> Your to-do list, and your library of sensory experiences to switch up, hold your centre or bring it down."]],
     ["Tonight is Day 0","Your setup day. Plan your food, plan tomorrow morning, set your alarm and wind down. Day 1 starts when you wake up."]],
   meals:[
     ["No meal plan. No counting.","Eat anything from your approved food list, as much as you need. 3 to 7 meals a day, whatever suits your day."],
@@ -2288,7 +2317,7 @@ function topBar(){
 const SPINE_VIDEOS={numbers:"",tomorrow:""};
 const ICO={moon:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11z"/></svg>',dumbbell:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.37-6.36a2 2 0 1 1 2.82 2.83l-1.76 1.76a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></svg>',brain:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a3 3 0 1 0-6 .13 4 4 0 0 0-2.52 5.77 4 4 0 0 0 .55 6.59A4 4 0 1 0 12 18z"/><path d="M12 5a3 3 0 1 1 6 .13 4 4 0 0 1 2.52 5.77 4 4 0 0 1-.55 6.59A4 4 0 1 1 12 18z"/><path d="M12 5v13M15 13a4.5 4.5 0 0 1-3-4M9 13a4.5 4.5 0 0 0 3-4"/></svg>',today:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M16 2.5v4M8 2.5v4M3 10h18M9 15.5l2 2 4-4"/></svg>',tracker:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',food:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',meals:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 2v7a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2V2M6 2v20M21 15V2a5 5 0 0 0-5 5v6a2 2 0 0 0 2 2h3zm0 0v7"/></svg>',progress:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 7l-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>',steps:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-2.4C4 11.5 3 10.5 3 8c0-2.7 1.5-6 4.5-6C9.4 2 10 3.8 10 5.5c0 3.1-2 5.7-2 8.7V16a2 2 0 1 1-4 0z"/><path d="M20 20v-2.4c0-2.1 1-3.1 1-5.6 0-2.7-1.5-6-4.5-6C14.6 6 14 7.8 14 9.5c0 3.1 2 5.7 2 8.7V20a2 2 0 1 0 4 0zM16 17h4M4 13h4"/></svg>',protein:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12.5" cy="8.5" r="2.5"/><path d="M12.5 2a6.5 6.5 0 0 0-6.2 4.6c-1.1 3.1-.8 3.9-3.2 6.1A3 3 0 0 0 5 18c4 0 8.4-1.8 11.4-4.3A6.5 6.5 0 0 0 12.5 2z"/><path d="M18.5 6l2.2 4.5a6.5 6.5 0 0 1-2.3 7.2C15.4 20.2 11 22 7 22a3 3 0 0 1-2.7-1.7L2.4 16.5"/></svg>',water:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5S5 13 5 15a7 7 0 0 0 7 7z"/></svg>',fruit:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-1.6-1-4.2-1.2-5.8.4C4.4 9.2 4.6 12.6 5.9 15.6 7 18.3 8.8 21 10.4 21c.8 0 1-.5 1.6-.5s.8.5 1.6.5c1.6 0 3.4-2.7 4.5-5.4 1.3-3 1.5-6.4-.3-8.2C16.2 5.8 13.6 6 12 7z"/><path d="M12 7c0-2 1-3.6 3-4.5"/></svg>',veg:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.3 21.7s9.9-3.5 12.7-6.4a4.5 4.5 0 0 0-6.4-6.4C5.8 11.8 2.3 21.7 2.3 21.7zM8.6 14l-2-2M15.3 15l-2.4-2.4"/><path d="M22 9s-1.3-2-3.5-2C16.9 7 15 9 15 9s1.3 2 3.5 2S22 9 22 9zM15 2s-2 1.3-2 3.5S15 9 15 9s2-1.8 2-3.5C17 3.3 15 2 15 2z"/></svg>',fat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.7c3 3.3 6 6.6 6 10.3a6 6 0 0 1-12 0c0-3.7 3-7 6-10.3z"/><path d="M12 18a3 3 0 0 1-3-3"/></svg>',ecarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 22 16 8M3.5 12.5 5 11l1.5 1.5a3.5 3.5 0 0 1 0 5L5 19l-1.5-1.5a3.5 3.5 0 0 1 0-5zM7.5 8.5 9 7l1.5 1.5a3.5 3.5 0 0 1 0 5L9 15l-1.5-1.5a3.5 3.5 0 0 1 0-5zM11.5 4.5 13 3l1.5 1.5a3.5 3.5 0 0 1 0 5L13 11l-1.5-1.5a3.5 3.5 0 0 1 0-5z"/></svg>',pcarbs:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>'};
 const NAV_IC={today:ICO.today,tracker:ICO.tracker,food:ICO.food,meals:ICO.meals,progress:ICO.progress,training:ICO.dumbbell,workout:ICO.dumbbell,oxygen:ICO.water,subconscious:ICO.brain};
-const CLIENT_TABS=[["today","The Process"],["meals","Meals"],["tracker","Tracker"],["training","Workout"],["subconscious","Subconscious"]];
+const CLIENT_TABS=[["today","The Process"],["meals","Meals"],["tracker","Tracker"],["training","Workout"],["subconscious","Oxygen"]];
 // which bottom tab lights up for pages that sit under another one
 const NAV_OF={days:"today",rules:"today",food:"meals",nutrition:"meals",workout:"training",oxygen:"subconscious",progress:"tracker"};
 const navOn=()=>{if(!S.session||S.session.role==="coach")return false;const m=me();return m.status==="active"&&introDone(m)&&!S.checkin};
@@ -2319,11 +2348,11 @@ function trackerView(){
     ${[["Fruit",isFruit,ICO.fruit,"Have fruit at least 3 times a day."],["Veg",isVeg,ICO.veg,"Have veg at least 3 times a day."]].map(([nm,fn,ic,tip])=>{const ek="extra_"+nm.toLowerCase(),ex=Number(log[ek])||0,n=Math.min(3,(log.food_entries||[]).filter(f=>(f.items||[]).some(fn)).length+(log.snacks||[]).filter(f=>(f.items||[]).some(fn)).length+ex),hit=n>=3;return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ic}</span><b>${nm}</b><span class="trk-v num">${n}<small> / 3</small></span></div>
       <div class="fruit-dots">${[0,1,2].map(k=>`<span class="${k<n?"on":""}"></span>`).join("")}</div><small class="muted" style="font-weight:600">${hit?`${TICK} ${nm} 3 times today`:`${tip} In a meal or as a snack.`}</small>
       <div class="extra-row"><span class="muted">Had some on its own?</span><button class="chip" data-gosnack="1">+ Log a snack</button>${ex?`<button class="link" data-extraminus="${ek}">Undo an extra</button>`:""}</div></section>`}).join("")}
-    ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious",meal:"Meals"};
-      return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
-      <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
-      ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${oxyArrow(o.g)} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"Brought you up":"Brought you down"}${src[o.from]?" · logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
-      <button class="btn" data-tab="subconscious" style="align-self:flex-start;margin-top:8px">Open Subconscious</button></section>`})()}
+    ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Oxygen",meal:"Meals"};
+      return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Oxygen</h2><span class="muted num">${ox.length} logged</span></div>
+      <p class="muted" style="font-size:13px;margin:-2px 0 8px">Your sensory experiences today: When, which state you chose, and how your body responded.</p>
+      ${ox.length||pl.length?`<div class="meal-log">${pl.map(it=>`<div class="ml-row"><div class="ml-top"><b>↑ ${esc(it)}</b><span class="ml-pro">Planned, not done yet</span></div></div>`).join("")}${ox.map(o=>`<div class="ml-row"><div class="ml-top"><b>${oxyArrow(o.g)} ${esc(o.item)}</b><span class="ml-pro ok">${TICK} Done ${esc(o.at)}</span></div><small class="muted">${o.g==="up"?"High arousal":o.g==="centre"?"Centred":"Low arousal"}${o.resp?" · Response: "+oxyArrow(o.resp)+" "+(OX_RESP.find(r=>r[0]===o.resp)||[,""])[1]:""}${src[o.from]?" · Logged in "+src[o.from]:""}</small></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">Nothing yet.</p>`}
+      <button class="btn" data-tab="subconscious" style="align-self:flex-start;margin-top:8px">Open Oxygen</button></section>`})()}
     ${(()=>{const rows=wkSummaryRows(log);return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Workout</h2>${log.train_done?`<span class="badge ok">Trained ${esc(log.train_done)}</span>`:""}</div>
       ${rows.length?`<div class="review">${rows.map(r=>`<div class="rv"><span>${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span></span><span class="num muted">${esc(r.at)}</span></div>`).join("")}</div>`:`<p class="muted" style="font-size:13px;margin:0">No workout logged today.</p>`}
       <button class="btn" data-tab="training" style="align-self:flex-start;margin-top:8px">${rows.length?"Open Workout":"Start your workout"}</button></section>`})()}
@@ -2423,7 +2452,7 @@ function trainingView(){
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Tick each step as you go.</p></div></div>
     ${x&&x.dn>0?dayNav(x):""}
-    ${x&&x.dn>0&&x.log.train_plan&&x.log.train_plan.on?`<div class="golink lime"><div><b>${x.log.train_plan.on==="yes"?`Planned: ${esc(x.log.train_plan.what||"Training")}${x.log.train_plan.time?" at "+esc(x.log.train_plan.time):""}`:"Planned: Rest day"}</b><span>From your plan. Change it in Subconscious, Plan ahead.</span></div></div>`:""}
+    ${x&&x.dn>0&&x.log.train_plan&&x.log.train_plan.on?`<div class="golink lime"><div><b>${x.log.train_plan.on==="yes"?`Planned: ${esc(x.log.train_plan.what||"Training")}${x.log.train_plan.time?" at "+esc(x.log.train_plan.time):""}`:"Planned: Rest day"}</b><span>From your plan. Change it in Oxygen, Plan ahead.</span></div></div>`:""}
     ${musicCue("train")}
     <div class="wk-key"><span class="tone-up">Arousal inducing: Stimulate</span><span class="tone-centre">Centring: Maintain balance</span><span class="tone-down">Arousal reducing: Calm</span></div>
     ${x&&x.dn>0?workoutCard(x):`<p class="muted">Workout logging starts on Day 1.</p>`}
@@ -2460,7 +2489,7 @@ const FAQS=[
   ["How do I know how much protein is in a meal?","Check the pack, or use a rough guide: A palm of meat or fish is about 30g, 2 eggs about 12g, a scoop of whey about 25g."],
   ["What counts as my morning action?","Anything physical that gets your heart rate up: A walk, cardio, cold therapy, breath work. Doing something else? Type it in."],
   ["What if I'm not training today?","That's fine. Skip the Workout tab and keep hitting your steps."],
-  ["What if I rate 6 or above before eating?","Do something from Bring yourself down in Subconscious first, then rate again."],
+  ["What if I rate 6 or above before eating?","Do something from Low arousal in Oxygen first, then rate again."],
   ["Who do I ask if I'm stuck?","Message Ellis."]
 ];
 function rulesView(){
@@ -2491,21 +2520,27 @@ function planAheadHtml(x){
       <small class="muted">These land on your to-do list on Day ${sel}.</small></div>`;
 }
 function subconsciousView(){
-  const x=curCtx(),log=x?x.log:{},ox=oxyOf(log);
-  const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g);return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Done at ${esc(n[n.length-1].at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button>${x&&x.dn>0?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Did it</button>`:""}
-    ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div>`;
+  const x=curCtx(),log=x?x.log:{},ox=oxyOf(log),on=x&&x.dn>0;
+  const guide=(it,g)=>{const q=oxGuide(it,g);return `<div class="oxy-info ox-g"><p><b>What</b> ${esc(q.what)}</p><div><b>How</b>${q.how.length>1?`<ul>${q.how.map(h=>`<li>${esc(h)}</li>`).join("")}</ul>`:` ${esc(q.how[0])}`}</div><p><b>Why</b> ${esc(q.why)}</p></div>`};
+  const list=G=>`<div class="oxy-list">${G.items.map(it=>{const open=S.oxyOpen===G.g+it,n=ox.filter(o=>o.item===it&&o.g===G.g),last=n[n.length-1];return `<div class="oxy-row${n.length?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n.length?`<small>${TICK} Logged ${n.length>1?n.length+" times, last at "+esc(last.at):"at "+esc(last.at)}</small>`:`<small>${open?"Hide":"What, how and why"}</small>`}</button>${on?`<button class="btn${n.length?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Log</button>`:""}
+    ${open?guide(it,G.g):""}
+    ${last&&S.oxyResp===last.id?`<div class="ox-resp"><b>How did your body respond?</b><div class="opts">${OX_RESP.map(([k,l])=>`<button class="chip" data-oxyresp="${last.id}|${k}" aria-pressed="${last.resp===k}">${oxyArrow(k)} ${l}</button>`).join("")}</div></div>`:last&&last.resp?`<small class="ox-resp-done">Response: ${oxyArrow(last.resp)} ${esc((OX_RESP.find(r=>r[0]===last.resp)||[,""])[1])}</small>`:""}</div>`}).join("")}</div>`;
+  const order=["up","centre","down"].map(g=>OXYGEN.find(G=>G.g===g));
   return `<div class="stack">
-    <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="muted">Your to-do list, and everything you can do to bring yourself up or down. Get it out of your head and let your body do the work.</p></div></div>
-    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div><small class="muted" style="margin:-4px 0 8px;display:block">Tap ★ to mark a task Important or your Hard thing. Hard things go to the top.</small>${todoHtml("todos",log,true,false)}</section>
+    <div class="tab-head"><div><h1 class="display">Oxygen</h1><p class="ox-lead">Be in this moment.</p><p class="muted">Choose your sensory experience. Direct your response. This is your library of real-world sensory experiences.</p></div></div>
+    ${on?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div><small class="muted" style="margin:-4px 0 8px;display:block">Tap ★ to mark a task Important or your Hard thing. Hard things go to the top.</small>${todoHtml("todos",log,true,false)}</section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your day</h2></div>${scheduleHtml(x)}</section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Plan ahead</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">Add tasks and workouts for the days coming up.</p>${planAheadHtml(x)}</section>`:""}
-    <section class="card skey"><h2 class="sec-title" style="font-size:20px;margin:0 0 8px">Your three states</h2>
-      <div class="skey-row up"><span class="skey-ic">↑</span><div><b>Sympathetic <small class="num">7 to 10</small></b><span>Fight or flight. Heart rate up, alert, switched on.</span></div></div>
-      <div class="skey-row centre"><span class="skey-ic">→</span><div><b>Centred <small class="num">4 to 6</small></b><span>Balanced. Steady, focused and in control.</span></div></div>
-      <div class="skey-row down"><span class="skey-ic">↓</span><div><b>Parasympathetic <small class="num">1 to 3</small></b><span>Rest and digest. Calm, ready to eat, recover or sleep.</span></div></div></section>
-    ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${oxyArrow(G.g)}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":G.g==="centre"?"Keeps you centred":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":G.g==="centre"?"Hold your centre":"Bring yourself down"}</h2></div></div>
-      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":G.g==="centre"?"Use these to hold a balanced state through your day.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${musicCue(G.g)}${list(G)}</section>`).join("")}
-    ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
+    <section class="card skey"><h2 class="sec-title" style="font-size:20px;margin:0 0 4px">Your senses bring you into the moment</h2>
+      <p class="muted" style="font-size:13px;margin:0 0 10px">Choose the state you want. Choose an activity. Immerse yourself through the sights, sounds, physical feelings and body awareness together, and notice how your body responds. Only single sense immersion deliberately isolates one sense.</p>
+      ${order.map(G=>{const st=OX_STATES[G.g];return `<a class="skey-row ${G.g}" href="#oxy-${G.g}" onclick="var e=document.getElementById('oxy-${G.g}');if(e)e.scrollIntoView({behavior:'smooth',block:'start'});return false"><span class="skey-ic">${oxyArrow(G.g)}</span><div><b>${esc(st.band)}</b><span>${esc(st.sub)} ${esc(st.tag)}</span></div></a>`}).join("")}</section>
+    ${order.map(G=>{const st=OX_STATES[G.g],wo=S.oxyWhy===G.g;return `<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${oxyArrow(G.g)}</span><div><span class="st-tag">${esc(st.band)}: ${esc(st.sub)}</span><h2 class="sec-title" style="font-size:20px;margin:0">${esc(st.title)}</h2></div></div>
+      <p class="st-when">${esc(st.d)}</p>
+      <p class="ox-att">${esc(st.att)} <span class="muted">Examples: ${esc(st.ex)}</span></p>
+      <button class="link" data-oxywhy="${G.g}" aria-expanded="${wo}" style="align-self:flex-start">${wo?"Hide":"What, how and why"}</button>
+      ${wo?`<div class="oxy-info ox-g"><p><b>What</b> ${esc(st.what)}</p><p><b>How</b> ${esc(st.how)}</p><p><b>Why</b> ${esc(st.why)}</p></div>`:""}
+      ${musicCue(G.g)}${list(G)}</section>`}).join("")}
+    ${on?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
   </div>`;
 }
 const backChip=()=>S.guideFrom&&S.guideFrom.tab==="today"?`<div style="margin-bottom:12px"><button class="chip" data-guideback="1">&lsaquo; Back to ${S.guideFrom.meal1?"Day Open":"Today"}</button></div>`:"";
@@ -2588,7 +2623,7 @@ function eatAskHtml(log){
   return `<section class="card eat-ask"><span class="eyebrow">Before you eat</span><h2 class="sec-title" style="font-size:20px;margin:2px 0 6px">Which state are you in right now?</h2>
     ${S.eatSym?`<div class="golink warn-eat"><div><b>Bring it down before you eat</b><span>In a sympathetic state your body isn't ready to digest. Do one of these and tap it (tap again to untick), then carry on to your meal.</span></div></div>
       <div class="opts">${downs.map(it=>{const d=ox.some(o=>o.item===it&&o.g==="down"&&o.from==="meal");return `<button class="chip${d?"":""}" data-oxy="${esc(it)}" data-oxyg="down" data-oxyfrom="meal" aria-pressed="${d}">${d?TICK+" ":""}${esc(it)}</button>`}).join("")}</div>
-      <button class="link" data-guidepage="subconscious" data-scrollto="oxy-down" style="align-self:flex-start">See how each one works in Subconscious</button>
+      <button class="link" data-guidepage="subconscious" data-scrollto="oxy-down" style="align-self:flex-start">See how each one works in Oxygen</button>
       <div class="opts"><button class="btn primary" data-eatstate="para">I'm in rest and digest now</button><button class="link" data-eatstate="skip">Log it anyway</button><button class="link" data-eatstate="back">Change my answer</button></div>`
     :`<div class="state-key"><button class="sk down" data-eatstate="para"><b>↓ Parasympathetic</b><span>Calm, rest and digest. Ready to eat.</span></button><button class="sk up" data-eatstate="sym"><b>↑ Sympathetic</b><span>Wired, heart rate up, fight or flight.</span></button></div>`}
     <button class="link" data-eatcancel="1" style="align-self:flex-start">Cancel</button></section>`;
@@ -2826,7 +2861,7 @@ function dayHub(x){
       ${tile("oxygen",NAV_IC.oxygen,"Oxygen",ox.length?`${ox.length} logged · last ${esc(ox[ox.length-1].item)}`:"Nothing logged yet")}
       ${tile("food",NAV_IC.food,"Food",log.meal1_done?"Meal 1 eaten":"Today's food & tomorrow's")}
       ${tile("training",NAV_IC.training,"Training",log.train==="yes"?(log.train_done?"Session done":`Training${log.train_time?" at "+esc(log.train_time):" today"}`):"Rest day")}
-      ${tile("subconscious",NAV_IC.subconscious,"Subconscious",td.length?`${td.filter(t=>t.done).length} of ${td.length} to-dos done`:"To-do list & thought dump")}
+      ${tile("subconscious",NAV_IC.subconscious,"Oxygen",td.length?`${td.filter(t=>t.done).length} of ${td.length} to-dos done`:"To-do list & thought dump")}
     </div></section>`;
 }
 function phaseHead(id){const P=PHASES.find(p=>p.id===id);return `<div class="goal"><div><span class="eyebrow">${P.name} · CNS goal</span><h2 class="display" style="font-size:clamp(32px,8vw,44px)">${P.goal}</h2></div><p class="muted" style="font-size:13px">${P.intro}</p></div>`}
@@ -2930,20 +2965,20 @@ function askHtml(a,log,wk,locked){
     case"tmrworkout":{const w=log.tmr_workout||{};return `<div class="ask"><span class="ask-h">Are you training tomorrow?</span><div class="opts"><button class="chip" data-tmrtrain="yes" aria-pressed="${w.on==="yes"}" ${dis}>Yes</button><button class="chip" data-tmrtrain="no" aria-pressed="${w.on==="no"}" ${dis}>Rest day</button></div>
       ${w.on==="yes"?`<div class="nums"><label class="ask" for="tw-what"><span>What are you training?</span><input class="input" id="tw-what" data-tmrw="what" value="${esc(w.what||"")}" placeholder="e.g. Legs" ${dis}></label><label class="ask" for="tw-time"><span>What time?</span><input class="input" type="time" id="tw-time" data-tmrw="time" value="${esc(w.time||"")}" ${dis}></label></div>`:""}</div>`}
     case"startstate":{const v=Number(log.am_state2);if(!v)return "";
-      const [cls,h,t,go,btn]=v>=7?["lvl-8","Bring it back to centre","You're in a sympathetic state. Do something from Bring yourself down to get back to centre, then start your day.","oxy-down","Bring it down"]:v>=4?["ok","Hold it there","You're centred: Right where you want to be. Do something from Hold your centre to keep it there.","oxy-centre","Hold your centre"]:["lvl-6","Bring yourself up to centre","You're in rest and digest: Great for eating, but you want to be centred to start your day. Do something from Hold your centre.","oxy-centre","Get centred"];
+      const [cls,h,t,go,btn]=v>=7?["lvl-8","Bring it back to centre","You're in a sympathetic state. Do something from Low arousal in Oxygen to get back to centre, then start your day.","oxy-down","Bring it down"]:v>=4?["ok","Hold it there","You're centred: Right where you want to be. Do something from Centred in Oxygen to keep it there.","oxy-centre","Centred options"]:["lvl-6","Bring yourself up to centre","You're in rest and digest: Great for eating, but you want to be centred to start your day. Do something from Centred in Oxygen.","oxy-centre","Get centred"];
       return `<div class="golink eat-lvl ${cls}"><div><b>${h}</b><span>You're at ${v}. ${t}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="${go}" ${dis}>${btn}</button></div>`}
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
       if(v<6)return `<div class="train-place ok"><span>${TICK} You're good to eat.</span></div>`;
       const M={6:["Nearly there","Take a few minutes to bring it down before you eat. A few slow breaths could be all it takes."],
-        7:["Bring it down before you eat","Your body isn't ready to digest properly yet. Pick something from Bring yourself down and do it first."],
-        8:["You need to bring it down first","You're too switched on to digest. Don't eat yet: Do something from Bring yourself down, then rate again."],
+        7:["Bring it down before you eat","Your body isn't ready to digest properly yet. Pick something from Low arousal in Oxygen and do it first."],
+        8:["You need to bring it down first","You're too switched on to digest. Don't eat yet: Do something from Low arousal in Oxygen, then rate again."],
         9:["Stop. You can't eat yet","You're in fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."],
         10:["Stop. You can't eat yet","You're in full fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."]}[v];
       return `<div class="golink eat-lvl lvl-${Math.min(v,9)}"><div><b>${M[0]}</b><span>You're at ${v}. ${M[1]}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Bring it down</button></div>`}
     case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=wkSummaryRows(log);
       const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
       return `<div class="overview">
-        <div class="ov-sec"><b>Up and down</b>${ox.length?`<div class="review">${ox.map(o=>row(`${oxyArrow(o.g)} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
+        <div class="ov-sec"><b>Oxygen</b>${ox.length?`<div class="review">${ox.map(o=>row(`${oxyArrow(o.g)} ${esc(o.item)}`,o.at)).join("")}</div>`:`<small class="muted">Nothing logged today.</small>`}</div>
         <div class="ov-sec"><b>Meals <span class="muted num" style="font-weight:600">${proteinOf(food)}g protein</span></b>${food.length?`<div class="review">${food.map((f,i)=>row(esc(f.name||"Meal "+(i+1)),f.at,`${esc(f.t)}${f.protein!=null?" · "+Number(f.protein)+"g protein":""}`)).join("")}</div>`:`<small class="muted">No meals logged today.</small>`}</div>
         <div class="ov-sec"><b>Workout</b>${wks.length?`${log.workout_name?`<small class="muted">${esc(log.workout_name)}</small>`:""}<div class="review">${wks.map(r=>row(`${r.n===r.of?TICK+" ":""}${esc(r.name)} <span class="muted num">${r.n}/${r.of}</span>`,r.at)).join("")}</div>`:`<small class="muted">No workout logged today.</small>`}</div>
       </div>`}
@@ -3027,7 +3062,7 @@ function stepSummary(s,log){
   if(log.zero&&s.id==="e1"){const pl=mplansOf().find(p=>p.id===log.tmr_mplan);return "You know how to eat: Anything from your list, protein in every meal. "+(pl?`Tomorrow: ${esc(pl.name)}.`:(log.tmr_favs||[]).length?`Tomorrow: ${log.tmr_favs.length} meals planned.`:"Tomorrow: Logging as you go.")}
   if(log.zero&&s.id==="e2")return zeroPlanSummary(log);
   const asks=s.asks.filter(a=>!a.when||a.when(log)),bits=[];
-  if(!log.zero&&s.id==="e1"){const f=log.food_entries||[],o=oxyOf(log);return [`${f.length} ${f.length===1?"meal":"meals"}, ${proteinOf(f)}g protein`,o.length?`${o.length} up and down`:"",log.train_done?"Workout done":""].filter(Boolean).join(" · ")}
+  if(!log.zero&&s.id==="e1"){const f=log.food_entries||[],o=oxyOf(log);return [`${f.length} ${f.length===1?"meal":"meals"}, ${proteinOf(f)}g protein`,o.length?`${o.length} oxygen logged`:"",log.train_done?"Workout done":""].filter(Boolean).join(" · ")}
   if(!log.zero&&s.id==="e3")return zeroPlanSummary(log,"Tomorrow is set.");
   if(s.id==="e4"&&!log.zero)return ["steps","protein","water"].filter(k=>Number(log[k])>=Number(curCtx().wk[k])).length+" of 3 targets hit";
   asks.forEach(a=>{const v=log[a.k];
@@ -3963,7 +3998,9 @@ root.addEventListener("click",e=>{
   if(b.dataset.chk){const sl=b.dataset.chk,ins=[...root.querySelectorAll(`[id^="a-c${sl}-"]`)];ins.forEach(el=>{const k=el.dataset.input;if(k&&el.value!=="")edit(k,Number(el.value))});edit("chk"+sl,nowHHMM());toast("Steps updated");return render()}
   if(b.dataset.chkundo){edit("chk"+b.dataset.chkundo,"");return render()}
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
-  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.oxyadd&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:uid(),item:it,g,from,at:t}]);if(!on)toast(it+" logged "+t);return render()}
+  if(b.dataset.oxywhy){S.oxyWhy=S.oxyWhy===b.dataset.oxywhy?null:b.dataset.oxywhy;return render()}
+  if(b.dataset.oxyresp){const [id,k]=b.dataset.oxyresp.split("|"),l=oxyOf(curCtx().log);edit("oxygen",l.map(o=>o.id===id?{...o,resp:o.resp===k?"":k}:o));S.oxyResp=null;toast("Response logged");return render()}
+  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.oxyadd&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM(),nid=uid();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:nid,item:it,g,from,at:t}]);if(!on){toast(it+" logged "+t);if(from==="tab")S.oxyResp=nid}return render()}
   if(b.dataset.oxydel){edit("oxygen",oxyOf(curCtx().log).filter(o=>o.id!==b.dataset.oxydel));return render()}
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
