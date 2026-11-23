@@ -2051,7 +2051,7 @@ const INTRO_NOTES={
   meals:[
     ["No meal plan. No counting.","Eat anything from your approved food list, as much as you need. 3 to 7 meals a day, whatever suits your day."],
     ["The one thing to hit: Protein",["Get protein in every meal.","Log each meal in Meals with how much protein was in it. That's how your protein for the day adds up towards your target."]],
-    ["How to build a meal",["<b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.","<b>Fats</b> fill the gaps in your other meals. We wouldn't normally put carbs and fats in the same meal.","<b>Fruit</b> in at least 3 meals a day. Need carbs outside of training? Have fruit.","<b>Veg</b> in at least 3 meals a day.","<b>Water</b> with every meal."]],
+    ["How to build a meal",["<b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.","<b>Fats</b> fill the gaps in your other meals. We wouldn't normally put carbs and fats in the same meal.","<b>Fruit</b> at least 3 times a day, in a meal or as a snack. Need carbs outside of training? Have fruit.","<b>Veg</b> at least 3 times a day, in a meal or as a snack.","<b>Water</b> with every meal."]],
     ["Eat in rest and digest","Your body digests properly when you're calm. Before Meal 1 you'll rate where you are, 1 to 10. Under 6 and you're good to eat. 6 or above, bring it down first. Then go for a short walk after every meal."],
     ["Make it easy on yourself",["<b>Favourites:</b> Save the meals you eat on repeat, with their protein, and log them in one tap.","<b>Meal plans:</b> Optional. Put a day of meals together for a training day or a rest day.","<b>Plan tomorrow tonight:</b> In Day Close, pick what you'll eat tomorrow. It'll be waiting for you in the morning."]]],
   workout:[
@@ -2303,9 +2303,9 @@ function trackerView(){
     <div class="tab-head"><div><h1 class="display">Tracker</h1><p class="muted">Log as you go. Steps, protein and water come first, every day.</p></div></div>
     ${dayNav(x)}
     ${num("steps","Steps")}${num("protein","Protein")}${num("water","Water")}
-    ${[["Fruit",isFruit,ICO.fruit,"Have fruit in at least 3 meals a day."],["Veg",isVeg,ICO.veg,"Have veg in at least 3 meals a day."]].map(([nm,fn,ic,tip])=>{const ek="extra_"+nm.toLowerCase(),ex=Number(log[ek])||0,n=Math.min(3,(log.food_entries||[]).filter(f=>(f.items||[]).some(fn)).length+ex),hit=n>=3;return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ic}</span><b>${nm}</b><span class="trk-v num">${n}<small> / 3 meals</small></span></div>
-      <div class="fruit-dots">${[0,1,2].map(k=>`<span class="${k<n?"on":""}"></span>`).join("")}</div><small class="muted" style="font-weight:600">${hit?`${TICK} ${nm} in 3 meals today`:`${tip} It counts when you log a meal with ${nm.toLowerCase()} in it.`}</small>
-      <div class="extra-row"><span class="muted">Had some outside a meal?</span><button class="chip" data-extra="${ek}">+ Add ${nm.toLowerCase()}</button>${ex?`<button class="link" data-extraminus="${ek}">Undo</button>`:""}</div></section>`}).join("")}
+    ${[["Fruit",isFruit,ICO.fruit,"Have fruit at least 3 times a day."],["Veg",isVeg,ICO.veg,"Have veg at least 3 times a day."]].map(([nm,fn,ic,tip])=>{const ek="extra_"+nm.toLowerCase(),ex=Number(log[ek])||0,n=Math.min(3,(log.food_entries||[]).filter(f=>(f.items||[]).some(fn)).length+(log.snacks||[]).filter(f=>(f.items||[]).some(fn)).length+ex),hit=n>=3;return `<section class="trk${hit?" hit":""}"><div class="trk-h"><span class="trk-ic" aria-hidden="true">${ic}</span><b>${nm}</b><span class="trk-v num">${n}<small> / 3</small></span></div>
+      <div class="fruit-dots">${[0,1,2].map(k=>`<span class="${k<n?"on":""}"></span>`).join("")}</div><small class="muted" style="font-weight:600">${hit?`${TICK} ${nm} 3 times today`:`${tip} In a meal or as a snack.`}</small>
+      <div class="extra-row"><span class="muted">Had some on its own?</span><button class="chip" data-gosnack="1">+ Log a snack</button>${ex?`<button class="link" data-extraminus="${ek}">Undo an extra</button>`:""}</div></section>`}).join("")}
     ${(()=>{const ox=oxyOf(log),pl=(x.prev.tmr_up||[]).filter(it=>!ox.some(o=>o.item===it&&o.g==="up")),src={am:"Day Open",am2:"Day Open",pm:"Day Close",tab:"Subconscious",meal:"Meals"};
       return `<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Up and down</h2><span class="muted num">${ox.length} done</span></div>
       <p class="muted" style="font-size:13px;margin:-2px 0 8px">What you've done today from Subconscious to bring yourself up or down.</p>
@@ -2435,7 +2435,7 @@ function daysView(){
 const RULES=[
   ["Expectations",["No coffee in the morning, unless you're lifting first thing.","No phone until you've started your day.","Do your Day Open first thing and your Day Close every evening, for all 21 days."]],
   ["The non-negotiables",["Hit your steps, protein and water every day, rain or shine."]],
-  ["Food",["Eat anything from your approved list, as much as you need. 3 to 7 meals a day.","Protein in every meal.","Carbs only around training: The meal before and after. Your evening meal too, if you want.","Fats fill the gaps. We wouldn't normally put carbs and fats in the same meal.","Fruit in at least 3 meals a day, and veg in at least 3 meals a day.","Water with every meal.","Eat in rest and digest: Under 6 on the scale. Walk after every meal."]],
+  ["Food",["Eat anything from your approved list, as much as you need. 3 to 7 meals a day.","Protein in every meal.","Carbs only around training: The meal before and after. Your evening meal too, if you want.","Fats fill the gaps. We wouldn't normally put carbs and fats in the same meal.","Fruit at least 3 times a day, and veg at least 3 times a day: In a meal or as a snack, whenever you want.","Water with every meal.","Eat in rest and digest: Under 6 on the scale. Walk after every meal."]],
   ["Your states",["↑ Sympathetic (7 to 10): Fight or flight. Switched on.","→ Centred (4 to 6): Balanced. Where you want to be for your day.","↓ Parasympathetic (1 to 3): Rest and digest. For eating, recovering and sleep."]],
   ["Every day",["Day Open first thing: Wake, switch on, Meal 1, your to-do list.","Day Close when your active day is done: Look back, clear your head, plan tomorrow, be present.","Phone away for the evening 📵"]]
 ];
@@ -2584,7 +2584,21 @@ function todayMeals(x){
           ${S.favToo?`<label class="ask" for="mfav-name"><span>Name it</span><input class="input" id="mfav-name" maxlength="40" value="${esc(S.favName||"")}" placeholder="e.g. Chicken &amp; rice"></label>`:""}`:""}
         <div style="display:flex;gap:8px"><button class="btn primary" data-msave="1" ${d.length?"":"disabled"}>Log ${S.mealRow?esc(S.mealRow.name):"Meal "+(food.length+1)}</button><button class="btn" data-mcancel="1">Cancel</button></div></div>`
       :`<button class="btn primary" data-mnew="1" style="align-self:flex-start">Log a meal</button>`}
-    </section>`;
+    </section>
+    ${snackCard(log)}`;
+}
+// Fruit and veg eaten outside a meal: logged on its own, counted in the Tracker
+const SNACK_CATS=()=>FOOD_CATS.filter(c=>c.k==="fruit"||c.k==="veg");
+function snackCard(log){
+  const sn=log.snacks||[],d=S.snackDraft;
+  return `<section class="card" id="snack-card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Fruit and veg snacks</h2><span class="muted num">${sn.length}</span></div>
+    <p class="muted" style="font-size:13px;margin:-2px 0 8px">Had fruit or veg on its own, between meals? Log it here. It counts towards your fruit and veg in the Tracker.</p>
+    ${sn.length?`<div class="meal-log">${sn.map(x=>`<div class="ml-row"><div class="ml-top"><b>Snack <span class="muted num" style="font-weight:600">${esc(x.at)}</span></b><button class="x" data-snackdel="${x.id}" aria-label="Remove this snack">×</button></div><small>${esc(x.items.join(", "))}</small></div>`).join("")}</div>`:""}
+    ${d?`<div class="ml-draft snack-draft"><div class="ml-head"><span class="ml-num">🍎</span><span><b>Logging a snack</b><small>${d.length?d.length+(d.length===1?" item":" items")+" picked":"Pick what you had"}</small></span></div>
+      ${SNACK_CATS().map(c=>`<div class="shop-g"><small>${c.k==="fruit"?"Fruit":"Veg"}</small><div class="opts">${c.items.map(n=>`<button class="chip" data-snackpick="${esc(n)}" aria-pressed="${d.includes(n)}">${d.includes(n)?TICK+" ":""}${esc(n)}</button>`).join("")}</div></div>`).join("")}
+      <div style="display:flex;gap:8px"><button class="btn primary" data-snacksave="1" ${d.length?"":"disabled"}>Log snack</button><button class="btn" data-snackcancel="1">Cancel</button></div></div>`
+    :`<button class="btn" data-snacknew="1" style="align-self:flex-start">+ Log a fruit or veg snack</button>`}
+  </section>`;
 }
 function favsSection(){
   const favs=favsOf(),fd=S.favDraft;
@@ -2860,7 +2874,7 @@ function askHtml(a,log,wk,locked){
       <li><b>Protein in every meal.</b> It's the one thing that matters most. Hit your protein target every day.</li>
       <li><b>Carbs</b> only when you're about to use them: The meal before you train and the meal after. Your evening meal too, if you want.</li>
       <li><b>Fats</b> fill the gaps in every other meal. <b>We wouldn't normally put carbs and fats in the same meal.</b></li>
-      <li><b>Fruit</b> in at least 3 meals a day, and <b>veg</b> in at least 3 meals a day. If you feel like you need carbs outside of training, have fruit.</li>
+      <li><b>Fruit</b> at least 3 times a day, and <b>veg</b> at least 3 times a day, in a meal or as a snack. If you feel like you need carbs outside of training, have fruit.</li>
       <li><b>Water</b> with every meal.</li></ul></div>`;
     case"note":return `<small class="muted" style="font-weight:600">${esc(a.text)}</small>`;
     case"oxyplan":{const G=OXYGEN.find(o=>o.g===a.g),cur=Array.isArray(log[a.k])?log[a.k]:[],own=cur.filter(x=>!G.items.includes(x));return `<div class="ask"><span class="ask-h">${a.label}</span><div class="opts">${[...G.items,...own].map(it=>`<button class="chip" data-oxyplan="${a.k}" data-item="${esc(it)}" aria-pressed="${cur.includes(it)}" ${dis}>${cur.includes(it)?TICK+" ":""}${esc(it)}</button>`).join("")}</div><small class="muted" style="font-weight:600">Doing something else? Type it in</small>${dis?"":ownForm("plan",a.k,a.g,"",a.g==="up"?"e.g. Swim, skipping, bike ride":"e.g. Listening to music, a bath, reading")}</div>`}
@@ -3884,6 +3898,12 @@ root.addEventListener("click",e=>{
   if(b.dataset.grpnew){S.grpForm=b.dataset.grpnew;render();const i=root.querySelector(`form[data-grpform] input`);if(i)i.focus();return}
   if(b.dataset.todoadd){const k=b.dataset.todoadd,iid=b.dataset.inp||"todo-"+k,inp=root.querySelector("#"+iid),ti=null,pi=root.querySelector("#"+iid+"-p"),v=inp&&inp.value.trim();if(!v)return toast("Type a task first");edit(k,[...todosOf(curCtx().log,k),{id:uid(),t:v.slice(0,200),time:ti&&ti.value||"",pri:(()=>{const v=pi&&pi.value||"";if(S.newPri&&pi)S.newPri[pi.id]="";return v})(),g:b.dataset.g||"",done:""}]);render();const n=root.querySelector("#"+iid);if(n)n.focus();return}
   if(b.dataset.mkplan){navPush();S.guideFrom={y:window.scrollY,tab:S.tab,mkplan:true};S.tab="meals";S.mseg="plans";S.favDraft=null;S.planDraft={name:"",count:0,kind:"",after:0,meals:[]};S.slotOpen=null;render();window.scrollTo(0,0);return}
+  if(b.dataset.snacknew){S.snackDraft=[];render();const el=root.querySelector("#snack-card");if(el)el.scrollIntoView({behavior:"smooth",block:"start"});return}
+  if(b.dataset.gosnack){if(S.tab!=="meals")navPush();S.tab="meals";S.mseg="today";S.snackDraft=[];render();requestAnimationFrame(()=>{const el=root.querySelector("#snack-card");if(el)el.scrollIntoView({block:"start"})});return}
+  if(b.dataset.snackpick){const n=b.dataset.snackpick,d=S.snackDraft||[];S.snackDraft=d.includes(n)?d.filter(x=>x!==n):[...d,n];return render()}
+  if(b.dataset.snackcancel){S.snackDraft=null;return render()}
+  if(b.dataset.snacksave){const d=S.snackDraft||[];if(!d.length)return;edit("snacks",[...(curCtx().log.snacks||[]),{id:uid(),items:d,at:nowHHMM()}]);S.snackDraft=null;toast("Snack logged");return render()}
+  if(b.dataset.snackdel){edit("snacks",(curCtx().log.snacks||[]).filter(x=>x.id!==b.dataset.snackdel));return render()}
   if(b.dataset.extra){const k=b.dataset.extra,l=curCtx().log;edit(k,(Number(l[k])||0)+1);toast("Added");return render()}
   if(b.dataset.extraminus){const k=b.dataset.extraminus,l=curCtx().log;edit(k,Math.max(0,(Number(l[k])||0)-1));return render()}
   if(b.dataset.useellis){const k=b.dataset.useellis,ex=EXAMPLE_PLANS[k],ms=ex.meals.filter(m=>foodsCount(m.foods)).map(m=>({items:[...new Set(planItems(m.foods))],protein:null,name:""}));const pl={id:uid(),name:k==="train"?"Ellis's training day":"Ellis's rest day",count:ms.length,kind:k,after:k==="train"?ex.after:0,meals:ms,from:k};
