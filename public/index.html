@@ -1340,12 +1340,12 @@ const FEELS=["Wired","Flat","Settled","Connected","Emotional","Hungry","Clear he
 // carbs only in the evening, pre-workout and post-workout meals, and pre-workout carbs are their own list for the pre-workout meal;
 // carbs and fats never in the same meal.
 const FOOD_CATS=[
-  {k:"protein",name:"Protein",from:1,items:["Chicken","Beef","Oily fish","White fish","Eggs","Turkey","Shellfish","Greek yogurt","Cottage cheese","Whey isolate","Vegan isolate","Beans","Milk","Lamb"]},
-  {k:"fat",name:"Fats",from:1,items:["Organic butter","Cheese","Hummus","Olives","Olive oil","Nut butter","Seeds","Nuts","Avocado","Kefir","Dark chocolate"]},
-  {k:"ecarbs",name:"Carbs",from:99,role:"evepost",items:["White potato","Sweet potato","Gluten free oats","Rice","Gluten free sourdough bread","Couscous"]},
-  {k:"pcarbs",name:"Pre-workout carbs",from:99,role:"pre",items:["White potato","Sweet potato","Gluten free oats","Rice","Cream of rice","Sourdough bread","Low fat cereal","Rice cakes","Square bars","Natural fruit juice"]},
-  {k:"fruit",name:"Fruit",from:1,items:["Dried fruit","Berries","Oranges","Kiwi","Banana","Grapes","Pineapple","Melon","Grapefruit","Pomegranate","Honey"]},
-  {k:"veg",name:"Veg / other",from:1,items:["Spinach","Mushrooms","Green beans","Carrots","Onions","Fermented veg","Asparagus","Broccoli","Broth","Soup","Kale"]},
+  {k:"protein",name:"Protein",from:1,items:["Chicken","Beef","Oily fish","White fish","Eggs","Turkey","Shellfish","Greek yogurt","Cottage cheese","Whey isolate","Vegan isolate","Beans","100% milk","Lamb","Pork","Tofu","Kefir"]},
+  {k:"fat",name:"Fats",from:1,items:["Organic butter","Cheese","Hummus","Olives","Olive oil","Nut butter","Seeds","Nuts","Avocado","80% or higher dark chocolate"]},
+  {k:"ecarbs",name:"Carbs",from:99,role:"evepost",items:["White potato","Sweet potato","Gluten free oats","Rice","Gluten free sourdough bread","Couscous","Sourdough bread","Rice cakes"]},
+  {k:"pcarbs",name:"Pre and post workout only carbs",from:99,role:"pre",items:["Cream of rice","Marzipan","100% pure maple syrup","Natural fruit juice","100% pure honey","100% fruit jam","Condensed milk","100% fruit juices","Isotonic"]},
+  {k:"fruit",name:"Fruit",from:1,items:["Dried fruit","Berries","Oranges","Kiwi","Banana","Grapes","Pineapple","Melon","Grapefruit","Pomegranate","Apples","Pears"]},
+  {k:"veg",name:"Veg / other",from:1,items:["Spinach","Mushrooms","Green beans","Carrots","Onions","Fermented veg","Asparagus","Broccoli","Kale","Broth","Soup","Tomatoes","Peppers","Beetroot"]},
   {k:"carbs",name:"Carbs",from:99,legacy:true,items:[]}
 ];
 const MAX_MEALS=5;
@@ -1358,10 +1358,10 @@ const fvOk=f=>true; // fruit and veg are counted across the day, not per meal
 const FV_MIN=3;
 const fvCount=foodsList=>foodsList.reduce((n,f)=>n+((f&&f.fruit)||[]).length+((f&&f.veg)||[]).length,0);
 const fvMissing=f=>[!(f&&(f.fruit||[]).length)&&"fruit",!(f&&(f.veg||[]).length)&&"veg"].filter(Boolean);
-const roleOk=(c,ctx)=>!c.role||(c.role==="pre"?!!ctx.pre:c.role==="evepost"?!!(ctx.eve||ctx.post):!!ctx[c.role]);
+const roleOk=(c,ctx)=>!c.role||(c.role==="pre"?!!(ctx.pre||ctx.post):c.role==="evepost"?!!(ctx.eve||ctx.post):!!ctx[c.role]);
 // why a tab is shut for this meal, or "" if it's open
 function catBlock(c,f,ctx){
-  if(!roleOk(c,ctx))return c.role==="pre"?"Pre-workout meal only":"Evening & post-workout only";
+  if(!roleOk(c,ctx))return c.role==="pre"?"Pre and post workout only":"Evening & post-workout only";
   if(c.role&&hasFats(f))return "Not with fats";
   if(c.k==="fat"&&hasCarbs(f))return "Not with carbs";
   return "";
@@ -2352,7 +2352,7 @@ const FOOD_ROWS=[
   {k:"veg",name:"Veg and other",d:"As much as you like."},
   {k:"fat",name:"Fats",d:"Fill the gaps: In every meal without carbs. Best kept out of meals with carbs."},
   {k:"ecarbs",name:"Carbs",d:"Only in the meal before you train, the meal after, and your evening meal if you want them."},
-  {k:"pcarbs",name:"Before you train",d:"Carbs for the meal before a workout."}
+  {k:"pcarbs",name:"Pre and post workout only",d:"Only in the meal before you train and the meal after. Not in your evening meal."}
 ];
 // Work back from the alarm: what time to be asleep for 7 to 9 hours
 function bedCue(w){const m=mins(w),t=h=>{const v=(m-h*60+1440)%1440;return pad(Math.floor(v/60))+":"+pad(v%60)};return `<div class="train-place ok"><span>Your alarm is <b class="num">${esc(w)}</b>. To get 8 hours, be asleep by <b class="num">${t(8)}</b>. Between <b class="num">${t(9)}</b> and <b class="num">${t(7)}</b> gives you 7 to 9 hours.</span></div>`}
@@ -2518,10 +2518,11 @@ const favById=id=>favsOf().find(f=>f.id===id);
 // A plan slot is a favourite ({fav}) or a meal built in the plan ({items, protein, name}). Older plans stored favourite ids.
 const slotOf=m=>typeof m==="string"?{fav:m}:(m||{});
 const slotMeal=m=>{m=slotOf(m);if(m.fav){const f=favById(m.fav);return f?{name:f.name,items:f.items,protein:f.protein,fav:f.id}:null}return m.items&&m.items.length?{name:m.name||"",items:m.items,protein:m.protein,fav:""}:null};
-const hasProtein=items=>(items||[]).some(n=>(FOOD_CATS.find(c=>c.k==="protein")||{items:[]}).items.includes(n));
+const hasProtein=items=>(items||[]).some(n=>catsOf(n).includes("protein"));
 function setPrefs(fn){const pr=JSON.parse(JSON.stringify(PREFS()));fn(pr);savePrefs(pr)}
 // Ellis's one food rule: direct carbs and direct fats never go in the same meal
-const catsOf=n=>FOOD_CATS.filter(c=>c.items.includes(n)).map(c=>c.k);
+const FOOD_ALIAS={"Milk":"100% milk","Dark chocolate":"80% or higher dark chocolate","Honey":"100% pure honey"};
+const catsOf=n=>{n=FOOD_ALIAS[n]||n;return FOOD_CATS.filter(c=>c.items.includes(n)).map(c=>c.k)};
 const isCarb=n=>catsOf(n).some(k=>k==="ecarbs"||k==="pcarbs");
 const isFat=n=>catsOf(n).includes("fat");
 const isFruit=n=>catsOf(n).includes("fruit");
