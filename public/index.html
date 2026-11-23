@@ -919,6 +919,65 @@ body.has-bnav .col{max-width:560px}
 .birds .review{margin-top:8px}
 .cues{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 .cue-chip{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.3;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+
+.tr-cov{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:6px;margin-bottom:10px}
+.tr-cov>div{border:1px solid var(--line);border-radius:10px;padding:8px 10px;display:flex;flex-direction:column;gap:2px}
+.tr-cov>div.ok{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 8%,transparent)}
+.tr-cov>div.gap{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent)}
+.tr-cov b{font-size:12.5px}.tr-cov small{font-size:11.5px;color:var(--muted)}
+.tr-list{display:flex;flex-direction:column;gap:6px}
+.tr-row{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);cursor:pointer;font:inherit;color:inherit}
+.tr-rt{display:flex;flex-direction:column;gap:2px}.tr-rt small{font-size:12px;color:var(--muted)}
+.tr-gap{color:var(--warn)!important;font-weight:700}.tr-warn{font-style:italic}
+.tr-form{display:flex;flex-direction:column;gap:12px}
+.tr-form .field>span{font-weight:700;font-size:13.5px;display:block;margin-bottom:6px}
+.tr-note{border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px;background:var(--surface)}
+.tr-note.gap{border-color:var(--warn);background:color-mix(in srgb,var(--warn) 10%,transparent)}
+.tr-note ul{margin:6px 0 0;padding-left:18px}
+.tr-pick{display:flex;flex-direction:column;gap:6px}
+.tr-pk{display:flex;align-items:flex-start;gap:10px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--bg);font:inherit;color:inherit;cursor:pointer}
+.tr-pk.on{border-color:var(--fg);background:var(--lime-dim)}
+.tr-pk .tick{width:22px;height:22px;border-radius:6px;border:1.5px solid var(--line);display:grid;place-items:center;flex:none;font-weight:800}
+.tr-pk.on .tick{background:var(--lime);border-color:var(--lime);color:#111}
+.tr-pk small{display:block;font-size:12px;color:var(--muted)}
+.tr-checks{margin:0;padding-left:18px;font-size:13.5px;display:flex;flex-direction:column;gap:4px}.tr-checks li.gap{color:var(--warn);font-weight:700}
+.tr-ok{color:var(--ok);font-weight:700;margin:0}
+.tr-ol{margin:6px 0 12px;padding-left:20px;font-size:14px;display:flex;flex-direction:column;gap:3px}
+.tr-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.tr-steps{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin:10px 0 14px}
+.tr-st{height:32px;border-radius:8px;border:1px solid var(--line);background:var(--bg);font:inherit;font-weight:800;font-size:13px;color:var(--muted);display:grid;place-items:center}
+.tr-st.done{background:var(--lime-dim);color:var(--fg);border-color:var(--lime)}
+.tr-st.cur{border-color:var(--fg);color:var(--fg)}
+.tr-st.here{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.tr-st:disabled{opacity:.45}
+.tr-stage{display:flex;flex-direction:column;gap:10px}
+.tr-what{font-size:17px;font-weight:700;margin:0}.tr-how{margin:0;font-size:14px;color:var(--muted)}
+.tr-why summary{cursor:pointer;font-weight:700;font-size:13px}.tr-why p{font-size:13px;margin:6px 0 0}
+.tr-breath{border-left:4px solid var(--lime);background:var(--surface);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px;font-size:13.5px}
+.tr-breath b{font-size:12px;text-transform:none}
+.tr-mov{border:1px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.tr-mov p{margin:0;font-size:14px}
+.tr-mh{display:flex;justify-content:space-between;gap:8px;align-items:center}.tr-mh b{font-size:16px}
+.tr-demo{align-self:flex-start;text-decoration:none;color:var(--fg)}
+.tr-pk .tick svg{width:14px;height:14px;display:block}
+.tr-focus{margin:0;padding-left:18px;font-size:13.5px}
+.tr-cue,.tr-felt{font-size:13px!important}
+.tr-felt{background:var(--lime-dim);border-radius:8px;padding:6px 8px}
+.tr-nums{display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap;font-size:12px}
+.tr-nums label{display:flex;flex-direction:column;gap:2px;width:72px}.tr-nums .input{padding:6px 8px}
+.tr-outs{display:flex;flex-direction:column;gap:6px}
+.tr-outs>b{font-size:14px}
+.tr-outs .confirm small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.tr-more{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--line);border-radius:12px;padding:10px}
+.tr-chosen{border:1px solid var(--fg);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.tr-chosen p{margin:0;font-size:13px}
+.tr-rh{display:flex;flex-direction:column;gap:2px;border-bottom:1px solid var(--line);padding:6px 0}.tr-rh small{font-size:12.5px;color:var(--muted)}
+.tr-wl{display:flex;flex-direction:column;gap:6px}
+.tr-wc{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg);font:inherit;color:inherit;cursor:pointer}
+.tr-wc small{color:var(--muted);font-size:12px}.tr-wc span{font-size:13px}
+.tr-next{display:flex;flex-direction:column;gap:6px;margin-top:14px}
+.tr-endl{margin-top:10px;align-self:flex-start;color:var(--muted)}
+.tr-sess{display:flex;flex-direction:column}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2258,7 +2317,7 @@ function setupView(){
 
 function topBar(){
   const coach=S.session.role==="coach";
-  const tabs=coach?[["overview","Clients"],["settings","Number setter"]]:[];
+  const tabs=coach?[["overview","Clients"],["training","Training"],["settings","Number setter"]]:[];
   const cur=coach?S.coachTab:S.tab;
   const name=coach?"Ellis Vine":me().name;
   return `<header class="top wrap"><div class="top-in ${coach?"wide":"col"}">
@@ -2405,7 +2464,7 @@ function workoutCard(x){
         <div class="wk-steps2">${ph.steps.map(s=>{const on=log[s.k];return `<button class="wk-step tone-${s.tone}${on?" on":""}" data-wtick="${s.k}" aria-pressed="${!!on}"><span class="wk-box">${on?TICK:""}</span><span class="wk-st"><b>${esc(s.t)}</b><span>${esc(s.d)}</span><small class="wk-tone">${TONE[s.tone][0]}${on?` · Done ${esc(on)}`:""}</small></span></button>`}).join("")}</div>`:""}
       </section>`}).join("")}`;
 }
-function trainingView(){
+function legacyTrainingView(){
   const v=INTRO_VIDEOS.find(x=>x.k==="workout"),x=curCtx();
   return `<div class="stack">
     <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Tick each step as you go.</p></div></div>
@@ -2420,7 +2479,7 @@ function trainingView(){
   </div>`;
 }
 // Tracker and Day Close summary of the workout
-function wkSummaryRows(log){return WORKOUT.map(ph=>{const n=wkDone(log,ph);if(!n)return null;const last=ph.steps.map(s=>log[s.k]).filter(Boolean).sort().pop();return{name:ph.name,n,of:ph.steps.length,at:last}}).filter(Boolean)}
+function wkSummaryRows(log){const ws=log.ws;if(ws&&ws.stage)return [...(log.ws_prev||[]).map(p=>({name:(p.title||"Session")+(p.status==="COMPLETED"?": Completed":": Unfinished"),n:p.status==="COMPLETED"?8:p.stage-1,of:8,at:""})),{name:(ws.title||"Session")+(ws.status==="COMPLETED"?": Completed":ws.status==="UNFINISHED"?": Unfinished":": In progress"),n:ws.status==="COMPLETED"?8:ws.stage-1,of:8,at:ws.finished||ws.ended||(ws.last_saved||"").slice(11,16)}];return WORKOUT.map(ph=>{const n=wkDone(log,ph);if(!n)return null;const last=ph.steps.map(s=>log[s.k]).filter(Boolean).sort().pop();return{name:ph.name,n,of:ph.steps.length,at:last}}).filter(Boolean)}
 function daysView(){
   const c=me(),today=clientDayNum(c),logs=logsFor(c),st=d=>{const l=logs[ymd(dateOf(c,d))]||{},o=MORNING.every(s=>l[s.id]),cl=EVENING.filter(s=>!s.zero).every(s=>l[s.id]);return o&&cl?"full":o||cl?"half":""};
   let streak=0;for(let d=today-(st(today)==="full"?0:1);d>=1&&st(d)==="full";d--)streak++;
@@ -3563,6 +3622,7 @@ function progressView(c){
 /* ---------- coach ---------- */
 function coachView(){
   if(S.coachTab==="settings")return settingsView();
+  if(S.coachTab==="training")return coachTrainingView();
   if(S.review)return reviewView();
   if(S.detail)return detailView(allClients().find(c=>c.id===S.detail));
   return overviewView();
@@ -3754,6 +3814,356 @@ function navPush(){try{history.replaceState({tab:S.tab,y:window.scrollY,gf:S.gui
 window.addEventListener("popstate",e=>{const st=e.state;if(!S.session||S.session.role==="coach"||!st||!st.tab)return;S.tab=st.tab;S.guideFrom=st.gf||null;render();window.scrollTo(0,st.y||0)});
 function afterLogin(){if(location.search||location.pathname==="/start")history.replaceState(null,"","/app");S.tab="today";S.coachTab="overview";S.detail=null;S.review=null;S.viewDay=null;S.phase=null;S.onboard=false;S.checkin=null;return boot().then(()=>window.scrollTo(0,0))}
 const busy=(form,on)=>{const b=form&&form.querySelector("button[type=submit]");if(b){b.disabled=on;b.classList.toggle("busy",on)}};
+
+/* ---------- Project Reset Training v4: one method, many workouts ---------- */
+// The library lives in settings.training. Clients only ever receive APPROVED movements and workouts.
+const TR_OUT=[["warmth","Warmth, heart rate and breath","Raise your temperature and heart rate with controlled breathing."],["ribcage","Rib cage and core","Mobilise and consciously engage."],["target","Target muscle connection","Feel the area you're about to train."],["proprio","Balance and coordination","Shift load, balance, or move with deliberate control."],["variation","Variation and rep pattern","A change to a familiar pattern that wakes up your attention."]];
+const TR_TARGETS=["Full body","Chest","Back","Shoulders","Arms","Core","Glutes","Quads","Hamstrings","Calves"];
+const TR_EQUIP=["None","Dumbbells","Kettlebell","Barbell","Cable","Machine","Bands","Bench","Cardio machine"];
+const TR_ENVS=["Gym","Home","Outdoors"];
+const TR_LEVELS=["All levels","Beginner","Intermediate","Advanced"];
+const TR_STAGEK={prep:"Movement prep",main:"Main compound",flow:"Blood flow"};
+const TR_BREATH="Breathe IN before or at the start of the lowering. Breathe OUT as you squeeze. Put your attention on the working muscle.";
+const TR_STAGES=[
+  {n:1,k:"settle",t:"Settle",what:"Prepare and eat your food in a relaxed space.",how:"Clear anything distracting. Don't start thinking about the session yet.",why:"Starting calm means you don't spend energy on your nervous system before the work begins."},
+  {n:2,k:"choose",t:"Choose and rehearse",what:"Choose today's workout, then picture yourself doing it.",how:"Watch each demo, then close your eyes and run through every movement. Pen and paper is optional: The app keeps the same record.",why:"Rehearsing a movement in your head primes the parts of your brain that plan and start it, so the real thing feels familiar."},
+  {n:3,k:"action",t:"Change into action",what:"Change your clothes, your music and your space, then take a short walk.",how:"Even if you train at home, walk for a few minutes before you start.",why:"A clear change of environment tells your body the work is starting."},
+  {n:4,k:"prep",t:"Movement prep",what:"Do prep movements until you've genuinely felt all five outcomes.",how:"Do a movement, then tick only what you actually felt. One movement can cover several outcomes. Add another if something's missing.",why:"Prep raises temperature and heart rate, switches on your core and the target muscle, and sharpens your balance and attention, so the main work goes where it should."},
+  {n:5,k:"main",t:"Main compound",what:"Your focused main movement.",how:"Focus on intent and the target area. Stay here until you feel ready to move on: There's no set number of reps to chase.",why:"Moving with full intent once you're prepared puts the work into the muscle rather than into strain."},
+  {n:6,k:"flow",t:"Blood flow and connection",what:"Keep constant tension and fill the muscle.",how:"Never fully lock out. Picture the muscle filling with blood. BFR straps are optional.",why:"Constant tension and attention on the muscle build the connection without pushing past failure."},
+  {n:7,k:"close",t:"Close the workout",what:"Bring yourself back down before you return to your day.",how:"All four steps, every time.",why:"Closing properly switches you out of training mode so recovery can start."},
+  {n:8,k:"record",t:"Record and finish",what:"A quick reflection, then save.",how:"Write what you felt and what changed. Weights, sets and reps are optional.",why:"Writing it down lets you release it, and shows you what's working."}
+];
+const TR_CLOSE=[["release","Calm movement to release any held tension"],["walk","Steady walk, breathing slowly into your stomach"],["cool","Bring your body temperature down"],["env","Change clothes, music and space, then a short walk"]];
+const TR_SETTLE_NA=["Training first thing, before food","Ate a while ago","Something else"];
+
+const LIB=()=>{DATA.settings=DATA.settings||{};const t=DATA.settings.training=DATA.settings.training||{movements:[],workouts:[]};t.movements=t.movements||[];t.workouts=t.workouts||[];return t};
+const trMov=id=>LIB().movements.find(m=>m.id===id);
+const trApproved=()=>LIB().movements.filter(m=>m.status==="APPROVED");
+const trLines=t=>String(t||"").split("\n").map(x=>x.trim()).filter(Boolean);
+function trSaveLib(msg){return api("/settings",{method:"PUT",body:{training:LIB()}}).then(()=>{if(msg)toast(msg)}).catch(x=>toast(x.message||"Couldn't save. Try again."))}
+
+// Missing content on a movement. Blocking gaps stop it being approved; the rest are flagged.
+function trMovGaps(m){
+  const block=[],warn=[];
+  if(!(m.name||"").trim())block.push("a name");
+  if(!(m.stages||[]).length)block.push("at least one stage");
+  if(!(m.how||"").trim())block.push("how to do it");
+  if((m.stages||[]).includes("prep")&&!(m.outcomes||[]).length)block.push("which prep outcomes it can cover");
+  if(((m.stages||[]).includes("main")||(m.stages||[]).includes("flow"))&&!(m.targets||[]).length)block.push("a target area");
+  if(!(m.demo||"").trim())warn.push("demo");
+  if(!trLines(m.focus).length)warn.push("focus points");
+  if(!(m.felt||"").trim())warn.push("felt check");
+  return{block,warn};
+}
+// Spec validation: pass/fail for a workout against the current library
+function trValidate(w){
+  const issues=[],lib=LIB(),get=id=>lib.movements.find(m=>m.id===id);
+  const all=[...(w.prep||[]),...(w.main||[]),...(w.flow||[])];
+  if(!(w.title||"").trim())issues.push("Give it a title.");
+  all.forEach(id=>{const m=get(id);if(!m)issues.push("A movement in this workout has been deleted from the library.");else if(m.status!=="APPROVED")issues.push(`${m.name} isn't approved yet.`)});
+  if(!(w.main||[]).length)issues.push("Choose at least one main compound movement.");
+  if(!(w.flow||[]).length)issues.push("Choose at least one blood flow movement.");
+  (w.main||[]).forEach(id=>{const m=get(id);if(m&&!(m.stages||[]).includes("main"))issues.push(`${m.name} isn't eligible as a main compound.`)});
+  (w.flow||[]).forEach(id=>{const m=get(id);if(m&&!(m.stages||[]).includes("flow"))issues.push(`${m.name} isn't eligible for blood flow.`)});
+  const cov=trCoverage((w.prep||[]).map(get).filter(Boolean));
+  TR_OUT.forEach(([k,n])=>{if(!cov[k].length)issues.push(`NEEDS COACH CONTENT: No prep movement covers ${n.toLowerCase()}.`)});
+  if(w.equipment&&w.equipment.length)all.forEach(id=>{const m=get(id);if(m&&(m.equipment||[]).some(e=>e!=="None"&&!w.equipment.includes(e)))issues.push(`${m.name} needs equipment this workout doesn't list.`)});
+  if(w.context)all.forEach(id=>{const m=get(id);if(m&&(m.env||[]).length&&!m.env.includes(w.context))issues.push(`${m.name} isn't set up for ${w.context.toLowerCase()} training.`)});
+  const lv=TR_LEVELS.indexOf(w.level||"All levels");if(lv>0)all.forEach(id=>{const m=get(id),ml=TR_LEVELS.indexOf(m&&m.level||"All levels");if(m&&ml>lv)issues.push(`${m.name} is above ${w.level.toLowerCase()} level.`)});
+  return [...new Set(issues)];
+}
+function trCoverage(movs){const c={};TR_OUT.forEach(([k])=>c[k]=movs.filter(m=>(m.outcomes||[]).includes(k)).map(m=>m.name));return c}
+// Deterministic builder: only ever picks approved records. Gaps come back as NEEDS COACH CONTENT, never as invented movements.
+function trAutoBuild(o){
+  const ok=m=>m.status==="APPROVED"&&(!o.context||!(m.env||[]).length||m.env.includes(o.context))&&(!o.equipment||!o.equipment.length||(m.equipment||[]).every(e=>e==="None"||o.equipment.includes(e)))&&(TR_LEVELS.indexOf(m.level||"All levels")<=Math.max(0,TR_LEVELS.indexOf(o.level||"All levels"))||!o.level||o.level==="All levels");
+  const hits=m=>!o.target||o.target==="Full body"||(m.targets||[]).includes(o.target)||(m.targets||[]).includes("Full body");
+  const pool=LIB().movements.filter(ok),gaps=[];
+  const prepPool=pool.filter(m=>(m.stages||[]).includes("prep")),prep=[];let need=TR_OUT.map(([k])=>k);
+  while(need.length){const best=prepPool.filter(m=>!prep.includes(m)).map(m=>[m,(m.outcomes||[]).filter(k=>need.includes(k)).length+(hits(m)?0.5:0)]).filter(x=>x[1]>=1).sort((a,b)=>b[1]-a[1])[0];if(!best)break;prep.push(best[0]);need=need.filter(k=>!(best[0].outcomes||[]).includes(k))}
+  need.forEach(k=>gaps.push(`No approved prep movement covers ${TR_OUT.find(x=>x[0]===k)[1].toLowerCase()}.`));
+  const main=pool.filter(m=>(m.stages||[]).includes("main")&&hits(m)).slice(0,1);if(!main.length)gaps.push(`No approved main compound for ${(o.target||"this target").toLowerCase()}.`);
+  const flow=pool.filter(m=>(m.stages||[]).includes("flow")&&hits(m)).slice(0,2);if(!flow.length)gaps.push(`No approved blood flow movement for ${(o.target||"this target").toLowerCase()}.`);
+  return{prep:prep.map(m=>m.id),main:main.map(m=>m.id),flow:flow.map(m=>m.id),gaps};
+}
+// Example drafts so Ellis isn't starting from a blank page. They stay DRAFT, invisible to clients, until he checks and approves each one.
+const TR_EXAMPLES=[
+  ["Bike or rower, easy pace",["prep"],["Full body"],["Cardio machine"],["Gym"],"5 to 10 minutes at a pace where you can still breathe through your nose.",["warmth"],"Feel your heart rate rise and your body warm up."],
+  ["Brisk walk or march on the spot",["prep"],["Full body"],["None"],["Gym","Home","Outdoors"],"5 to 10 minutes, building the pace until you're breathing deeper but still in control.",["warmth"],"Warm, heart rate up, breathing steady."],
+  ["Dead bug",["prep"],["Core"],["None"],["Gym","Home"],"On your back, arms up, knees at 90 degrees. Press your lower back into the floor, then slowly lower the opposite arm and leg. Breathe out as you extend.",["ribcage","proprio"],"Rib cage down and your core switched on without your back lifting."],
+  ["90/90 breathing",["prep"],["Core"],["None"],["Gym","Home"],"Lie on your back, feet on a wall, knees and hips at 90 degrees. Breathe in through your nose, then a long full breath out, feeling your ribs drop.",["ribcage","warmth"],"Ribs moving down and in on every breath out."],
+  ["Single leg Romanian deadlift, bodyweight",["prep"],["Hamstrings","Glutes"],["None"],["Gym","Home"],"Hinge on one leg, reaching the other leg back, with a long spine. Move slowly and stay balanced.",["proprio","target"],"Your standing hamstring and glute holding you steady."],
+  ["Banded glute bridge",["prep","flow"],["Glutes"],["Bands"],["Gym","Home"],"On your back with a band above your knees. Push the knees out, drive through your heels and squeeze your glutes at the top. Don't fully drop between reps.",["target","ribcage"],"Glutes working, not your lower back."],
+  ["Tempo goblet squat",["prep"],["Quads","Glutes"],["Dumbbells","Kettlebell"],["Gym","Home"],"Light weight held at your chest. 4 seconds down, a pause at the bottom, then stand. A change to your usual squat rhythm.",["variation","target","proprio"],"Quads and glutes loading through the whole rep."],
+  ["Band pull-apart",["prep","flow"],["Back","Shoulders"],["Bands"],["Gym","Home"],"Arms straight at chest height. Pull the band apart by squeezing your shoulder blades together. Control it back.",["target","variation"],"Upper back working between your shoulder blades."],
+  ["Barbell back squat",["main"],["Quads","Glutes"],["Barbell"],["Gym"],"Bar on your upper back, brace, sit down between your hips, then drive up. Full control on the way down.",[],"Quads and glutes doing the work, rib cage stacked."],
+  ["Dumbbell bench press",["main"],["Chest"],["Dumbbells","Bench"],["Gym"],"Lower the dumbbells under control to chest level, then press up and slightly in.",[],"Chest doing the work, not your shoulders."],
+  ["Lat pulldown",["main","flow"],["Back"],["Cable","Machine"],["Gym"],"Pull the bar to your upper chest by driving your elbows down. Control it back up without letting your shoulders shrug.",[],"Lats working under your arms."],
+  ["Leg extension, constant tension",["flow"],["Quads"],["Machine"],["Gym"],"Never fully lock out or let the weight rest. Squeeze at the top, slow on the way down.",[],"Quads full and burning, never resting."],
+  ["Cable lateral raise",["flow"],["Shoulders"],["Cable"],["Gym"],"Raise to shoulder height, leading with your elbow. Keep tension on the cable at the bottom.",[],"Side of the shoulder filling up."]
+];
+function trAddExamples(){const L=LIB(),now=new Date().toISOString();TR_EXAMPLES.forEach(([name,stages,targets,equipment,env,how,outcomes,felt])=>L.movements.push({id:uid(),version:1,status:"DRAFT",example:true,name,stages,targets,role:"",equipment,env,level:"All levels",restrictions:"",demo:"",how,focus:"",sensory:"",breath_ex:"",outcomes,felt,bfr:stages.includes("flow"),created_at:now}));return trSaveLib("Example drafts added. Check each one before you approve it.")}
+
+/* ---------- coach: Training library ---------- */
+const trChips=(field,opts,cur,attr="data-trtog")=>`<div class="opts">${opts.map(o=>{const v=Array.isArray(o)?o[0]:o,l=Array.isArray(o)?o[1]:o,on=(cur||[]).includes(v);return `<button type="button" class="chip" ${attr}="${field}|${esc(v)}" aria-pressed="${on}">${on?TICK+" ":""}${esc(l)}</button>`}).join("")}</div>`;
+const trPill=st=>st==="APPROVED"?`<span class="pill ok">Approved</span>`:`<span class="pill">Draft</span>`;
+function coachTrainingView(){
+  const L=LIB(),seg=S.trSeg||"movements";
+  if(S.trEdit)return trMovEditor();
+  if(S.trW)return trWorkoutEditor();
+  const ap=trApproved(),cov=trCoverage(ap.filter(m=>(m.stages||[]).includes("prep")));
+  return `<div class="stack">
+    <div><span class="eyebrow">Coach only</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Training</h1>
+    <p class="muted" style="max-width:66ch;margin-top:6px">One method, many workouts. Build your approved movement library, then put movements together into workouts. Clients only ever see what you've approved. Until there's at least one approved movement, clients see the original Workout guide.</p></div>
+    <div class="seg" role="tablist"><button role="tab" data-trseg="movements" aria-selected="${seg==="movements"}">Movement library <span class="num">${L.movements.length}</span></button><button role="tab" data-trseg="workouts" aria-selected="${seg==="workouts"}">Workouts <span class="num">${L.workouts.length}</span></button></div>
+    ${seg==="movements"?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Prep coverage</h2><span class="muted" style="font-size:12.5px">Approved movements only</span></div>
+      <p class="muted" style="font-size:13px;margin:0 0 8px">Every workout needs prep movements that, between them, cover all five outcomes.</p>
+      <div class="tr-cov">${TR_OUT.map(([k,n])=>`<div class="${cov[k].length?"ok":"gap"}"><b>${esc(n)}</b><small>${cov[k].length?esc(cov[k].length+" approved"):"None approved yet"}</small></div>`).join("")}</div></section>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-trnewmov="1">+ Add a movement</button>${L.movements.some(m=>m.example)?"":`<button class="btn" data-trexamples="1">Add example drafts</button>`}</div>
+      ${L.movements.length?`<div class="tr-list">${L.movements.map(m=>{const g=trMovGaps(m);return `<button class="tr-row" data-tredit="${m.id}"><span class="tr-rt"><b>${esc(m.name||"Untitled")}</b><small>${(m.stages||[]).map(s=>TR_STAGEK[s]).join(", ")||"No stage"}${(m.targets||[]).length?" · "+esc(m.targets.join(", ")):""} · v${m.version||1}</small>${g.block.length?`<small class="tr-gap">Needs ${esc(g.block.join(", "))}</small>`:g.warn.length?`<small class="tr-warn">Missing ${esc(g.warn.join(", "))}</small>`:""}</span>${trPill(m.status)}</button>`}).join("")}</div>`:`<p class="muted">No movements yet. Add your first, or start from the example drafts and check each one.</p>`}`
+    :`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-trneww="1">+ New workout</button><button class="btn" data-trneww="auto">Auto-build a draft</button><button class="btn" data-trprompt="1">Copy AI generator prompt</button></div>
+      ${L.workouts.length?`<div class="tr-list">${L.workouts.map(w=>{const v=trValidate(w);return `<button class="tr-row" data-treditw="${w.id}"><span class="tr-rt"><b>${esc(w.title||"Untitled workout")}</b><small>${esc((w.targets||[]).join(", ")||"No target")} · ${(w.prep||[]).length} prep, ${(w.main||[]).length} main, ${(w.flow||[]).length} blood flow · v${w.version||1}</small>${v.length?`<small class="tr-gap">${v.length} ${v.length===1?"issue":"issues"} to fix before approval</small>`:""}</span>${trPill(w.status)}</button>`}).join("")}</div>`:`<p class="muted">No workouts yet.${ap.length?"":" Approve some movements first: Workouts can only use approved movements."}</p>`}`}
+  </div>`;
+}
+function trMovEditor(){
+  const m=S.trEdit,g=trMovGaps(m),inp=(k,l,ph,ta)=>`<label class="field" for="trm-${k}">${l}${ta?`<textarea class="input" id="trm-${k}" data-trin="${k}" rows="3" placeholder="${esc(ph||"")}">${esc(m[k]||"")}</textarea>`:`<input class="input" id="trm-${k}" data-trin="${k}" value="${esc(m[k]||"")}" placeholder="${esc(ph||"")}">`}</label>`;
+  return `<div class="stack"><div><button class="chip" data-trclose="1">&lsaquo; Back to the library</button></div>
+    <div><span class="eyebrow">${m.created?"Edit movement":"New movement"} · v${m.version||1}</span><h1 class="display" style="font-size:clamp(36px,7vw,54px)">${esc(m.name||"New movement")}</h1>${m.example?`<p class="muted" style="font-size:13px">Example draft. Check every detail before you approve it.</p>`:""}</div>
+    <section class="card tr-form">
+      ${inp("name","Name","e.g. Dead bug")}
+      <div class="field"><span>Which stages can it be used in?</span>${trChips("stages",[["prep","Movement prep"],["main","Main compound"],["flow","Blood flow"]],m.stages)}</div>
+      ${(m.stages||[]).includes("prep")?`<div class="field"><span>Prep outcomes it can cover <small class="muted">(clients still tick what they actually felt)</small></span>${trChips("outcomes",TR_OUT.map(([k,n])=>[k,n]),m.outcomes)}</div>`:""}
+      <div class="field"><span>Target areas</span>${trChips("targets",TR_TARGETS,m.targets)}</div>
+      <div class="field"><span>Equipment</span>${trChips("equipment",TR_EQUIP,m.equipment)}</div>
+      <div class="field"><span>Where</span>${trChips("env",TR_ENVS,m.env)}</div>
+      <div class="field"><span>Level</span>${trChips("level",TR_LEVELS,[m.level||"All levels"],"data-trone")}</div>
+      ${inp("demo","Demo video link","https://")}
+      ${inp("how","How to do it","Short and plain: What to do, step by step.",1)}
+      ${inp("focus","Focus points (one per line)","Rib cage down\nDrive through the heels",1)}
+      ${inp("sensory","Attention cue (touch, balance or effort)","e.g. Feel your feet spread on the floor")}
+      ${inp("felt","Felt check","What they should feel before moving on")}
+      ${inp("restrictions","Avoid or modify if","e.g. Lower back pain: Use the floor version")}
+      ${inp("breath_ex","Breath exception (leave blank to use the standard cue)","")}
+      ${(m.stages||[]).includes("flow")?`<button type="button" class="confirm${m.bfr?" on":""}" data-trbfr="1" aria-pressed="${!!m.bfr}"><span class="tick">${TICK}</span><span>BFR straps are suitable for this movement</span></button>`:""}
+    </section>
+    ${g.block.length?`<div class="tr-note gap">Before you can approve it, add ${esc(g.block.join(", "))}.</div>`:g.warn.length?`<div class="tr-note">Still missing: ${esc(g.warn.join(", "))}. Clients will see "Ellis is adding this" in its place.</div>`:""}
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-trsavemov="APPROVED" ${g.block.length?"disabled":""}>Approve and publish</button><button class="btn" data-trsavemov="DRAFT">Save as draft</button>${m.created?`<button class="btn" data-trdelmov="1">Delete</button>`:""}</div>
+    ${m.status==="APPROVED"?`<p class="muted" style="font-size:12.5px">Saving changes makes a new version. Sessions clients have already done keep the version they used.</p>`:""}
+  </div>`;
+}
+function trSync(){root.querySelectorAll("[data-trin]").forEach(i=>{if(S.trEdit)S.trEdit[i.dataset.trin]=i.value});root.querySelectorAll("[data-trwin]").forEach(i=>{if(S.trW)S.trW[i.dataset.trwin]=i.value})}
+function trWorkoutEditor(){
+  const w=S.trW,ap=trApproved(),v=trValidate(w),get=id=>trMov(id);
+  const pick=st=>{const elig=ap.filter(m=>(m.stages||[]).includes(st));return elig.length?`<div class="tr-pick">${elig.map(m=>{const on=(w[st]||[]).includes(m.id);return `<button type="button" class="tr-pk${on?" on":""}" data-trwpick="${st}|${m.id}" aria-pressed="${on}"><span class="tick">${on?TICK:""}</span><span><b>${esc(m.name)}</b><small>${esc((m.targets||[]).join(", "))}${st==="prep"&&(m.outcomes||[]).length?" · Covers: "+esc(m.outcomes.map(k=>TR_OUT.find(x=>x[0]===k)[1]).join(", ")):""}</small></span></button>`}).join("")}</div>`:`<p class="tr-note gap">NEEDS COACH CONTENT: No approved ${TR_STAGEK[st].toLowerCase()} movements yet.</p>`};
+  const cov=trCoverage((w.prep||[]).map(get).filter(Boolean));
+  return `<div class="stack"><div><button class="chip" data-trclose="1">&lsaquo; Back to workouts</button></div>
+    <div><span class="eyebrow">Workout · v${w.version||1} · ${w.status==="APPROVED"?"Approved":"Draft"}</span><h1 class="display" style="font-size:clamp(36px,7vw,54px)">${esc(w.title||"New workout")}</h1></div>
+    ${S.trAuto?`<section class="card"><h2 class="sec-title" style="font-size:20px">Auto-build a draft</h2><p class="muted" style="font-size:13px;margin:0 0 8px">Picks only from your approved movements. Anything it can't cover comes back as a gap for you to fill, never a made-up movement.</p>
+      <div class="field"><span>Target</span>${trChips("a_target",TR_TARGETS,[S.trAuto.target],"data-trauto")}</div>
+      <div class="field"><span>Where</span>${trChips("a_context",TR_ENVS,[S.trAuto.context],"data-trauto")}</div>
+      <button class="btn primary" data-trrunauto="1">Build it</button>${S.trAuto.gaps&&S.trAuto.gaps.length?`<div class="tr-note gap"><b>NEEDS COACH CONTENT</b><ul>${S.trAuto.gaps.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`:""}</section>`:""}
+    <section class="card tr-form">
+      <label class="field" for="trw-title">Title<input class="input" id="trw-title" data-trwin="title" value="${esc(w.title||"")}" placeholder="e.g. Lower body: Quads and glutes"></label>
+      <label class="field" for="trw-intention">Intention<input class="input" id="trw-intention" data-trwin="intention" value="${esc(w.intention||"")}" placeholder="What this session is for"></label>
+      <div class="field"><span>Target areas</span>${trChips("w_targets",TR_TARGETS,w.targets)}</div>
+      <div class="field"><span>Where</span>${trChips("w_context",TR_ENVS,[w.context],"data-trone")}</div>
+      <div class="field"><span>Level</span>${trChips("w_level",TR_LEVELS,[w.level||"All levels"],"data-trone")}</div>
+      <div class="field"><span>Equipment available <small class="muted">(leave empty for any)</small></span>${trChips("w_equipment",TR_EQUIP,w.equipment)}</div>
+    </section>
+    <section class="card"><h2 class="sec-title" style="font-size:20px">Movement prep</h2><p class="muted" style="font-size:13px;margin:0 0 8px">Between them, these must be able to cover all five outcomes.</p>
+      <div class="tr-cov">${TR_OUT.map(([k,n])=>`<div class="${cov[k].length?"ok":"gap"}"><b>${esc(n)}</b><small>${cov[k].length?esc(cov[k].join(", ")):"Not covered"}</small></div>`).join("")}</div>${pick("prep")}</section>
+    <section class="card"><h2 class="sec-title" style="font-size:20px">Main compound</h2>${pick("main")}</section>
+    <section class="card"><h2 class="sec-title" style="font-size:20px">Blood flow</h2>${pick("flow")}</section>
+    <section class="card tr-form"><label class="field" for="trw-copy">What clients read<textarea class="input" id="trw-copy" data-trwin="client_copy" rows="3" placeholder="A short intro clients see when they choose this workout">${esc(w.client_copy||"")}</textarea></label>
+      <label class="field" for="trw-notes">Coach notes (only you see these)<textarea class="input" id="trw-notes" data-trwin="coach_notes" rows="2">${esc(w.coach_notes||"")}</textarea></label></section>
+    <section class="card"><h2 class="sec-title" style="font-size:20px">Checks</h2>${v.length?`<ul class="tr-checks">${v.map(x=>`<li class="${/^NEEDS/.test(x)?"gap":""}">${esc(x)}</li>`).join("")}</ul>`:`<p class="tr-ok">${TICK} Passes every check. Ready to approve.</p>`}
+      <p class="muted" style="font-size:12.5px;margin:8px 0 0">Every workout runs the same eight stages: Settle, Choose and rehearse, Change into action, Movement prep, Main compound, Blood flow, Close, Record and finish.</p></section>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-trsavew="APPROVED" ${v.length?"disabled":""}>Approve and publish</button><button class="btn" data-trsavew="DRAFT">Save as draft</button>${w.created?`<button class="btn" data-trdelw="1">Delete</button>`:""}</div>
+  </div>`;
+}
+function trPromptText(){
+  const ap=trApproved().map(m=>({id:m.id,version:m.version,name:m.name,stages:m.stages,targets:m.targets,equipment:m.equipment,environment:m.env,level:m.level,restrictions:m.restrictions,prep_outcome_capabilities:m.outcomes,demo:!!m.demo}));
+  return `Generate a DRAFT Project Reset workout using only the supplied APPROVED movement records and the fixed v4 method.
+Inputs: workout focus [ ], experience level [ ], location [ ], equipment [ ], restrictions [ ], preference [ ].
+Never invent movements, names, demonstrations, coaching instructions, rep counts, times, BFR setup, or claims about measured hypoxia or neural activation.
+Keep this order exactly: settle → choose and rehearse → change into action → prep loop → main compound → blood flow and connection → close → record and finish.
+Use prep movements whose approved capability tags collectively cover all five prep outcomes (warmth, rib cage and core, target connection, proprioception and coordination, variation and rep pattern). Never mark outcomes complete in advance: client confirmations are required.
+Select main compounds only from MAIN-approved records, later work only from BLOOD_FLOW-approved records. Use no movement that fails the client filters.
+Return: metadata, movement IDs by stage, prep coverage matrix, short client-facing instructions, missing-content warnings, and status DRAFT. If eligible content is insufficient, return NEEDS COACH CONTENT with the missing roles or tags. Do NOT invent substitutions.
+
+APPROVED MOVEMENT LIBRARY:
+${JSON.stringify(ap,null,1)}`;
+}
+
+/* ---------- client: the guided session ---------- */
+const trWs=log=>log.ws||null;
+function trSaveWs(ws){ws.last_saved=new Date().toISOString();edit("ws",ws)}
+function trSnap(id){const m=trMov(id);return m?JSON.parse(JSON.stringify(m)):null}
+function trNewWs(){return{id:uid(),status:"IN_PROGRESS",stage:1,started:nowHHMM(),wid:"",wver:0,title:"",prep:[],main:[],flow:[],out:{},close:{},nums:{},rec:{}}}
+function trGateOk(ws,n){ // has stage n been confirmed?
+  if(n===1)return !!(ws.settle&&(ws.settle.ok||ws.settle.na));
+  if(n===2)return !!ws.rehearsed&&ws.main.length>0;
+  if(n===3)return !!ws.action;
+  if(n===4)return TR_OUT.every(([k])=>ws.out[k]);
+  if(n===5)return !!ws.main_ok;
+  if(n===6)return !!ws.flow_ok;
+  if(n===7)return TR_CLOSE.every(([k])=>ws.close[k]);
+  if(n===8)return ws.status==="COMPLETED";
+}
+function trMovCard(m,stage,ws){
+  if(!m)return "";const focus=trLines(m.focus),nm=ws&&ws.nums[m.id]||{};
+  return `<div class="tr-mov"><div class="tr-mh"><b>${esc(m.name)}</b>${(m.targets||[]).length?`<span class="pill">${esc(m.targets.join(", "))}</span>`:""}</div>
+    ${m.demo?`<a class="btn tr-demo" href="${esc(m.demo)}" target="_blank" rel="noopener">▶ Watch the demo</a>`:`<small class="muted">Demo: Ellis is adding this one.</small>`}
+    <p>${esc(m.how||"")}</p>
+    ${focus.length?`<ul class="tr-focus">${focus.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:""}
+    ${m.sensory?`<p class="tr-cue"><b>Notice:</b> ${esc(m.sensory)}</p>`:""}
+    ${m.breath_ex?`<p class="tr-cue"><b>Breathing for this one:</b> ${esc(m.breath_ex)}</p>`:""}
+    ${stage==="prep"&&(m.outcomes||[]).length?`<small class="muted">Can help with: ${esc(m.outcomes.map(k=>TR_OUT.find(x=>x[0]===k)[1]).join(", "))}</small>`:""}
+    ${m.felt?`<p class="tr-felt"><b>You should feel:</b> ${esc(m.felt)}</p>`:""}
+    ${(stage==="main"||stage==="flow")&&ws?`<div class="tr-nums"><span class="muted">Optional</span>${[["w","Weight"],["s","Sets"],["r","Reps"]].map(([k,l])=>`<label><small>${l}</small><input class="input num" data-trnum="${m.id}|${k}" value="${esc(nm[k]||"")}" inputmode="decimal" aria-label="${l} for ${esc(m.name)}"></label>`).join("")}</div>`:""}
+  </div>`;
+}
+function trStageBody(ws,st,cur,ro){
+  const D=ro?"disabled":"";
+  switch(st.k){
+    case"settle":return `<button class="confirm${ws.settle&&ws.settle.ok?" on":""}" data-trset="ok" ${D}><span class="tick">${TICK}</span><span>I've eaten and settled</span></button>
+      <div class="field"><span class="muted" style="font-size:13px">Doesn't apply today?</span><div class="opts">${TR_SETTLE_NA.map(r=>`<button class="chip" data-trset="na|${esc(r)}" aria-pressed="${!!(ws.settle&&ws.settle.na===r)}" ${D}>${esc(r)}</button>`).join("")}</div></div>`;
+    case"choose":{
+      if(!ws.main.length||S.trPicking)return trChooseHtml(ws,D);
+      const all=[...ws.prep,...ws.main,...ws.flow];
+      return `<div class="tr-chosen"><b>${esc(ws.title)}</b>${ws.copy?`<p>${esc(ws.copy)}</p>`:""}${ro?"":`<button class="link" data-trrepick="1">Choose a different workout</button>`}</div>
+        <p class="muted" style="font-size:13px">Watch each demo, then picture yourself doing it.</p>
+        ${all.map(m=>`<div class="tr-rh"><b>${esc(m.name)}</b><small>${esc(m.how||"")}</small>${m.demo?`<a class="link" href="${esc(m.demo)}" target="_blank" rel="noopener">▶ Demo</a>`:`<small class="muted">Demo coming</small>`}</div>`).join("")}
+        <button class="confirm${ws.rehearsed?" on":""}" data-trflag="rehearsed" ${D}><span class="tick">${TICK}</span><span>I've pictured every movement. I'm ready.</span></button>`}
+    case"action":return `<button class="confirm${ws.action?" on":""}" data-trflag="action" ${D}><span class="tick">${TICK}</span><span>Changed clothes, music and space, and had a short walk</span></button>`;
+    case"prep":{
+      const have=new Set(ws.prep.map(m=>m.id)),missing=TR_OUT.filter(([k])=>!ws.out[k]).map(([k])=>k);
+      const extra=trApproved().filter(m=>(m.stages||[]).includes("prep")&&!have.has(m.id)).map(m=>[m,(m.outcomes||[]).filter(k=>missing.includes(k)).length]).sort((a,b)=>b[1]-a[1]);
+      return `${ws.prep.map(m=>trMovCard(m,"prep",ws)).join("")||`<p class="muted" style="font-size:13px">No prep movements chosen yet. Add one below.</p>`}
+        <div class="tr-outs"><b>Tick only what you actually felt</b>${TR_OUT.map(([k,n,d])=>`<button class="confirm${ws.out[k]?" on":""}" data-trout="${k}" ${D}><span class="tick">${TICK}</span><span><b>${esc(n)}</b><small>${esc(d)}</small></span></button>`).join("")}</div>
+        ${!ro&&missing.length?`<div class="tr-more"><b>Still to feel: ${esc(missing.map(k=>TR_OUT.find(x=>x[0]===k)[1]).join(", "))}</b><small class="muted">Repeat a movement, or add another. These are suggested for what's missing:</small>
+          ${extra.length?`<div class="tr-pick">${extra.slice(0,6).map(([m,n])=>`<button class="tr-pk" data-traddprep="${m.id}"><span class="tick">+</span><span><b>${esc(m.name)}</b><small>${n?"Can help with "+esc((m.outcomes||[]).filter(k=>missing.includes(k)).map(k=>TR_OUT.find(x=>x[0]===k)[1]).join(", ")):"Another prep option"}</small></span></button>`).join("")}</div>`:`<small class="muted">No other approved prep movements yet. Repeat the ones above.</small>`}</div>`:""}`}
+    case"main":return `${ws.main.map(m=>trMovCard(m,"main",ws)).join("")}
+      <button class="confirm${ws.main_ok?" on":""}" data-trflag="main_ok" ${D}><span class="tick">${TICK}</span><span>I felt it working in the right place. Ready to move on.</span></button>
+      ${ws.main_ok?"":`<small class="muted">Not ready? Stay here and do another set.</small>`}`;
+    case"flow":{const bfr=ws.flow.some(m=>m.bfr);return `${ws.flow.map(m=>trMovCard(m,"flow",ws)).join("")}
+      ${bfr?`<button class="confirm${ws.bfr?" on":""}" data-trflag="bfr" ${D}><span class="tick">${TICK}</span><span>I used BFR straps (optional)</span></button>`:""}
+      <button class="confirm${ws.flow_ok?" on":""}" data-trflag="flow_ok" ${D}><span class="tick">${TICK}</span><span>I felt the connection and the muscle filling up. Ready to close.</span></button>`}
+    case"close":return `<div class="tr-outs">${TR_CLOSE.map(([k,l])=>`<button class="confirm${ws.close[k]?" on":""}" data-trclose2="${k}" ${D}><span class="tick">${TICK}</span><span>${esc(l)}</span></button>`).join("")}</div>`;
+    case"record":return `${[["felt","What did you feel?"],["changed","What changed in your body or mind?"],["release","Any thought or distraction to write down and let go?"]].map(([k,l])=>`<label class="field" for="trr-${k}">${l}<textarea class="input" id="trr-${k}" data-trrec="${k}" rows="2" ${D}>${esc(ws.rec[k]||"")}</textarea></label>`).join("")}
+      ${ws.status==="COMPLETED"?`<p class="tr-ok">${TICK} Saved as completed at ${esc(ws.finished||"")}.</p>`:`<button class="btn primary" data-trfinish="1">Finish and save</button>${S.trMissing&&S.trMissing.length?`<div class="tr-note gap">Not complete yet. Still to do: ${esc(S.trMissing.join(", "))}.</div>`:""}`}`;
+  }
+}
+function trChooseHtml(ws,D){
+  const L=LIB(),ws_=L.workouts.filter(w=>w.status==="APPROVED"),f=S.trFilter||"";
+  if(S.trOwn)return trOwnBuilder(ws);
+  const list=ws_.filter(w=>!f||(w.targets||[]).includes(f));
+  return `<div class="opts">${["",...TR_TARGETS].filter(t=>!t||ws_.some(w=>(w.targets||[]).includes(t))).map(t=>`<button class="chip" data-trfilter="${esc(t)}" aria-pressed="${f===t}">${t?esc(t):"All"}</button>`).join("")}</div>
+    ${list.length?`<div class="tr-wl">${list.map(w=>`<button class="tr-wc" data-trpickw="${w.id}" ${D}><b>${esc(w.title)}</b><small>${esc([(w.targets||[]).join(", "),w.context].filter(Boolean).join(" · "))}</small>${w.intention?`<span>${esc(w.intention)}</span>`:""}</button>`).join("")}</div>`:`<p class="muted" style="font-size:13px">${ws_.length?"Nothing for that target yet.":"Ellis hasn't published any set workouts yet. Build your own from his approved movements."}</p>`}
+    <button class="btn" data-trown="1" ${D}>Build my own from Ellis's movements</button>`;
+}
+function trOwnBuilder(ws){
+  const o=S.trOwn,ap=trApproved(),fit=m=>!o.target||o.target==="Full body"||(m.targets||[]).includes(o.target)||(m.targets||[]).includes("Full body");
+  const col=st=>{const l=ap.filter(m=>(m.stages||[]).includes(st)&&(st==="prep"||fit(m)));return `<div class="field"><span><b>${TR_STAGEK[st]}</b>${st==="prep"?" <small class='muted'>(you can add more as you go)</small>":""}</span>${l.length?`<div class="tr-pick">${l.map(m=>{const on=o[st].includes(m.id);return `<button class="tr-pk${on?" on":""}" data-trownpick="${st}|${m.id}" aria-pressed="${on}"><span class="tick">${on?TICK:""}</span><span><b>${esc(m.name)}</b><small>${esc((m.targets||[]).join(", "))}</small></span></button>`}).join("")}</div>`:`<small class="muted">Nothing approved for this yet.</small>`}</div>`};
+  return `<div class="tr-own"><div class="field"><span>What are you training?</span>${trChips("o_target",TR_TARGETS,[o.target],"data-trownt")}</div>
+    ${col("prep")}${col("main")}${col("flow")}
+    <div style="display:flex;gap:8px"><button class="btn primary" data-trownuse="1" ${o.main.length&&o.flow.length?"":"disabled"}>Use these</button><button class="btn" data-trowncancel="1">Cancel</button></div>
+    ${o.main.length&&o.flow.length?"":`<small class="muted">Pick at least one main compound and one blood flow movement.</small>`}</div>`;
+}
+function trSessionView(x){
+  const log=x.log;let ws=trWs(log);
+  const ap=trApproved();
+  if(!ws)return `<section class="card tr-start"><h2 class="sec-title" style="font-size:22px">Today's session</h2><p class="muted" style="font-size:13px">Eight stages, one at a time. Everything saves as you go, and you can pick up exactly where you left off.</p>
+    <ol class="tr-ol">${TR_STAGES.map(s=>`<li>${esc(s.t)}</li>`).join("")}</ol><button class="btn primary" data-trstart="1">Start my session</button></section>`;
+  const cur=ws.stage,view=S.trView&&S.trView<=cur?S.trView:cur,st=TR_STAGES[view-1],ro=view<cur||ws.status!=="IN_PROGRESS";
+  const moving=["prep","main","flow"].includes(st.k);
+  return `<section class="card tr-sess">
+    <div class="tr-top"><b>${esc(ws.title||"Today's session")}</b>${ws.status==="COMPLETED"?`<span class="pill ok">Completed</span>`:ws.status==="UNFINISHED"?`<span class="pill warn">Unfinished</span>`:`<span class="muted num" style="font-size:12px">Saved ${esc((ws.last_saved||"").slice(11,16))}</span>`}</div>
+    <div class="tr-steps" role="list">${TR_STAGES.map(s=>{const done=s.n<cur||ws.status==="COMPLETED",here=s.n===view;return `<button role="listitem" class="tr-st${done?" done":""}${here?" here":""}${s.n===cur?" cur":""}" ${s.n<=cur?`data-trview="${s.n}"`:"disabled"} aria-label="Stage ${s.n}: ${esc(s.t)}${s.n>cur?" (locked)":""}">${done&&!here?TICK:s.n}</button>`}).join("")}</div>
+    ${ws.status==="UNFINISHED"?`<div class="tr-note">You ended this session at Stage ${cur}: ${esc(TR_STAGES[cur-1].t)}. It's saved as unfinished.<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-trresume="1">Pick up at Stage ${cur}</button><button class="btn" data-trnewsess="1">Start a new session</button></div></div>`:""}
+    <div class="tr-stage"><span class="eyebrow">Stage ${st.n} of 8${view<cur?" · Done":""}</span><h2 class="sec-title" style="font-size:26px">${esc(st.t)}</h2>
+      <p class="tr-what">${esc(st.what)}</p><p class="tr-how">${esc(st.how)}</p>
+      <details class="tr-why"><summary>Why this matters</summary><p>${esc(st.why)}</p></details>
+      ${moving?`<div class="tr-breath"><b>One breath cue</b><span>${esc(TR_BREATH)}</span></div>`:""}
+      ${trStageBody(ws,st,cur,ro)}
+    </div>
+    ${ws.status==="IN_PROGRESS"&&view===cur&&cur<8?`<div class="tr-next">${trGateOk(ws,cur)?`<button class="btn primary" data-trnext="1">Next: ${esc(TR_STAGES[cur].t)}</button>`:`<button class="btn primary" disabled>Next: ${esc(TR_STAGES[cur].t)}</button><small class="muted">${cur===4?"Main work unlocks when all five are ticked.":"Confirm this stage to move on."}</small>`}</div>`:""}
+    ${view<cur&&ws.status==="IN_PROGRESS"?`<button class="link" data-trview="${cur}">Back to Stage ${cur}</button>`:""}
+    ${ws.status==="IN_PROGRESS"?(S.trEnding?`<div class="tr-note">End now? It'll be saved as unfinished at Stage ${cur}, and you can pick it back up later.<div style="margin-top:8px;display:flex;gap:8px"><button class="btn" data-trend="2">End session</button><button class="btn primary" data-trend="0">Keep going</button></div></div>`:`<button class="link tr-endl" data-trend="1">End session early</button>`):""}
+    ${ws.status==="COMPLETED"?`<button class="btn" data-trnewsess="1">Start another session</button>`:""}
+  </section>
+  ${(log.ws_prev||[]).length?`<section class="card"><h2 class="sec-title" style="font-size:18px">Earlier today</h2>${log.ws_prev.map(p=>`<div class="rv"><span>${esc(p.title||"Session")}</span><span>${p.status==="COMPLETED"?"Completed":"Unfinished at Stage "+p.stage}</span></div>`).join("")}</section>`:""}`;
+}
+function trainingView(){
+  if(!trApproved().length)return legacyTrainingView();
+  const x=curCtx();
+  return `<div class="stack">
+    <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">One method, many workouts. Do one stage at a time.</p></div></div>
+    ${x&&x.dn>0?dayNav(x):""}
+    ${x&&x.dn>0&&x.log.train_plan&&x.log.train_plan.on?`<div class="golink lime"><div><b>${x.log.train_plan.on==="yes"?`Planned: ${esc(x.log.train_plan.what||"Training")}${x.log.train_plan.time?" at "+esc(x.log.train_plan.time):""}`:"Planned: Rest day"}</b><span>From your plan. Change it in Subconscious, Plan ahead.</span></div></div>`:""}
+    ${x&&x.dn>0?trSessionView(x):`<p class="muted">Workouts start on Day 1.</p>`}
+  </div>`;
+}
+
+function trClick(b){
+  const d=b.dataset;
+  // coach
+  if(d.trseg){S.trSeg=d.trseg;return render()}
+  if(d.trexamples){trAddExamples().then(render);return}
+  if(d.trnewmov){S.trEdit={id:uid(),version:1,status:"DRAFT",name:"",stages:[],targets:[],equipment:[],env:[],level:"All levels",outcomes:[]};render();window.scrollTo(0,0);return}
+  if(d.tredit){S.trEdit=JSON.parse(JSON.stringify(trMov(d.tredit)));S.trEdit.created=1;render();window.scrollTo(0,0);return}
+  if(d.trclose){S.trEdit=null;S.trW=null;S.trAuto=null;render();window.scrollTo(0,0);return}
+  if(d.trtog&&S.trEdit&&!S.trW){trSync();const [f,v]=d.trtog.split("|"),a=S.trEdit[f]||[];S.trEdit[f]=a.includes(v)?a.filter(x=>x!==v):[...a,v];return render()}
+  if(d.trone&&S.trEdit&&!S.trW){trSync();const [f,v]=d.trone.split("|");S.trEdit[f]=v;return render()}
+  if(d.trbfr){trSync();S.trEdit.bfr=!S.trEdit.bfr;return render()}
+  if(d.trsavemov){trSync();const m=S.trEdit,L=LIB(),i=L.movements.findIndex(q=>q.id===m.id),old=i>=0?L.movements[i]:null;
+    const changed=old&&JSON.stringify({...old,status:0,version:0,approved_at:0})!==JSON.stringify({...m,created:undefined,status:0,version:0,approved_at:0});
+    const rec={...m,created:undefined,status:d.trsavemov,version:old?(changed?(old.version||1)+1:old.version||1):1,approved_at:d.trsavemov==="APPROVED"?new Date().toISOString():(old&&old.approved_at)||null,example:m.example&&d.trsavemov!=="APPROVED"};delete rec.created;
+    if(i>=0)L.movements[i]=rec;else L.movements.push(rec);S.trEdit=null;trSaveLib(d.trsavemov==="APPROVED"?"Approved. Clients can use it now.":"Saved as a draft").then(render);return render()}
+  if(d.trdelmov){const L=LIB();L.movements=L.movements.filter(m=>m.id!==S.trEdit.id);S.trEdit=null;trSaveLib("Deleted");return render()}
+  if(d.trneww){S.trW={id:uid(),version:1,status:"DRAFT",title:"",intention:"",targets:[],context:"",level:"All levels",equipment:[],prep:[],main:[],flow:[]};S.trAuto=d.trneww==="auto"?{target:"Full body",context:"Gym"}:null;render();window.scrollTo(0,0);return}
+  if(d.treditw){S.trW=JSON.parse(JSON.stringify(LIB().workouts.find(w=>w.id===d.treditw)));S.trW.created=1;S.trAuto=null;render();window.scrollTo(0,0);return}
+  if(d.trauto){trSync();const [f,v]=d.trauto.split("|");S.trAuto[f==="a_target"?"target":"context"]=v;return render()}
+  if(d.trrunauto){trSync();const r=trAutoBuild({target:S.trAuto.target,context:S.trAuto.context});Object.assign(S.trW,{prep:r.prep,main:r.main,flow:r.flow,targets:[S.trAuto.target],context:S.trAuto.context,status:"DRAFT"});if(!S.trW.title)S.trW.title=S.trAuto.target+" ("+S.trAuto.context.toLowerCase()+")";S.trAuto.gaps=r.gaps;toast(r.gaps.length?"Draft built, with gaps to fill":"Draft built. Check it, then approve");return render()}
+  if(S.trW&&(d.trtog||d.trone)){trSync();const [f,v]=(d.trtog||d.trone).split("|"),k=f.replace(/^w_/,"");if(d.trone)S.trW[k]=S.trW[k]===v&&k==="context"?"":v;else{const a=S.trW[k]||[];S.trW[k]=a.includes(v)?a.filter(x=>x!==v):[...a,v]}return render()}
+  if(d.trwpick){trSync();const [st,id]=d.trwpick.split("|"),a=S.trW[st]||[];S.trW[st]=a.includes(id)?a.filter(x=>x!==id):[...a,id];return render()}
+  if(d.trsavew){trSync();const w=S.trW;if(d.trsavew==="APPROVED"&&trValidate(w).length)return toast("Fix the checks first");const L=LIB(),i=L.workouts.findIndex(q=>q.id===w.id),old=i>=0?L.workouts[i]:null;
+    const rec={...w,status:d.trsavew,version:old?(old.version||1)+(old.status==="APPROVED"?1:0):1,approved_at:d.trsavew==="APPROVED"?new Date().toISOString():null,approved_by:d.trsavew==="APPROVED"?"Ellis Vine":null,method_version:"v4"};delete rec.created;
+    if(i>=0)L.workouts[i]=rec;else L.workouts.push(rec);S.trW=null;S.trAuto=null;trSaveLib(d.trsavew==="APPROVED"?"Approved. Clients can choose it now.":"Saved as a draft");return render()}
+  if(d.trdelw){const L=LIB();L.workouts=L.workouts.filter(w=>w.id!==S.trW.id);S.trW=null;trSaveLib("Deleted");return render()}
+  if(d.trprompt){const t=trPromptText();(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("Prompt copied, with your approved library")).catch(()=>toast("Couldn't copy on this device"));return}
+  // client
+  const x=curCtx();if(!x)return;let ws=trWs(x.log);
+  if(d.trstart){trSaveWs(trNewWs());S.trView=null;return render()}
+  if(d.trnewsess){const prev=[...(x.log.ws_prev||[])];if(ws)prev.push({id:ws.id,title:ws.title,status:ws.status==="IN_PROGRESS"?"UNFINISHED":ws.status,stage:ws.stage});edit("ws_prev",prev);trSaveWs(trNewWs());S.trView=null;S.trMissing=null;return render()}
+  if(!ws)return;ws=JSON.parse(JSON.stringify(ws));
+  if(ws.status==="IN_PROGRESS"){let ch=0;root.querySelectorAll("[data-trrec]").forEach(t=>{const v=t.value.slice(0,1000);if((ws.rec[t.dataset.trrec]||"")!==v){ws.rec[t.dataset.trrec]=v;ch=1}});root.querySelectorAll("[data-trnum]").forEach(t=>{const [id,k]=t.dataset.trnum.split("|"),v=t.value.trim().slice(0,20);if(((ws.nums[id]||{})[k]||"")!==v){ws.nums[id]={...(ws.nums[id]||{}),[k]:v};ch=1}});if(ch)trSaveWs(ws)}
+  if(d.trview){S.trView=Number(d.trview);render();const el=root.querySelector(".tr-sess");if(el)el.scrollIntoView({block:"start"});return}
+  if(ws.status!=="IN_PROGRESS"&&!d.trresume)return;
+  if(d.trresume){ws.status="IN_PROGRESS";trSaveWs(ws);S.trView=null;return render()}
+  if(d.trend){S.trEnding=d.trend==="1";if(d.trend==="2"){ws.status="UNFINISHED";ws.ended=nowHHMM();trSaveWs(ws);toast("Saved as unfinished")}return render()}
+  if(d.trset){const [k,r]=d.trset.split("|");ws.settle=k==="ok"?(ws.settle&&ws.settle.ok?null:{ok:nowHHMM()}):(ws.settle&&ws.settle.na===r?null:{na:r});trSaveWs(ws);return render()}
+  if(d.trflag){ws[d.trflag]=ws[d.trflag]?null:nowHHMM();trSaveWs(ws);return render()}
+  if(d.trout){ws.out[d.trout]=ws.out[d.trout]?null:nowHHMM();trSaveWs(ws);return render()}
+  if(d.trclose2){ws.close[d.trclose2]=ws.close[d.trclose2]?null:nowHHMM();trSaveWs(ws);return render()}
+  if(d.traddprep){const m=trSnap(d.traddprep);if(m&&!ws.prep.some(p=>p.id===m.id)){ws.prep.push(m);trSaveWs(ws)}toast("Added. Do it, then tick what you felt");return render()}
+  if(d.trnext){if(!trGateOk(ws,ws.stage))return;ws.stage=Math.min(8,ws.stage+1);trSaveWs(ws);S.trView=null;S.trEnding=false;render();const el=root.querySelector(".tr-sess");if(el)el.scrollIntoView({block:"start"});return}
+  if(d.trfilter!==undefined){S.trFilter=d.trfilter;return render()}
+  if(d.trpickw){const w=LIB().workouts.find(q=>q.id===d.trpickw);if(!w)return;Object.assign(ws,{wid:w.id,wver:w.version,title:w.title,copy:w.client_copy||"",prep:w.prep.map(trSnap).filter(Boolean),main:w.main.map(trSnap).filter(Boolean),flow:w.flow.map(trSnap).filter(Boolean),rehearsed:null});trSaveWs(ws);S.trPicking=false;return render()}
+  if(d.trrepick){S.trPicking=true;return render()}
+  if(d.trown){S.trOwn={target:"",prep:[],main:[],flow:[]};return render()}
+  if(d.trownt){const v=d.trownt.split("|")[1];S.trOwn.target=S.trOwn.target===v?"":v;return render()}
+  if(d.trownpick){const [st,id]=d.trownpick.split("|"),a=S.trOwn[st];S.trOwn[st]=a.includes(id)?a.filter(q=>q!==id):[...a,id];return render()}
+  if(d.trowncancel){S.trOwn=null;return render()}
+  if(d.trownuse){const o=S.trOwn;Object.assign(ws,{wid:"own",wver:0,title:"My workout"+(o.target?": "+o.target:""),copy:"",prep:o.prep.map(trSnap).filter(Boolean),main:o.main.map(trSnap).filter(Boolean),flow:o.flow.map(trSnap).filter(Boolean),rehearsed:null});trSaveWs(ws);S.trOwn=null;S.trPicking=false;return render()}
+  if(d.trfinish){const miss=[];TR_STAGES.slice(0,7).forEach(s=>{if(!trGateOk(ws,s.n))miss.push(s.t)});S.trMissing=miss;if(miss.length)return render();
+    ws.status="COMPLETED";ws.finished=nowHHMM();trSaveWs(ws);if(!x.log.train_done)edit("train_done",nowHHMM());toast("Session saved as completed");return render()}
+}
+root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;if(Object.keys(b.dataset).some(k=>/^tr[a-z]/.test(k))){e.stopImmediatePropagation();trClick(b)}},true);
+root.addEventListener("change",e=>{const t=e.target;if(!t.dataset)return;
+  if(t.dataset.trnum||t.dataset.trrec){const x=curCtx(),w=x&&trWs(x.log);if(!w||w.status==="COMPLETED"&&t.dataset.trnum)return;const ws=JSON.parse(JSON.stringify(w));
+    if(t.dataset.trnum){const [id,k]=t.dataset.trnum.split("|");ws.nums[id]={...(ws.nums[id]||{}),[k]:t.value.trim().slice(0,20)}}else ws.rec[t.dataset.trrec]=t.value.slice(0,1000);trSaveWs(ws)}
+},true);
 
 root.addEventListener("submit",e=>{
   if(e.target.dataset.foodform){e.preventDefault();const t=e.target.querySelector("#food-in").value.trim();if(!t)return;S.mealDraft=[...(S.mealDraft||[]),t];S.mealOther=false;return render()}
