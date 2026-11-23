@@ -919,6 +919,10 @@ body.has-bnav .col{max-width:560px}
 .birds .review{margin-top:8px}
 .cues{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
 .cue-chip{display:flex;align-items:flex-start;gap:8px;font-size:12px;line-height:1.3;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+
+.music-cue{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:9px 12px;font-size:13px;margin:4px 0 8px}
+.music-cue>span:first-child{font-size:18px;line-height:1.2}
+.music-cue b{display:block;font-size:13.5px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -1382,6 +1386,14 @@ const MEAL1_TAGS=["Protein","Fruit / veg","No carbs","No added sugar"];
 // For launch, clients log their own workout. The PDF library (female, male, home) comes back here when it's ready.
 const WORKOUTS=[["Your workout",["My own workout"]]];
 // Ellis's Process (18/11): Day Open and Day Close, five steps each. The bit in between is theirs, with the Tracker.
+// Music prompts: not tracked, just a nudge at the right moment
+const MUSIC={
+  up:["Your morning soundtrack","Put on music that lifts you while you get your heart rate up."],
+  centre:["Your working soundtrack","Working? Put on music that keeps you steady and focused."],
+  down:["Your evening soundtrack","Slow, calm music, or none at all."],
+  train:["Your workout soundtrack","Switch your music as you start your set up: Whatever drives you. Then switch it again when you close the workout."]
+};
+const musicCue=k=>MUSIC[k]?`<div class="music-cue"><span aria-hidden="true">🎵</span><span><b>${esc(MUSIC[k][0])}</b>${esc(MUSIC[k][1])}</span></div>`:"";
 const OXYGEN=[
   {g:"up",name:"Switch up",d:"Oxygenate the body: Something physical that gets your heart rate up.",items:[...MOVE]},
   {g:"down",name:"Bring it down",d:"Lower your arousal: Recover, regulate and rest.",items:[...LOWER,"Walk after a meal","Evening moonlight","Cooking"]},
@@ -1396,7 +1408,7 @@ const MORNING=[
   {id:"m1",title:"Wake up",cue:["up","Do something hard upon waking."],text:["Mark the time you got out of bed"],
    asks:[{k:"woke_at",type:"time",label:"What time did you get out of bed?",req:l=>!!l.woke_at,reqMsg:"Add the time you woke up"},{k:"_intent",type:"lastintent"}]},
   {id:"m2",title:"Switch the system on",cue:["up","Get your heart rate up."],text:["Do what you planned last night, then tap it"],
-   asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"}]},
+   asks:[{k:"_oxy_am",type:"oxypick",from:"am",only:"up",plan:"tmr_up",label:"Your action to get your heart rate up",req:l=>oxyOf(l).some(o=>o.from==="am"),reqMsg:"Tap it once you've done it"},{k:"_music",type:"music",m:"up"}]},
   {id:"m3",title:"Meal 1",text:["Before you eat, rate your zone: You want to be in rest and digest","Eat Meal 1 within 90 minutes of waking, from your food list","Log it in Meals with its protein, then come back here"],
    asks:[{k:"am_state",type:"rating",arousal:true,eat:true,aim:"calm",label:"Before you eat: Rate your zone, 1 to 10",req:l=>!!l.am_state,reqMsg:"Rate your zone before you eat"},{k:"_eatready",type:"eatready"},{k:"_meal1",type:"logmeal1",req:l=>(l.food_entries||[]).length>0||!!l.meal1_done,reqMsg:"Log Meal 1 in Meals"},{k:"_go_food",type:"golink",go:"food",title:"Not sure what to eat?",text:"Anything from your food list. Have as much as you need.",btn:"See the list"}]},
   {id:"m4",title:"Your subconscious",region:"Prefrontal cortex",text:["Review your to-do list from last night, and add anything new","Check where you are before you start your day"],
@@ -1415,6 +1427,7 @@ const TMR_ASKS=[
   {k:"tmr_wake",type:"wake",label:"Set your alarm",req:l=>!!l.tmr_wake,reqMsg:"Set your alarm"}
 ];
 const WIND_ASKS=[
+  {k:"_music",type:"music",m:"down"},
   {k:"_oxy_pm",type:"oxypick",from:"pm",only:"down",label:"What will you do?",req:l=>oxyOf(l).some(o=>o.from==="pm"),reqMsg:"Tap what you did"},
   {k:"pm_state",type:"rating",arousal:true,aim:"calm",label:"Rate your zone before bed, 1 to 10"}
 ];
@@ -2325,7 +2338,7 @@ function oxygenView(){
   const cnt=(it,g)=>ox.filter(o=>o.item===it&&o.g===g).length;
   return `<div class="stack">
     ${tabHead("Oxygen","Everything that moves your nervous system. Switch it up to get going, bring it down to recover. Tap Log when you've done one.",x)}
-    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${oxyArrow(G.g)} ${G.name}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${G.d}</p>
+    ${OXYGEN.map(G=>`<section class="card oxy-card ${G.g}"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${oxyArrow(G.g)} ${G.name}</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">${G.d}</p>${musicCue(G.g)}
       <div class="oxy-list">${G.items.map(it=>{const n=cnt(it,G.g),open=S.oxyOpen===G.g+it;return `<div class="oxy-row${n?" on":""}"><button class="oxy-name" data-oxyopen="${esc(G.g+it)}" aria-expanded="${open}"><b>${esc(it)}</b>${n?`<small>${TICK} Logged ${n>1?n+" times":"at "+esc(ox.filter(o=>o.item===it&&o.g===G.g).pop().at)}</small>`:`<small>${open?"Hide":"How it works"}</small>`}</button><button class="btn${n?"":" primary"}" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="tab" data-oxyadd="1">Log</button>
         ${open?`<div class="oxy-info">${esc(INFO[it]||"")}${it==="The Reset"?`<ol class="g-rules">${RESET_STEPS.map(([t,d,b])=>`<li><b>${esc(t)}</b>${d?` <span class="muted">${esc(d)}</span>`:""}<ul class="g-list">${b.map(q=>`<li>${esc(q)}</li>`).join("")}</ul></li>`).join("")}</ol>`:""}</div>`:""}</div>`}).join("")}</div></section>`).join("")}
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Logged today</h2><span class="muted num">${ox.length}</span></div>
@@ -2411,6 +2424,7 @@ function trainingView(){
     <div class="tab-head"><div><h1 class="display">Workout</h1><p class="muted">Every bit of effort driven by glycogen-fuelled muscle, with no energy wasted on your nervous system. Tick each step as you go.</p></div></div>
     ${x&&x.dn>0?dayNav(x):""}
     ${x&&x.dn>0&&x.log.train_plan&&x.log.train_plan.on?`<div class="golink lime"><div><b>${x.log.train_plan.on==="yes"?`Planned: ${esc(x.log.train_plan.what||"Training")}${x.log.train_plan.time?" at "+esc(x.log.train_plan.time):""}`:"Planned: Rest day"}</b><span>From your plan. Change it in Subconscious, Plan ahead.</span></div></div>`:""}
+    ${musicCue("train")}
     <div class="wk-key"><span class="tone-up">Arousal inducing: Stimulate</span><span class="tone-centre">Centring: Maintain balance</span><span class="tone-down">Arousal reducing: Calm</span></div>
     ${x&&x.dn>0?workoutCard(x):`<p class="muted">Workout logging starts on Day 1.</p>`}
     <section class="card"><button class="wk-why" data-wkwhy="1" aria-expanded="${!!S.wkWhy}"><b>Why it works</b><span>${S.wkWhy?"Hide":"Show"}</span></button>
@@ -2437,6 +2451,7 @@ const RULES=[
   ["The non-negotiables",["Hit your steps, protein and water every day, rain or shine."]],
   ["Food",["Eat anything from your approved list, as much as you need. 3 to 7 meals a day.","Protein in every meal.","Carbs only around training: The meal before and after. Your evening meal too, if you want.","Fats fill the gaps. We wouldn't normally put carbs and fats in the same meal.","Fruit at least 3 times a day, and veg at least 3 times a day: In a meal or as a snack, whenever you want.","Water with every meal.","Eat in rest and digest: Under 6 on the scale. Walk after every meal."]],
   ["Your states",["↑ Sympathetic (7 to 10): Fight or flight. Switched on.","→ Centred (4 to 6): Balanced. Where you want to be for your day.","↓ Parasympathetic (1 to 3): Rest and digest. For eating, recovering and sleep."]],
+  ["Your soundtracks",["Know the music that switches you on, the music that keeps you focused, and the music that drives your training.","Lift it in the morning, keep it steady while you work, drive it in the gym, and slow it right down in the evening."]],
   ["Every day",["Day Open first thing: Wake, switch on, Meal 1, your to-do list.","Day Close when your active day is done: Look back, clear your head, plan tomorrow, be present.","Phone away for the evening 📵"]]
 ];
 const FAQS=[
@@ -2489,7 +2504,7 @@ function subconsciousView(){
       <div class="skey-row centre"><span class="skey-ic">→</span><div><b>Centred <small class="num">4 to 6</small></b><span>Balanced. Steady, focused and in control.</span></div></div>
       <div class="skey-row down"><span class="skey-ic">↓</span><div><b>Parasympathetic <small class="num">1 to 3</small></b><span>Rest and digest. Calm, ready to eat, recover or sleep.</span></div></div></section>
     ${OXYGEN.map(G=>`<section class="card oxy-card st-${G.g}" id="oxy-${G.g}"><div class="st-band"><span class="st-arrow" aria-hidden="true">${oxyArrow(G.g)}</span><div><span class="st-tag">${G.g==="up"?"Takes you into a sympathetic state":G.g==="centre"?"Keeps you centred":"Takes you into a parasympathetic state"}</span><h2 class="sec-title" style="font-size:20px;margin:0">${G.g==="up"?"Get yourself up":G.g==="centre"?"Hold your centre":"Bring yourself down"}</h2></div></div>
-      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":G.g==="centre"?"Use these to hold a balanced state through your day.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${list(G)}</section>`).join("")}
+      <p class="st-when">${G.g==="up"?"Use these first thing in the morning to oxygenate your body and switch on.":G.g==="centre"?"Use these to hold a balanced state through your day.":"Use these before you eat, after you train and in the evening, or any time you feel wired."}</p>${musicCue(G.g)}${list(G)}</section>`).join("")}
     ${x&&x.dn>0?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Tomorrow's to-do list</h2></div>${todoHtml("tmr_todos",log,false,false)}</section>`:""}
   </div>`;
 }
@@ -2858,6 +2873,7 @@ function askHtml(a,log,wk,locked){
       return `<div class="ask"><span class="ask-h">${a.label}</span><small class="muted" style="font-weight:500">${pl.length?(planOnly?"What you planned last night. Tap it once you've done it.":"Tap what you did instead."):"Tap it once you've done it."}</small>
         ${groups.map(G=>`<div class="oxy-g ${G.g}">${a.only?"":`<b>${oxyArrow(G.g)} ${G.name}</b>`}<div class="opts${planOnly?" planned":""}">${G.items.map(it=>{const on=mine.find(o=>o.item===it&&o.g===G.g);return `<button class="chip" data-oxy="${esc(it)}" data-oxyg="${G.g}" data-oxyfrom="${a.from}" aria-pressed="${!!on}" ${dis}>${on?TICK+" "+esc(it)+" · Done "+esc(on.at):esc(it)}</button>`}).join("")}</div></div>`).join("")}${pl.length&&planOnly?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Did something else? Change it</button>`:`${dis?"":`<small class="muted" style="font-weight:600">Did something else? Type it in</small>${ownForm("pick",a.k,a.only||"up",a.from,(a.only||"up")==="down"?"e.g. Listening to music, a bath, reading":(a.only==="centre"?"e.g. Tidying, admin":"e.g. Swim, skipping, bike ride"))}`}${pl.length?`<button class="link" data-oxyall="${a.k}" style="align-self:flex-start">Back to what you planned</button>`:""}`}</div>`}
     case"oxyday":{const all=oxyOf(log);return `<div class="ask"><span class="ask-h">What you used from Oxygen today <span class="muted num">${all.length}</span></span>${all.length?`<div class="review">${all.map(o=>`<div class="rv"><span>${oxyArrow(o.g)} ${esc(o.item)}</span><span class="num muted">${esc(o.at)}</span></div>`).join("")}</div>`:`<small class="muted" style="font-weight:500">Nothing logged yet.</small>`}<button class="link" data-guidepage="oxygen" style="align-self:flex-start">Log something you did in Oxygen</button></div>`}
+    case"music":return musicCue(a.m);
     case"golink":{const t=typeof a.text==="function"?a.text(log):a.text;return `<div class="golink"><div><b>${esc(a.title)}</b><span>${esc(t)}</span></div><button class="btn" data-guidepage="${a.go}" ${dis}>${esc(a.btn)}</button></div>`}
     case"prevnums":{const x=curCtx();if(x.dn<=1)return `<div class="numhead"><b>Nothing to update today</b><span>Day 0 was your setup day. From tomorrow, this is where you put in yesterday's final numbers.</span></div>`;
       const p=x.prev;return `<div class="ask"><span class="ask-h">Day ${x.dn-1}: Your final numbers</span><div class="nums">${[["steps","Steps",1],["protein","Protein (g)",1],["water","Water (L)",0.5]].map(([k,l,st])=>{const t=x.wk[k],v=p[k],hit=v!==undefined&&v!==""&&Number(v)>=t;return `<label class="ask" for="pn-${k}"><span class="num-lbl">${l}<small class="num-sub num">Target ${Number(t).toLocaleString("en-GB")}${hit?` · <b class="hitok">${TICK} Hit</b>`:""}</small></span><input class="input" type="number" inputmode="decimal" min="0" step="${st}" id="pn-${k}" data-pin="${k}" value="${v===undefined?"":esc(v)}" ${dis}></label>`}).join("")}</div></div>`}
