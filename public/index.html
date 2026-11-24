@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}/* Phones zoom into any field under 16px: keep every field at 16px on touch screens */
 @media (hover:none) and (pointer:coarse){input,select,textarea,.input{font-size:16px!important}}
+
+/* Make the current tab obvious: black with lime text */
+.bnav .bn[aria-current="page"]:not(.bn-main){background:var(--night,#111);color:var(--lime);border-radius:14px}
+.bnav .bn[aria-current="page"]:not(.bn-main)::before{display:none}
+.bnav .bn[aria-current="page"]:not(.bn-main) span:last-child{font-weight:800}
+.bnav .bn-main[aria-current="page"] span:last-child{color:var(--fg);text-decoration:underline;text-decoration-color:var(--lime);text-decoration-thickness:3px;text-underline-offset:3px}
 </style>
 <title>Project Reset App</title>
 <link rel="icon" type="image/png" href="/favicon.png">
