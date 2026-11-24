@@ -930,6 +930,10 @@ body.has-bnav .col{max-width:560px}
 .ox-resp{padding:8px 0 4px;display:flex;flex-direction:column;gap:6px}.ox-resp b{font-size:13px}
 .ox-resp-done{display:block;font-size:12px;color:var(--muted);padding:2px 0 6px}
 a.skey-row{text-decoration:none;color:inherit}
+
+.rerate-bar{display:flex;gap:10px;align-items:center;justify-content:space-between;background:var(--lime-dim);border:1px solid var(--lime);border-radius:12px;padding:10px 12px;font-size:13px}
+.ask.rerate{outline:2px solid var(--lime);outline-offset:6px;border-radius:12px}
+.rerate-note{background:var(--lime-dim);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;margin-bottom:4px}
 /* App Spine: bottom tabs, hub, Oxygen */
 body.has-bnav main{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}
 .bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;gap:2px;padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px));background:color-mix(in srgb,var(--bg) 94%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--line)}
@@ -2527,6 +2531,7 @@ function subconsciousView(){
     ${last&&S.oxyResp===last.id?`<div class="ox-resp"><b>How did your body respond?</b><div class="opts">${OX_RESP.map(([k,l])=>`<button class="chip" data-oxyresp="${last.id}|${k}" aria-pressed="${last.resp===k}">${oxyArrow(k)} ${l}</button>`).join("")}</div></div>`:last&&last.resp?`<small class="ox-resp-done">Response: ${oxyArrow(last.resp)} ${esc((OX_RESP.find(r=>r[0]===last.resp)||[,""])[1])}</small>`:""}</div>`}).join("")}</div>`;
   const order=["up","centre","down"].map(g=>OXYGEN.find(G=>G.g===g));
   return `<div class="stack">
+    ${S.guideFrom&&S.guideFrom.rerate?`<div class="rerate-bar"><span><b>Pick something and do it.</b> When you tap Log, you'll go straight back to The Process to rate again.</span><button class="chip" data-guideback="1">&lsaquo; Back</button></div>`:""}
     <div class="tab-head"><div><h1 class="display">Subconscious</h1><p class="ox-lead">Be in this moment.</p><p class="muted">Choose your sensory experience. Direct your response. This is your library of real-world sensory experiences.</p></div></div>
     ${on?`<section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Your to-do list</h2><span class="muted num">${todosOf(log,"todos").filter(t=>t.done).length} / ${todosOf(log,"todos").length} done</span></div><small class="muted" style="margin:-4px 0 8px;display:block">Tap ★ to mark a task Important or your Hard thing. Hard things go to the top.</small>${todoHtml("todos",log,true,false)}</section>
     <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Plan ahead</h2></div><p class="muted" style="font-size:13px;margin:-2px 0 8px">Add tasks and workouts for the days coming up.</p>${planAheadHtml(x)}</section>`:""}
@@ -2869,7 +2874,7 @@ function askHtml(a,log,wk,locked){
   const v=log[a.k],dis=locked?"disabled":"",id=`a-${a.idp||""}${a.k}`;
   switch(a.type){
     case"rating":if(a.arousal){const z=zoneOf(v),aim=ZONES.find(q=>q[0]===a.aim);
-      return `<div class="ask"><span class="ask-h">${a.label}${infoBtn("arousal","arousal")}</span>${infoBox("arousal")}
+      return `<div class="ask${S.rerateFlash===a.k?" rerate":""}" id="ask-${a.k}">${S.rerateFlash===a.k?`<div class="rerate-note">${TICK} ${esc(S.rerateItem||"Logged")}. Now rate where you are again.</div>`:""}<span class="ask-h">${a.label}${infoBtn("arousal","arousal")}</span>${infoBox("arousal")}
         ${a.eat&&a.k==="am_state"?`<small class="muted" style="font-weight:500">Under 6 and you're good to eat. 6 or above, bring it down first.</small>`:a.eat?`<small class="muted" style="font-weight:500">Aim for centred, 4 to 6, to start your day.</small>`:aim?`<small class="muted" style="font-weight:500">Aim for the <b>${aim[1]}</b> zone ${a.aimText||(a.aim==="calm"?"by now: Winding down for sleep.":"here: Balanced and ready for the day.")}</small>`:`<small class="muted" style="font-weight:500">No right answer. Just notice where you are.</small>`}
         <div class="rating arousal" role="group" aria-label="${esc(a.label)}">${Array.from({length:10},(_,i)=>`<button class="z-${zoneOf(i+1)[0]}" data-ask="${a.k}" data-val="${i+1}" data-num="1" aria-pressed="${Number(v)===i+1}" ${dis}>${i+1}</button>`).join("")}</div>
         <div class="zones">${ZONES.map(q=>`<div class="zone z-${q[0]}${z&&z[0]===q[0]?" on":""}" style="grid-column:span ${q[3]}"><b>${q[1]}</b><span>${q[2]}</span></div>`).join("")}</div>
@@ -2965,7 +2970,7 @@ function askHtml(a,log,wk,locked){
       ${w.on==="yes"?`<div class="nums"><label class="ask" for="tw-what"><span>What are you training?</span><input class="input" id="tw-what" data-tmrw="what" value="${esc(w.what||"")}" placeholder="e.g. Legs" ${dis}></label><label class="ask" for="tw-time"><span>What time?</span><input class="input" type="time" id="tw-time" data-tmrw="time" value="${esc(w.time||"")}" ${dis}></label></div>`:""}</div>`}
     case"startstate":{const v=Number(log.am_state2);if(!v)return "";
       const [cls,h,t,go,btn]=v>=7?["lvl-8","Bring it back to centre","You're in a sympathetic state. Do something from Low arousal in Subconscious to get back to centre, then start your day.","oxy-down","Bring it down"]:v>=4?["ok","Hold it there","You're centred: Right where you want to be. Do something from Centred in Subconscious to keep it there.","oxy-centre","Centred options"]:["lvl-6","Bring yourself up to centre","You're in rest and digest: Great for eating, but you want to be centred to start your day. Do something from Centred in Subconscious.","oxy-centre","Get centred"];
-      return `<div class="golink eat-lvl ${cls}"><div><b>${h}</b><span>You're at ${v}. ${t}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="${go}" ${dis}>${btn}</button></div>`}
+      return `<div class="golink eat-lvl ${cls}"><div><b>${h}</b><span>You're at ${v}. ${t}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="${go}" data-rerate="am_state2" ${dis}>${btn}</button></div>`}
     case"eatready":{const v=Number(log.am_state);if(!v)return "";
       if(v<6)return `<div class="train-place ok"><span>${TICK} You're good to eat.</span></div>`;
       const M={6:["Nearly there","Take a few minutes to bring it down before you eat. A few slow breaths could be all it takes."],
@@ -2973,7 +2978,7 @@ function askHtml(a,log,wk,locked){
         8:["You need to bring it down first","You're too switched on to digest. Don't eat yet: Do something from Low arousal in Subconscious, then rate again."],
         9:["Stop. You can't eat yet","You're in fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."],
         10:["Stop. You can't eat yet","You're in full fight or flight. Your body can't digest like this. Bring it down first, then rate again before you eat."]}[v];
-      return `<div class="golink eat-lvl lvl-${Math.min(v,9)}"><div><b>${M[0]}</b><span>You're at ${v}. ${M[1]}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" ${dis}>Bring it down</button></div>`}
+      return `<div class="golink eat-lvl lvl-${Math.min(v,9)}"><div><b>${M[0]}</b><span>You're at ${v}. ${M[1]}</span></div><button class="btn primary" data-guidepage="subconscious" data-scrollto="oxy-down" data-rerate="am_state" ${dis}>Bring it down</button></div>`}
     case"dayoverview":{const ox=oxyOf(log),food=log.food_entries||[],wks=wkSummaryRows(log);
       const row=(t,at,sub)=>`<div class="rv"><span>${t}${sub?`<small class="muted" style="display:block;font-weight:500">${sub}</small>`:""}</span><span class="num muted">${esc(at||"")}</span></div>`;
       return `<div class="overview">
@@ -3914,10 +3919,10 @@ root.addEventListener("click",e=>{
   if(b.dataset.mpafter){const k=S.mpKind&&myPlan(S.mpKind)?S.mpKind:planKeys()[0],pr=JSON.parse(JSON.stringify(PREFS()));pr.plans=pr.plans||{};const p=pr.plans[k]=pr.plans[k]||emptyPlan();p.after=Number(b.dataset.mpafter);savePrefs(pr);return render()}
   if(b.dataset.mpauto){const pr=JSON.parse(JSON.stringify(PREFS()));pr.auto=!pr.auto;savePrefs(pr);toast(pr.auto?"Tomorrow's meals will fill from your plans":"Auto-fill off");return render()}
   if(b.dataset.useplan){const[src,k]=b.dataset.useplan.split(":"),p=src==="ex"?EXAMPLE_PLANS[k]:myPlan(k);if(p){useMealPlan(p,k);toast("Meals filled from "+(src==="ex"?"Ellis's example":"your "+(k==="train"?"training":"rest")+" day plan")+". Change anything you need.")}return render()}
-  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);if(b.dataset.scrollto){const el=document.getElementById(b.dataset.scrollto);if(el)window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)}return}
+  if(b.dataset.guidepage){navPush();S.guideFrom={y:window.scrollY,tab:S.tab,rerate:b.dataset.rerate||""};S.tab=b.dataset.guidepage;if(b.dataset.gomseg){S.mseg=b.dataset.gomseg;S.favDraft=null;S.planDraft=null}render();window.scrollTo(0,0);if(b.dataset.scrollto){const el=document.getElementById(b.dataset.scrollto);if(el)window.scrollTo(0,el.getBoundingClientRect().top+window.scrollY-80)}return}
   if(b.dataset.logmeal1){navPush();S.guideFrom={y:window.scrollY,tab:"today",meal1:true};S.tab="meals";S.mseg="today";S.eatAsk=null;S.mealDraft=[];S.favDraft=null;S.planDraft=null;render();window.scrollTo(0,0);return}
   if(b.dataset.guideback){const y=S.guideFrom?S.guideFrom.y:0;S.tab=S.guideFrom&&S.guideFrom.tab||"today";S.guideFrom=null;render();window.scrollTo(0,y);return}
-  if(b.dataset.tab){S.guideFrom=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
+  if(b.dataset.tab){S.guideFrom=null;S.rerateFlash=null;if(S.session.role==="coach"){S.coachTab=b.dataset.tab;S.detail=null}else{if(S.tab!==b.dataset.tab)navPush();S.tab=b.dataset.tab}render();window.scrollTo(0,0);return}
   if(b.dataset.phase||b.dataset.jump){const id=b.dataset.phase||b.dataset.jump;S.scrollTo=id==="score"?"score":id;render();return}
   if(b.dataset.open){S.open[b.dataset.open]=true;S.scrollTo=b.dataset.open;return render()}
   if(b.dataset.collapse){S.open[b.dataset.collapse]=false;S.scrollTo=b.dataset.collapse;return render()}
@@ -3947,7 +3952,7 @@ root.addEventListener("click",e=>{
   if(b.dataset.ask==="am_water500"&&b.dataset.val==="yes"&&!curCtx().log.am_water_added){const w=Number(curCtx().log.water)||0;edit("water",Math.round((w+0.5)*10)/10);edit("am_water_added",true);toast("+500ml water")}
   if(b.dataset.ask==="tmr_train"&&b.dataset.val==="yes"&&!curCtx().log.tmr_workout)edit("tmr_workout","My own workout");
   if(b.dataset.ask==="tmr_train"&&PREFS().auto&&!planFoodsOf(curCtx().log).some(f=>foodsCount(f))){const k=b.dataset.val==="yes"?"train":"rest",p=myPlan(k);if(planFilled(p)){useMealPlan(p,k,b.dataset.val==="yes");toast("Tomorrow's meals filled from your "+(k==="train"?"training":"rest")+" day plan")}}
-  if(b.dataset.ask){const k=b.dataset.ask,raw=b.dataset.val,v=b.dataset.num?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
+  if(b.dataset.ask){S.rerateFlash=null;const k=b.dataset.ask,raw=b.dataset.val,v=b.dataset.num?Number(raw):raw,cur=curCtx().log[k];edit(k,cur===v?"":v);return render()}
   // client: day list
   if(b.dataset.cat){S.cat=b.dataset.cat;return render()}
   if(b.dataset.add){const label=b.dataset.label;if(itemsOf(curCtx().log).some(i=>i.label===label)&&b.dataset.add!=="own"){toast("Already on your list");return}setItems(a=>[...a,{id:uid(),kind:b.dataset.add,label}]);toast("Added to your list");return render()}
@@ -3999,7 +4004,8 @@ root.addEventListener("click",e=>{
   if(b.dataset.gauges){S.gopen=!S.gopen;return render()}
   if(b.dataset.oxywhy){S.oxyWhy=S.oxyWhy===b.dataset.oxywhy?null:b.dataset.oxywhy;return render()}
   if(b.dataset.oxyresp){const [id,k]=b.dataset.oxyresp.split("|"),l=oxyOf(curCtx().log);edit("oxygen",l.map(o=>o.id===id?{...o,resp:o.resp===k?"":k}:o));S.oxyResp=null;toast("Response logged");return render()}
-  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.oxyadd&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM(),nid=uid();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:nid,item:it,g,from,at:t}]);if(!on){toast(it+" logged "+t);if(from==="tab")S.oxyResp=nid}return render()}
+  if(b.dataset.oxy){const it=b.dataset.oxy,g=b.dataset.oxyg,from=b.dataset.oxyfrom||"",l=oxyOf(curCtx().log),on=!b.dataset.oxyadd&&l.find(o=>o.item===it&&o.g===g&&o.from===from);const t=nowHHMM(),nid=uid();edit("oxygen",on?l.filter(o=>o.id!==on.id):[...l,{id:nid,item:it,g,from,at:t}]);if(!on&&from==="tab"&&S.guideFrom&&S.guideFrom.rerate){const k=S.guideFrom.rerate;S.guideFrom=null;S.oxyResp=null;S.tab="today";S.rerateFlash=k;S.rerateItem=it+" logged at "+t;S.scrollSel="#ask-"+k;toast(it+" logged. Now rate again");render();return}
+    if(!on){toast(it+" logged "+t);if(from==="tab")S.oxyResp=nid}return render()}
   if(b.dataset.oxydel){edit("oxygen",oxyOf(curCtx().log).filter(o=>o.id!==b.dataset.oxydel));return render()}
   if(b.dataset.oxyopen){S.oxyOpen=S.oxyOpen===b.dataset.oxyopen?null:b.dataset.oxyopen;return render()}
   if(b.dataset.vid){S.vid=S.vid===b.dataset.vid?null:b.dataset.vid;return render()}
