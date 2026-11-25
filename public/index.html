@@ -11,6 +11,30 @@
 .bnav .bn[aria-current="page"]:not(.bn-main)::before{display:none}
 .bnav .bn[aria-current="page"]:not(.bn-main) span:last-child{font-weight:800}
 .bnav .bn-main[aria-current="page"] span:last-child{color:var(--fg);text-decoration:underline;text-decoration-color:var(--lime);text-decoration-thickness:3px;text-underline-offset:3px}
+
+.cl-list{display:flex;flex-direction:column;gap:10px}
+.cl-card{border:1px solid var(--line);border-left:5px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+.cl-card.st-ok{border-left-color:var(--ok)}.cl-card.st-warn{border-left-color:var(--warn)}.cl-card.st-bad{border-left-color:var(--bad)}
+.cl-main{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;background:none;border:0;padding:12px 14px 8px;font:inherit;color:inherit;cursor:pointer}
+.cl-top{display:flex;align-items:center;gap:8px}.cl-top b{font-size:17px}
+.cl-meta{font-size:13px;color:var(--muted)}
+.cl-row{display:flex;align-items:center;gap:10px}
+.wk-strip{display:inline-flex;gap:3px}.wk-strip i{width:16px;height:16px;border-radius:4px;background:var(--line)}
+.wk-strip i.half{background:color-mix(in srgb,var(--lime) 45%,var(--line))}.wk-strip i.full{background:var(--lime)}
+.cl-pills{display:flex;flex-wrap:wrap;gap:5px}
+.cs-pill{font-size:12px;border-radius:999px;padding:3px 9px;border:1px solid var(--line)}
+.cs-pill.g{background:color-mix(in srgb,var(--ok) 12%,transparent);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+.cs-pill.a{background:color-mix(in srgb,var(--warn) 12%,transparent);border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.cs-pill.r{background:color-mix(in srgb,var(--bad) 12%,transparent);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+.cl-flags{font-size:12.5px;color:var(--warn)}.cl-flags.ok{color:var(--ok);font-weight:600}
+.cl-act{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;padding:0 14px 10px}
+.cl-del{color:var(--muted);font-size:12.5px}
+.cl-warn{color:var(--bad);font-size:13px;font-weight:600;flex:1 1 200px}
+.cl-bulk{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.cd-log{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.cd-sec h4{margin:0 0 6px;font-size:14px}
+.cd-flags{margin:0;padding-left:18px;color:var(--warn);font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:4px}
 </style>
 <title>Project Reset App</title>
 <link rel="icon" type="image/png" href="/favicon.png">
@@ -3688,115 +3712,132 @@ function testClientCard(){
 }
 function pendingSignupsCard(){const ps=pendingClients();return ps.length?`<section class="card signups"><div class="sec-head"><h2 class="sec-title" style="font-size:22px">New sign-ups</h2><span class="pill warn">${ps.length} waiting for targets</span></div>
       ${ps.map(p=>`<div class="signup-row"><div><b>${esc(p.name)}</b><small class="muted">${esc((f=>isLegacy(f)?[f.goal,f.weight&&f.weight+"kg",f.activity]:[f.occupation,f.weight_lb&&f.weight_lb+" lbs",f.height,f.intention&&"“"+f.intention+"”"])(p.form||{}).filter(Boolean).join(" · "))}</small><small class="muted">Form sent ${esc(fmtWhen(p.created_at))}</small></div><button class="btn primary" data-act="review" data-c="${p.id}">Review & set targets</button></div>`).join("")}</section>`:""}
+/* ---------- coach: simple client overview (built on the current app, no points) ---------- */
+function coachDay(c,d,logs){
+  const date=ymd(dateOf(c,d)),l=logs[date]||{},wk=tgtFor(c,d);
+  const opened=MORNING.every(s=>l[s.id]),closed=EVENING.filter(s=>!s.zero).every(s=>l[s.id]);
+  const hit=k=>{const t=Number(wk[k])||0;return t?(Number(l[k])||0)>=t:null};
+  const fe=l.food_entries||[],sn=l.snacks||[],cnt=fn=>Math.min(3,fe.filter(f=>(f.items||[]).some(fn)).length+sn.filter(f=>(f.items||[]).some(fn)).length+(Number(l["extra_"+(fn===isFruit?"fruit":"veg")])||0));
+  return{d,date,l,wk,opened,closed,steps:hit("steps"),protein:hit("protein"),water:hit("water"),meals:fe.length,fruit:cnt(isFruit),veg:cnt(isVeg),trained:!!l.train_done||!!(l.ws&&l.ws.status==="COMPLETED"),ox:oxyOf(l).length,any:hasAny(l)};
+}
+function coachStats(c){
+  const logs=logsFor(c),today=clientDayNum(c),days=[];
+  for(let d=1;d<=Math.min(Math.max(today,0),PROGRAMME_DAYS);d++)days.push(coachDay(c,d,logs));
+  const past=days.filter(x=>x.d<today).slice(-7),rows=past.length?past:days.slice(-1),n=rows.length;
+  const rate=k=>n?Math.round(rows.filter(x=>x[k]).length/n*100):0,count=k=>rows.filter(x=>x[k]).length;
+  const full=x=>x.opened&&x.closed;
+  let streak=0;const tr=days[days.length-1];for(let i=days.length-1-(tr&&full(tr)?0:1);i>=0&&full(days[i]);i--)streak++;
+  let last=null;for(let i=days.length-1;i>=0;i--)if(days[i].any){last=days[i];break}
+  const since=today<=0?0:last?today-last.d:today;
+  const R={open:rate("opened"),close:rate("closed"),steps:rate("steps"),protein:rate("protein"),water:rate("water")};
+  const score=Math.round((R.open+R.close+R.steps+R.protein+R.water)/5);
+  let status="ok";if(today<=0)status="new";else if(today===1&&!past.length)status=since>=1?"warn":"ok";
+  if(today>1){if(since>=2||score<45)status="bad";else if(score<70)status="warn"}
+  const flags=[];
+  if(today>0){
+    if(since>=2)flags.push(`Nothing logged for ${since} days`);
+    const mo=n-count("opened"),mc=n-count("closed");
+    if(n>=2&&(mo/n>0.4||mc/n>0.4))flags.push(mo===mc?`Day Open and Day Close missed ${mo} of ${n} days`:[mo/n>0.4?`Day Open missed ${mo} of ${n} days`:"",mc/n>0.4?`Day Close missed ${mc} of ${n} days`:""].filter(Boolean).join(", "));
+    const under=[["steps","Steps"],["protein","Protein"],["water","Water"]].filter(([k])=>n>=2&&(n-count(k))/n>0.4).map(([k,l])=>`${l} ${n-count(k)} of ${n} days`);
+    if(under.length)flags.push(`Under target: ${under.join(", ")}`);
+    const fr=rows.reduce((a,x)=>a+x.fruit,0)/Math.max(1,n),vg=rows.reduce((a,x)=>a+x.veg,0)/Math.max(1,n);
+    if(n>=2&&(fr<2||vg<2))flags.push(`Low fruit and veg (about ${fr.toFixed(1)} fruit, ${vg.toFixed(1)} veg a day)`);
+  }
+  return{c,days,rows,n,today,R,score,streak,since,status,flags,trained:count("trained"),meals:n?rows.reduce((a,x)=>a+x.meals,0)/n:0};
+}
+const CSTATUS={new:["","Day 0"],ok:["ok","On track"],warn:["warn","Slipping"],bad:["bad","At risk"]};
+const sinceTxt=s=>s.today<=0?"Not started":s.since===0?"Active today":s.since===1?"Last active yesterday":`<span style="color:var(--bad)">Last active ${s.since} days ago</span>`;
+function weekStrip(s){const last=s.days.slice(-7);return `<span class="wk-strip" aria-label="Last 7 days">${last.map(x=>`<i class="${x.opened&&x.closed?"full":x.opened||x.closed?"half":""}" title="Day ${x.d}: ${x.opened?"Opened":"Not opened"}, ${x.closed?"closed":"not closed"}"></i>`).join("")}</span>`}
+const statPill=(l,p)=>`<span class="cs-pill ${p>=70?"g":p>=45?"a":"r"}"><b>${l}</b> ${p}%</span>`;
 function overviewView(){
-  const all=allClients().map(statsFor);
-  if(!all.length)return `<div class="stack">
-    <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
-    ${pendingClients().length?"":`<section class="card"><h2 class="sec-title" style="font-size:22px">No clients yet</h2><p class="muted">When someone fills in the onboarding form, they'll appear here for you to set their targets. Share the app's address with them and they'll pick "Start your onboarding form".</p></section>`}
-    ${pendingSignupsCard()}${inviteCard()}${testClientCard()}</div>`;
+  const all=allClients().map(coachStats),tests=all.filter(s=>s.c.test),f=S.filter||"all";
   const counts={ok:0,warn:0,bad:0,new:0};all.forEach(s=>counts[s.status]++);
-  const mean=f=>Math.round(all.reduce((a,s)=>a+f(s),0)/all.length);
-  const order={bad:0,warn:1,ok:2,new:3};
-  const keyed={status:s=>order[s.status]*1000+s.avg7,name:s=>s.c.name,day:s=>s.today,today:s=>s.todayRow.sc.pts,pts:s=>s.pts7,avg7:s=>s.avg7,morn:s=>s.morn7,eve:s=>s.eve7,proc:s=>s.proc7??-1,senses:s=>s.senses7,steps:s=>s.steps7||0,last:s=>s.since};
-  let rows=all.filter(s=>S.filter==="all"||s.status===S.filter);
-  const f=keyed[S.sort.k];rows.sort((a,b)=>{const x=f(a),y=f(b);return(x>y?1:x<y?-1:0)*S.sort.dir});
-  const th=(k,l,num)=>`<th class="${num?"num":""}"><button data-sort="${k}" data-active="${S.sort.k===k}">${l}${S.sort.k===k?(S.sort.dir>0?" ↑":" ↓"):""}</button></th>`;
-  // breakdowns over everyone's last 7 days
-  const rws=[];all.forEach(s=>s.rows.forEach(x=>rws.push(x)));
-  const rate=(n,d)=>d?Math.round(n/d*100):0;
-  const stepRows=[...MORNING.map(s=>["Morning",s]),...EVENING.map(s=>["Evening",s])].map(([ph,s])=>({label:s.title,ph,p:rate(rws.filter(x=>x.log[s.id]).length,rws.length)}));
-  const dayRates=(()=>{let pn=0,pd=0,wk=0,wa=0,wy=0;rws.forEach(x=>{dayPairs(x.log).forEach(q=>{pn++;if(q.done){pd++;if(q.walk)wk++;if(q.water!=null){wa++;if(q.water)wy++}}})});return{meals:rws.length?pd/rws.length:0,walk:pd?Math.round(wk/pd*100):0,water:wa?Math.round(wy/wa*100):0,done:pn?Math.round(pd/pn*100):0}})();
-  const kindRows=Object.keys(KINDS).map(k=>{let n=0,d=0,a=0,y=0;rws.forEach(x=>(k==="meal"?mealsOf(x.log):itemsOf(x.log).filter(i=>i.kind===k)).forEach(i=>{n++;if(i.done){d++;if(i.fu!==undefined&&i.fu!==null){a++;if(i.fu)y++}}}));return{k,name:KINDS[k].name,per:rws.length?n/rws.length:0,done:rate(d,n),proc:a?rate(y,a):null}});
-  const bar=(p)=>`<div class="bar"><i class="${p<50?"low":p<70?"mid":""}" style="width:${p}%"></i></div>`;
+  const order={bad:0,warn:1,new:2,ok:3};
+  let rows=all.filter(s=>f==="all"?true:f==="test"?s.c.test:f==="real"?!s.c.test:s.status===f);
+  rows.sort((a,b)=>(order[a.status]-order[b.status])||(a.score-b.score)||a.c.name.localeCompare(b.c.name));
+  const card=s=>{const[cls,lab]=CSTATUS[s.status],arm=S.delArm===s.c.id;return `<article class="cl-card st-${s.status}">
+    <button class="cl-main" data-client="${s.c.id}">
+      <div class="cl-top"><b>${esc(s.c.name)}</b>${s.c.test?`<span class="pill">Test</span>`:""}<span class="pill ${cls}" style="margin-left:auto">${lab}</span></div>
+      <div class="cl-meta">${s.today>0?`Day ${Math.min(s.today,PROGRAMME_DAYS)} of ${PROGRAMME_DAYS}`:"Day 0: Setting up"} · ${s.streak} day streak · ${sinceTxt(s)}</div>
+      ${s.today>0?`<div class="cl-row">${weekStrip(s)}<span class="muted" style="font-size:11.5px">Opened and closed, last 7 days</span></div>
+      <div class="cl-pills">${statPill("Day Open",s.R.open)}${statPill("Day Close",s.R.close)}${statPill("Steps",s.R.steps)}${statPill("Protein",s.R.protein)}${statPill("Water",s.R.water)}</div>
+      ${s.flags.length?`<div class="cl-flags"><b>Watch:</b> ${esc(s.flags[0])}${s.flags.length>1?` <span class="muted">+ ${s.flags.length-1} more</span>`:""}</div>`:`<div class="cl-flags ok">${TICK} Nothing to flag</div>`}`:""}
+    </button>
+    <div class="cl-act">${arm?`<span class="cl-warn">Delete ${esc(s.c.name)} and all their data? This can't be undone.</span><button class="btn danger" data-act="client-del" data-c="${s.c.id}">Yes, delete</button><button class="btn" data-act="del-cancel">Cancel</button>`:`<button class="link cl-del" data-act="client-del" data-c="${s.c.id}">Delete</button>`}</div>
+  </article>`};
   return `<div class="stack">
-    <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Client overview</h1></div></div>
+    <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Clients</h1></div></div>
     ${pendingSignupsCard()}
-    <div class="tiles">
-      <div class="tile"><small>Active clients</small><b class="num">${all.length}</b></div>
-      <div class="tile"><small>Avg points, 7 days</small><b class="num">${(all.reduce((a,s)=>a+s.pts7,0)/all.length).toFixed(1)}</b></div>
-      <div class="tile"><small>Morning done, 7 days</small><b class="num">${mean(s=>s.morn7)}%</b></div>
-      <div class="tile"><small>Evening done, 7 days</small><b class="num">${mean(s=>s.eve7)}%</b></div>
-      <div class="tile"><small>Water with meals</small><b class="num">${mean(s=>s.proc7||0)}%</b></div>
-      <div class="tile"><small>Need attention</small><b class="num" style="color:${counts.bad?"var(--bad)":"var(--fg)"}">${counts.bad+counts.warn}</b></div>
+    ${all.length?`<div class="tiles">
+      <div class="tile"><small>Clients</small><b class="num">${all.length-tests.length}</b>${tests.length?`<small class="muted">+ ${tests.length} test</small>`:""}</div>
+      <div class="tile"><small>On track</small><b class="num" style="color:var(--ok)">${counts.ok}</b></div>
+      <div class="tile"><small>Slipping</small><b class="num" style="color:var(--warn)">${counts.warn}</b></div>
+      <div class="tile"><small>At risk</small><b class="num" style="color:var(--bad)">${counts.bad}</b></div>
     </div>
-    <div class="coach-grid">
-      <div class="stack" style="min-width:0">
-        <div class="filters" role="group" aria-label="Filter clients">
-          ${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`]].map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${S.filter===k}">${l}</button>`).join("")}
-        </div>
-        <div class="tbl-wrap"><table>
-          <thead><tr>${th("name","Client")}${th("status","Status")}${th("day","Day",1)}${th("today","Points today",1)}${th("pts","Avg pts 7d",1)}${th("avg7","Done 7d",1)}<th>Last 7</th>${th("morn","Morning",1)}${th("eve","Evening",1)}${th("proc","Water",1)}${th("senses","Senses",1)}${th("steps","Steps avg",1)}${th("last","Last log")}</tr></thead>
-          <tbody>${rows.map(s=>{const[cls,lab]=STATUS[s.status];const l7=s.days.slice(-8,-1);
-            return `<tr data-client="${s.c.id}" tabindex="0">
-            <td><strong>${esc(s.c.name)}</strong>${s.c.test?' <span class="pill warn">Test</span>':""}</td>
-            <td><span class="pill ${cls}">${lab}</span></td>
-            <td class="num">${s.today}</td>
-            <td class="num">${s.todayRow.sc.pts}</td>
-            <td class="num"><strong>${s.pts7.toFixed(1)}</strong></td>
-            <td class="num">${s.avg7}%</td>
-            <td><span class="mini">${Array.from({length:7},(_,i)=>{const x=l7[l7.length-7+i];return `<i class="${x?lvl(x.pct):""}" title="${x?`Day ${x.d}: ${x.sc.pts} pts`:""}"></i>`}).join("")}</span></td>
-            <td class="num">${s.morn7}%</td>
-            <td class="num">${s.eve7}%</td>
-            <td class="num">${s.proc7==null?"–":s.proc7+"%"}</td>
-            <td class="num">${s.senses7.toFixed(1)} / ${SENSES.length}</td>
-            <td class="num">${s.steps7?Math.round(s.steps7).toLocaleString("en-GB"):"–"}</td>
-            <td>${s.since===0?"Today":s.since===1?"Yesterday":`<span style="color:var(--bad)">${s.since} days ago</span>`}</td></tr>`}).join("")}</tbody>
-        </table></div>
-        <p class="muted" style="font-size:12px">1 point per completed step, meal, walk block and non-negotiable. Done 7d is points against everything available. Morning and Evening show how often all 3 steps were done. Water is how often clients had water with their meals. Status: On track at 70%+ done, slipping at 45 to 69%, at risk under 45% or 2+ days with nothing logged.</p>
-      </div>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Last 7 days</h2></div>
-        <div class="hview" role="group" aria-label="Show"><button class="chip" data-hview="phases" aria-pressed="${S.hview!=="day"}">Morning & Evening</button><button class="chip" data-hview="day" aria-pressed="${S.hview==="day"}">Meals & walks</button></div>
-        ${S.hview==="day"
-          ?`<p class="muted" style="font-size:12px;margin-bottom:8px">How the Day's non-negotiables are going across all clients.</p>
-            <div class="kindrow"><div class="kind-h"><b>Meals logged</b><span class="muted num">${dayRates.meals.toFixed(1)} a day</span></div><div class="habit"><span>Planned meals eaten</span>${bar(dayRates.done)}<span class="num" style="text-align:right">${dayRates.done}%</span></div></div>
-            <div class="kindrow"><div class="habit"><span>Walk after meal</span>${bar(dayRates.walk)}<span class="num" style="text-align:right">${dayRates.walk}%</span></div></div>
-            <div class="kindrow"><div class="habit"><span>Water with meal</span>${bar(dayRates.water)}<span class="num" style="text-align:right">${dayRates.water}%</span></div></div>`
-          :`<p class="muted" style="font-size:12px;margin-bottom:8px">How often each step gets done across all clients.</p>`+stepRows.map(r=>`<div class="habit"><span><span class="pl">${r.ph}</span> ${esc(r.label)}</span>${bar(r.p)}<span class="num" style="text-align:right">${r.p}%</span></div>`).join("")}
-      </section>
+    <div class="filters" role="group" aria-label="Filter clients">${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`],["new",`Day 0 ${counts.new}`],["real",`Real clients ${all.length-tests.length}`],["test",`Test ${tests.length}`]].filter(([k])=>k==="all"||k==="real"||k==="test"?true:counts[k]).map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
+    ${tests.length?`<div class="cl-bulk">${S.delTests?`<span class="cl-warn">${tests.length===1?"Delete the test account and its data?":`Delete all ${tests.length} test accounts and their data?`} This can't be undone.</span><button class="btn danger" data-act="del-tests">Yes, delete them all</button><button class="btn" data-act="del-cancel">Cancel</button>`:`<button class="btn" data-act="del-tests">${tests.length===1?"Delete the test account":`Delete all ${tests.length} test accounts`}</button>`}</div>`:""}
+    <div class="cl-list">${rows.map(card).join("")||`<p class="muted">No clients in this view.</p>`}</div>
+    <p class="muted" style="font-size:12px">Percentages are from the last 7 full days (or today, on Day 1). Steps, Protein and Water count a day when the target was hit. Status: On track at 70%+ across the five, Slipping at 45 to 69%, At risk under 45% or 2+ days with nothing logged.</p>`
+    :`<section class="card"><h2 class="sec-title" style="font-size:22px">No clients yet</h2><p class="muted">When someone fills in the onboarding form, they'll appear here for you to set their targets.</p></section>`}
+    ${inviteCard()}${testClientCard()}</div>`;
+}
+function coachDayLog(s,sel){
+  const x=s.days[sel-1];if(!x)return `<p class="muted">No log for this day.</p>`;const l=x.l,wk=x.wk;
+  const yn=(b,t)=>`<div class="rv"><span>${t}</span><span>${b?`<span class="pill ok">Done${typeof b==="string"?" "+esc(b):""}</span>`:`<span class="pill bad">Not done</span>`}</span></div>`;
+  const num=(k,lab,u)=>{const v=Number(l[k])||0,t=Number(wk[k])||0;return `<div class="rv"><span>${lab}</span><span class="num">${v.toLocaleString("en-GB")}${u} / ${t.toLocaleString("en-GB")}${u} ${t&&v>=t?TICK:""}</span></div>`};
+  const fe=l.food_entries||[],ox=oxyOf(l),td=todosOf(l,"todos"),zone=v=>v?`${v} (${(zoneOf(Number(v))||[,""])[1]})`:"–";
+  return `<div class="cd-log">
+    <div class="cd-sec"><h4>Day Open and Day Close</h4>${yn(x.opened,"Day Open")}${yn(x.closed,"Day Close")}
+      <div class="rv"><span>Got up</span><span class="num">${esc(l.woke_at||"–")}</span></div>
+      <div class="rv"><span>Zone before Meal 1</span><span class="num">${zone(l.am_state)}</span></div>
+      <div class="rv"><span>Zone starting the day</span><span class="num">${zone(l.am_state2)}</span></div>
+      <div class="rv"><span>Zone before bed</span><span class="num">${zone(l.pm_state)}</span></div></div>
+    <div class="cd-sec"><h4>Non-negotiables</h4>${num("steps","Steps","")}${num("protein","Protein","g")}${num("water","Water","L")}
+      <div class="rv"><span>Fruit / Veg</span><span class="num">${x.fruit} / 3 · ${x.veg} / 3</span></div></div>
+    <div class="cd-sec"><h4>Meals (${fe.length})</h4>${fe.length?fe.map(m=>`<div class="rv"><span><b>${esc(m.name||"Meal")}</b> <small class="muted">${esc(m.at||"")}</small><small class="muted" style="display:block">${esc((m.items||[]).join(", "))}</small></span><span class="num">${Number(m.protein)||0}g</span></div>`).join(""):`<p class="muted" style="font-size:13px">None logged.</p>`}
+      ${(l.snacks||[]).length?`<div class="rv"><span>Snacks</span><span>${esc(l.snacks.map(q=>q.items.join(", ")).join(" · "))}</span></div>`:""}</div>
+    <div class="cd-sec"><h4>Workout</h4>${x.trained?`<div class="rv"><span>Trained</span><span class="pill ok">${esc(l.train_done||"Done")}</span></div>`:`<p class="muted" style="font-size:13px">No workout logged.</p>`}</div>
+    <div class="cd-sec"><h4>Subconscious (${ox.length})</h4>${ox.length?ox.map(o=>`<div class="rv"><span>${oxyArrow(o.g)} ${esc(o.item)}${o.resp?` <small class="muted">Response: ${esc((OX_RESP.find(r=>r[0]===o.resp)||[,""])[1])}</small>`:""}</span><span class="num">${esc(o.at||"")}</span></div>`).join(""):`<p class="muted" style="font-size:13px">Nothing logged.</p>`}
+      <div class="rv"><span>To-do list</span><span class="num">${td.filter(t=>t.done).length} / ${td.length} done</span></div></div>
+    ${l.day_summary?`<div class="cd-sec"><h4>Their summary of the day</h4><p style="font-size:13.5px;margin:0">“${esc(l.day_summary)}”</p></div>`:""}
+  </div>`;
+}
+function detailView(c){
+  if(!c){S.detail=null;return overviewView()}
+  const s=coachStats(c),[cls,lab]=CSTATUS[s.status],note=(DATA.notes||{})[c.id]||{};
+  const sel=Math.min(S.detailDay||Math.max(1,Math.min(s.today,PROGRAMME_DAYS)),Math.max(1,s.days.length)),arm=S.delArm===c.id;
+  return `<div class="stack">
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="chip" data-act="back">&lsaquo; All clients</button><button class="chip" data-act="review" data-c="${c.id}">Onboarding, targets & account</button></div>
+    <div class="detail-head"><div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · ${s.today>0?`Day ${Math.min(s.today,PROGRAMME_DAYS)} of ${PROGRAMME_DAYS}`:"Day 0"}</span><h1 class="display">${esc(c.name)}</h1><p class="muted" style="margin:4px 0 0">${sinceTxt(s)}</p></div><span class="pill ${cls}" style="font-size:14px">${lab}</span></div>
+    ${s.today>0?`<div class="tiles">
+      <div class="tile"><small>Streak</small><b class="num">${s.streak}</b><small class="muted">days opened and closed</small></div>
+      <div class="tile"><small>Day Open</small><b class="num">${s.R.open}%</b></div>
+      <div class="tile"><small>Day Close</small><b class="num">${s.R.close}%</b></div>
+      <div class="tile"><small>Steps hit</small><b class="num">${s.R.steps}%</b></div>
+      <div class="tile"><small>Protein hit</small><b class="num">${s.R.protein}%</b></div>
+      <div class="tile"><small>Water hit</small><b class="num">${s.R.water}%</b></div>
+      <div class="tile"><small>Workouts</small><b class="num">${s.trained}</b><small class="muted">last ${s.n} ${s.n===1?"day":"days"}</small></div>
+      <div class="tile"><small>Meals a day</small><b class="num">${s.meals.toFixed(1)}</b></div>
     </div>
-  ${inviteCard()}${testClientCard()}</div>`;
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Where they're slipping</h2></div>${s.flags.length?`<ul class="cd-flags">${s.flags.map(f=>`<li>${esc(f)}</li>`).join("")}</ul>`:`<p class="tr-ok" style="color:var(--ok);font-weight:700;margin:0">${TICK} Nothing to flag in the last 7 days.</p>`}</section>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Their 21 days</h2><span class="muted" style="font-size:12px">Tap a day to see it</span></div>
+      <div class="days-grid">${Array.from({length:PROGRAMME_DAYS},(_,i)=>i+1).map(d=>{const x=s.days[d-1],st=x?(x.opened&&x.closed?"full":x.opened||x.closed?"half":""):"";return `<button class="dg ${st}${d===sel?" cur":""}${!x?" fut":""}" ${x?`data-act="cday" data-d="${d}"`:"disabled"}><small>Day</small><b class="num">${d}</b><span>${st==="full"?TICK:st==="half"?"½":x?"·":""}</span></button>`}).join("")}</div>
+      <div class="dg-key"><span><i class="full"></i>Opened and closed</span><span><i class="half"></i>One of the two</span><span><i></i>Missed</span></div></section>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel}</h2><span class="muted num">${fmtShort(dateOf(c,sel))}</span></div>${coachDayLog(s,sel)}</section>`
+    :`<section class="card"><p class="muted" style="margin:0">${esc(c.name.split(" ")[0])} is on Day 0, setting up. Their days will show here from Day 1.</p></section>`}
+    ${checkinsCard(c)}
+    <section class="card stack" style="gap:10px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Note to ${esc(c.name.split(" ")[0])}</h2>${note.at?`<span class="muted" style="font-size:12px">Last sent ${fmtShort(new Date(note.at))}</span>`:""}</div>
+      <label for="coachNote" class="muted" style="font-size:13px">Shows at the top of their Today screen.</label>
+      <textarea class="input" id="coachNote" placeholder="Great week. Your Day Close is the one to tighten up next.">${esc(note.text||"")}</textarea>
+      <div><button class="btn primary" data-act="send-note" data-c="${c.id}">Send note</button></div></section>
+    <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Delete client</h2></div>
+      ${arm?`<p class="cl-warn" style="margin:0 0 8px">Delete ${esc(c.name)} and all their data? This can't be undone.</p><div style="display:flex;gap:8px"><button class="btn danger" data-act="client-del" data-c="${c.id}">Yes, delete</button><button class="btn" data-act="del-cancel">Cancel</button></div>`:`<p class="muted" style="font-size:13px;margin:0 0 8px">Removes their account, logs, photos, check-ins and notes.</p><button class="btn" data-act="client-del" data-c="${c.id}">Delete ${esc(c.name)}</button>`}</section>
+  </div>`;
 }
 function phaseLog(title,steps,log,wk){
   return `<div class="log-phase"><h4>${title}</h4>${steps.map(s=>{const d=log[s.id];
     const ans=s.asks.map(a=>{if(a.type==="review")return"";const v=a.type==="todo"?todoOf(log).map(t=>t[1]).join(", "):a.type==="todolist"?todosOf(log,a.k).map(t=>(t.time?t.time+" ":"")+t.t+(t.done?" ✓":"")).join(", "):log[a.k];if(v===undefined||v==="")return"";let t=a.type==="rating"?(a.arousal?zoneTxt(v):v+"/10"):a.type==="choice"?((a.options.find(o=>o[0]===v)||[0,v])[1]):Array.isArray(v)?v.join(", "):a.type==="number"&&a.target?`${Number(v).toLocaleString("en-GB")} of ${Number(wk[a.target]).toLocaleString("en-GB")}`:v;return `<span><span class="muted">${esc(a.label.replace(/\? 1 to 10/,"").replace(/\?$/,""))}:</span> ${esc(t)}</span>`}).filter(Boolean).join("");
     return `<div class="lp-row ${d?"":"miss"}"><div class="lp-top"><span>${d?"✓ ":""}${esc(s.title)}</span><span class="num">${d?esc(d):"–"}</span></div>${ans?`<div class="lp-ans">${ans}</div>`:""}</div>`}).join("")}</div>`;
-}
-function detailView(c){
-  const st=statsFor(c),[cls,lab]=STATUS[st.status];
-  const sel=S.detailDay||Math.max(1,st.today),row=st.days[sel-1],wk=row.wk,log=row.log,items=itemsOf(log);
-  const note=(DATA.notes||{})[c.id]||{};
-  return `<div class="stack">
-    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="chip" data-act="back">&lsaquo; All clients</button><button class="chip" data-act="review" data-c="${c.id}">Onboarding, targets & account</button></div>
-    <div class="detail-head">
-      <div><span class="eyebrow">Started ${fmtShort(clientStart(c))} · Day ${st.today} of ${PROGRAMME_DAYS}</span><h1 class="display">${esc(c.name)}</h1>${(()=>{const b=logsFor(c)[ymd(addDays(clientStart(c),-1))]||{};const w=tgtFor(c,Math.max(1,st.today));return `<p class="muted" style="font-size:13px">Targets: ${w.steps.toLocaleString("en-GB")} steps · ${w.protein}g protein · ${w.water}L water a day <span class="kind">From onboarding form, coming soon</span></p>`})()}</div>
-      <span class="pill ${cls}" style="font-size:14px">${lab}</span>
-    </div>
-    <div class="tiles">
-      <div class="tile"><small>Avg points, 7 days</small><b class="num">${st.pts7.toFixed(1)}</b></div>
-      <div class="tile"><small>Done, 7 days</small><b class="num">${st.avg7}%</b></div>
-      <div class="tile"><small>Morning done</small><b class="num">${st.morn7}%</b></div>
-      <div class="tile"><small>Evening done</small><b class="num">${st.eve7}%</b></div>
-      <div class="tile"><small>Water with meals</small><b class="num">${st.proc7==null?"–":st.proc7+"%"}</b></div>
-    </div>
-    <div class="two">
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">${PROGRAMME_DAYS} day map</h2><span class="muted" style="font-size:12px">Select a day to see its log</span></div>${heatmap(st,{clickable:true,sel})}</section>
-      <section class="card"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Day ${sel} log</h2><span class="muted num">${fmtShort(dateOf(c,sel))} · ${row.sc.pts} pts · ${row.sc.brain.size}/4 brain · ${row.sc.senses.size}/5 senses</span></div>
-        <div class="log-phase"><h4>Timeline</h4>${timeline(log)}${log.bank?`<p style="font-size:13px;margin-top:8px"><span class="muted">Banked:</span> “${esc(log.bank)}”</p>`:""}</div>
-        <details class="raw"><summary>Full answers by section</summary>
-        ${phaseLog("Morning",MORNING,log,wk)}
-        <div class="log-phase"><h4>Day: Meals & walks</h4>${log.train==="yes"?`<div class="lp-row ${log.train_done?"":"miss"}"><div class="lp-top"><span>${log.train_done?"✓ ":""}Training session${log.train_time?" (planned "+esc(log.train_time)+")":""}</span><span class="num">${log.train_done?esc(log.train_done):"–"}</span></div></div>`:""}${log.energy?`<p class="muted" style="font-size:12px;margin-bottom:6px">Energy ${esc(log.energy)} · ${log.train==="yes"?"training day":"rest day"}</p>`:""}
-          ${dayPairs(log).length?dayPairs(log).map(q=>`<div class="lp-row ${q.done?"":"miss"}"><div class="lp-top"><span>${q.done?"✓ ":""}Meal ${q.slot}${q.text?": "+esc(q.text):""}</span><span class="num">${q.done?esc(q.done):"–"}${q.done?(q.water===true?' <span class="badge ok">Water</span>':q.water===false?' <span class="badge miss">No water</span>':""):""}</span></div></div><div class="lp-row ${q.walk?"":"miss"}"><div class="lp-top"><span>${q.walk?"✓ ":""}Walk after Meal ${q.slot}</span><span class="num">${q.walk?esc(q.walk):"–"}</span></div></div>`).join(""):`<p class="muted" style="font-size:13px">No meals logged.</p>`}</div>
-        ${phaseLog("Evening",eveningSteps(log),log,wk)}</details>
-      </section>
-    </div>
-    ${trendCharts(st)}
-    ${checkinsCard(c)}
-    <section class="card stack" style="gap:10px"><div class="sec-head"><h2 class="sec-title" style="font-size:20px">Note to ${esc(c.name.split(" ")[0])}</h2>${note.at?`<span class="muted" style="font-size:12px">Last sent ${fmtShort(new Date(note.at))}</span>`:""}</div>
-      <label for="coachNote" class="muted" style="font-size:13px">Shows at the top of their Today screen.</label>
-      <textarea class="input" id="coachNote" placeholder="Great week. Your evening steps are the one to tighten up next.">${esc(note.text||"")}</textarea>
-      <div><button class="btn primary" data-act="send-note" data-c="${c.id}">Send note</button></div>
-    </section>
-  </div>`;
 }
 function settingsView(){
   return `<div class="stack">
@@ -3902,6 +3943,8 @@ root.addEventListener("click",e=>{
   if(act==="assign"){const id=b.dataset.c,c=allUsers().find(x=>x.id===id);if(!c)return;const g=q=>Number((root.querySelector(q)||{}).value)||0;const t={steps:g("#tg-steps"),protein:g("#tg-protein"),water:g("#tg-water")};if(!t.steps||!t.protein||!t.water)return toast("Fill in all three targets");const first=c.status==="pending";b.disabled=true;
     api("/clients/"+id+"/targets",{method:"POST",body:t}).then(()=>{toast(first?"Targets assigned. "+c.name.split(" ")[0]+" can start once they've watched the intro videos":"Targets saved");if(first){S.review=null;S.detail=null}return boot()}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="client-pw"){const id=b.dataset.c,v=(root.querySelector("#cpw")||{}).value||"";if(v.length<8)return toast("Use 8+ characters");b.disabled=true;api("/clients/"+id+"/password",{method:"POST",body:{password:v}}).then(()=>{toast("Password set. Send it to them.");root.querySelector("#cpw").value="";b.disabled=false}).catch(x=>{toast(x.message);b.disabled=false});return}
+  if(act==="del-cancel"){S.delArm=null;S.delTests=false;return render()}
+  if(act==="del-tests"){if(!S.delTests){S.delTests=true;return render()}const ids=allClients().filter(c=>c.test).map(c=>c.id);b.disabled=true;Promise.all(ids.map(id=>api("/clients/"+id,{method:"DELETE"}).catch(()=>null))).then(()=>{toast(ids.length+" test accounts deleted");S.delTests=false;S.filter="all";return boot()});return}
   if(act==="client-del"){const id=b.dataset.c;if(S.delArm!==id){S.delArm=id;return render()}b.disabled=true;api("/clients/"+id,{method:"DELETE"}).then(()=>{toast("Client removed");S.delArm=null;S.review=null;S.detail=null;return boot()}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="test-next"){b.disabled=true;flush().then(()=>api("/test/nextday",{method:"POST"})).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Moved to the next day")}).catch(x=>{toast(x.message);b.disabled=false});return}
   if(act==="test-restart"){if(!S.restartArm){S.restartArm=true;return render()}S.restartArm=false;b.disabled=true;dirty.clear();pendingSet(DATA.me.id,{});api("/test/restart",{method:"POST"}).then(()=>{S.viewDay=null;S.open={};return boot()}).then(()=>{window.scrollTo(0,0);toast("Back to Day 0")}).catch(x=>{toast(x.message);b.disabled=false});return}
@@ -3937,7 +3980,8 @@ root.addEventListener("click",e=>{
   if(b.dataset.unfinishday){edit("day_done","");S.open.day=true;return render()}
   if(act==="day"){const c=me(),t=clientDayNum(c),d=Number(b.dataset.d);S.viewDay=d===t?null:clamp(d,c.fresh?0:1,t);S.phase=null;S.open={};if(S.tab==="days"){S.tab="today";window.scrollTo(0,0)}return render()}
   if(b.dataset.client){S.detail=b.dataset.client;S.detailDay=null;render();window.scrollTo(0,0);return}
-  if(act==="back"){S.detail=null;return render()}
+  if(act==="back"){S.detail=null;S.delArm=null;return render()}
+  if(act==="cday"){S.detailDay=Number(b.dataset.d);return render()}
   if(b.dataset.hday){S.detailDay=Number(b.dataset.hday);return render()}
   if(b.dataset.filter){S.filter=b.dataset.filter;return render()}
   if(b.dataset.hview){S.hview=b.dataset.hview;return render()}
