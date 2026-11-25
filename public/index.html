@@ -35,6 +35,26 @@
 .cd-log{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .cd-sec h4{margin:0 0 6px;font-size:14px}
 .cd-flags{margin:0;padding-left:18px;color:var(--warn);font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:4px}
+
+.cl-list{gap:6px!important}
+.cl-card{position:relative;border-left-width:4px!important;border-radius:12px!important}
+.cl-main{gap:3px!important;padding:9px 40px 9px 12px!important}
+.cl-top{gap:6px!important}.cl-top b{font-size:15px!important}.cl-top .pill{margin-left:auto;font-size:11px;padding:2px 8px}
+.cl-test{font-size:10.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px}
+.cl-meta{font-size:12px!important;display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.cl-meta .wk-strip{margin-left:6px}.wk-strip i{width:10px!important;height:10px!important;border-radius:3px!important}
+.cl-stats{display:flex;flex-wrap:wrap;gap:2px 10px;font-size:12px}
+.cl-stats .cs{color:var(--muted)}.cl-stats .cs b{font-weight:800}
+.cl-stats .cs.g b{color:var(--ok)}.cl-stats .cs.a b{color:var(--warn)}.cl-stats .cs.r b{color:var(--bad)}
+.cl-flags{font-size:12px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cl-x{position:absolute;top:6px;right:6px;width:28px;height:28px;border-radius:8px;border:0;background:none;color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+.cl-x:hover{background:var(--line);color:var(--bad)}
+.cl-act{padding:0 12px 8px!important}
+.btn.sm{padding:6px 12px;font-size:13px}
+.cl-sum{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.cl-sum b{font-size:18px;margin-right:2px}
+.cl-more>summary{cursor:pointer;font-weight:700;padding:10px 0}
+@media (min-width:760px){.cl-list{display:grid!important;grid-template-columns:1fr 1fr;align-items:start}}
 </style>
 <title>Project Reset App</title>
 <link rel="icon" type="image/png" href="/favicon.png">
@@ -3755,31 +3775,26 @@ function overviewView(){
   const order={bad:0,warn:1,new:2,ok:3};
   let rows=all.filter(s=>f==="all"?true:f==="test"?s.c.test:f==="real"?!s.c.test:s.status===f);
   rows.sort((a,b)=>(order[a.status]-order[b.status])||(a.score-b.score)||a.c.name.localeCompare(b.c.name));
-  const card=s=>{const[cls,lab]=CSTATUS[s.status],arm=S.delArm===s.c.id;return `<article class="cl-card st-${s.status}">
+  const card=s=>{const[cls,lab]=CSTATUS[s.status],arm=S.delArm===s.c.id,R=s.R,stat=(l,p)=>`<span class="cs ${p>=70?"g":p>=45?"a":"r"}">${l} <b>${p}%</b></span>`;return `<article class="cl-card st-${s.status}">
     <button class="cl-main" data-client="${s.c.id}">
-      <div class="cl-top"><b>${esc(s.c.name)}</b>${s.c.test?`<span class="pill">Test</span>`:""}<span class="pill ${cls}" style="margin-left:auto">${lab}</span></div>
-      <div class="cl-meta">${s.today>0?`Day ${Math.min(s.today,PROGRAMME_DAYS)} of ${PROGRAMME_DAYS}`:"Day 0: Setting up"} · ${s.streak} day streak · ${sinceTxt(s)}</div>
-      ${s.today>0?`<div class="cl-row">${weekStrip(s)}<span class="muted" style="font-size:11.5px">Opened and closed, last 7 days</span></div>
-      <div class="cl-pills">${statPill("Day Open",s.R.open)}${statPill("Day Close",s.R.close)}${statPill("Steps",s.R.steps)}${statPill("Protein",s.R.protein)}${statPill("Water",s.R.water)}</div>
-      ${s.flags.length?`<div class="cl-flags"><b>Watch:</b> ${esc(s.flags[0])}${s.flags.length>1?` <span class="muted">+ ${s.flags.length-1} more</span>`:""}</div>`:`<div class="cl-flags ok">${TICK} Nothing to flag</div>`}`:""}
+      <div class="cl-top"><b>${esc(s.c.name)}</b>${s.c.test?`<span class="cl-test">Test</span>`:""}<span class="pill ${cls}">${lab}</span></div>
+      <div class="cl-meta">${s.today>0?`Day ${Math.min(s.today,PROGRAMME_DAYS)}/${PROGRAMME_DAYS} · ${s.streak} day streak · ${sinceTxt(s)}${weekStrip(s)}`:"Setting up for Day 1"}</div>
+      ${s.today>0?`<div class="cl-stats">${stat("Open",R.open)}${stat("Close",R.close)}${stat("Steps",R.steps)}${stat("Protein",R.protein)}${stat("Water",R.water)}</div>
+      ${s.flags.length?`<div class="cl-flags">Watch: ${esc(s.flags[0])}${s.flags.length>1?` (+${s.flags.length-1})`:""}</div>`:""}`:""}
     </button>
-    <div class="cl-act">${arm?`<span class="cl-warn">Delete ${esc(s.c.name)} and all their data? This can't be undone.</span><button class="btn danger" data-act="client-del" data-c="${s.c.id}">Yes, delete</button><button class="btn" data-act="del-cancel">Cancel</button>`:`<button class="link cl-del" data-act="client-del" data-c="${s.c.id}">Delete</button>`}</div>
+    ${arm?`<div class="cl-act"><span class="cl-warn">Delete ${esc(s.c.name)} and all their data?</span><button class="btn danger sm" data-act="client-del" data-c="${s.c.id}">Delete</button><button class="btn sm" data-act="del-cancel">Cancel</button></div>`:`<button class="cl-x" data-act="client-del" data-c="${s.c.id}" aria-label="Delete ${esc(s.c.name)}" title="Delete">×</button>`}
   </article>`};
   return `<div class="stack">
     <div class="detail-head"><div><span class="eyebrow">${fmtLong(TODAY)}</span><h1 class="display" style="font-size:clamp(44px,9vw,68px)">Clients</h1></div></div>
     ${pendingSignupsCard()}
-    ${all.length?`<div class="tiles">
-      <div class="tile"><small>Clients</small><b class="num">${all.length-tests.length}</b>${tests.length?`<small class="muted">+ ${tests.length} test</small>`:""}</div>
-      <div class="tile"><small>On track</small><b class="num" style="color:var(--ok)">${counts.ok}</b></div>
-      <div class="tile"><small>Slipping</small><b class="num" style="color:var(--warn)">${counts.warn}</b></div>
-      <div class="tile"><small>At risk</small><b class="num" style="color:var(--bad)">${counts.bad}</b></div>
-    </div>
+    ${all.length?`<div class="cl-sum"><span><b class="num">${all.length-tests.length}</b> clients${tests.length?` <small class="muted">+${tests.length} test</small>`:""}</span><span><b class="num" style="color:var(--ok)">${counts.ok}</b> on track</span><span><b class="num" style="color:var(--warn)">${counts.warn}</b> slipping</span><span><b class="num" style="color:var(--bad)">${counts.bad}</b> at risk</span></div>
     <div class="filters" role="group" aria-label="Filter clients">${[["all",`All ${all.length}`],["bad",`At risk ${counts.bad}`],["warn",`Slipping ${counts.warn}`],["ok",`On track ${counts.ok}`],["new",`Day 0 ${counts.new}`],["real",`Real clients ${all.length-tests.length}`],["test",`Test ${tests.length}`]].filter(([k])=>k==="all"||k==="real"||k==="test"?true:counts[k]).map(([k,l])=>`<button class="chip" data-filter="${k}" aria-pressed="${f===k}">${l}</button>`).join("")}</div>
     ${tests.length?`<div class="cl-bulk">${S.delTests?`<span class="cl-warn">${tests.length===1?"Delete the test account and its data?":`Delete all ${tests.length} test accounts and their data?`} This can't be undone.</span><button class="btn danger" data-act="del-tests">Yes, delete them all</button><button class="btn" data-act="del-cancel">Cancel</button>`:`<button class="btn" data-act="del-tests">${tests.length===1?"Delete the test account":`Delete all ${tests.length} test accounts`}</button>`}</div>`:""}
     <div class="cl-list">${rows.map(card).join("")||`<p class="muted">No clients in this view.</p>`}</div>
     <p class="muted" style="font-size:12px">Percentages are from the last 7 full days (or today, on Day 1). Steps, Protein and Water count a day when the target was hit. Status: On track at 70%+ across the five, Slipping at 45 to 69%, At risk under 45% or 2+ days with nothing logged.</p>`
     :`<section class="card"><h2 class="sec-title" style="font-size:22px">No clients yet</h2><p class="muted">When someone fills in the onboarding form, they'll appear here for you to set their targets.</p></section>`}
-    ${inviteCard()}${testClientCard()}</div>`;
+    <details class="cl-more"><summary>Invite a client</summary>${inviteCard()}</details>
+    <details class="cl-more"><summary>Create a test account</summary>${testClientCard()}</details></div>`;
 }
 function coachDayLog(s,sel){
   const x=s.days[sel-1];if(!x)return `<p class="muted">No log for this day.</p>`;const l=x.l,wk=x.wk;
